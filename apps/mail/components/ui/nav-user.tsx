@@ -29,7 +29,6 @@ import { AddConnectionDialog } from '../connection/add';
 import { CircleCheck, ThreeDots } from '../icons/icons';
 import { useTRPC } from '@/providers/query-provider';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useBilling } from '@/hooks/use-billing';
 import { SunIcon } from '../icons/animated/sun';
 import { clear as idbClear } from 'idb-keyval';
 import { useLocation } from 'react-router';
@@ -99,7 +98,7 @@ export function NavUser() {
     trpc.connections.setDefault.mutationOptions(),
   );
   const { mutateAsync: handleForceSync } = useMutation(trpc.mail.forceSync.mutationOptions());
-  const { openBillingPortal, customer: billingCustomer, isPro } = useBilling();
+  const isPro = false;
   const pathname = useLocation().pathname;
   const queryClient = useQueryClient();
   const { data: activeConnection, refetch: refetchActiveConnection } = useActiveConnection();
@@ -202,7 +201,7 @@ export function NavUser() {
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-(--radix-dropdown-menu-trigger-width) ml-3 min-w-56 bg-white font-medium dark:bg-[#131313]"
+                className="w-(--radix-dropdown-menu-trigger-width) ml-3 min-w-56 bg-white font-medium dark:bg-popover"
                 align="end"
                 side={'bottom'}
                 sideOffset={8}
@@ -233,12 +232,6 @@ export function NavUser() {
                       <div className="w-full">
                         <div className="flex items-center justify-center gap-0.5 text-sm font-medium">
                           {activeAccount.name || session.user.name || 'User'}
-                          {isPro && (
-                            <BadgeCheck
-                              className="h-4 w-4 text-white dark:text-[#141414]"
-                              fill="#1D9BF0"
-                            />
-                          )}
                         </div>
                         <div className="text-muted-foreground text-xs">{activeAccount.email}</div>
                       </div>
@@ -407,7 +400,7 @@ export function NavUser() {
                       </AvatarFallback>
                     </Avatar>
                     {activeAccount.id === activeConnection?.id && data.connections.length > 1 && (
-                      <CircleCheck className="fill-mainBlue absolute -bottom-2 -right-2 size-4 rounded-full bg-white dark:bg-[#141414]" />
+                      <CircleCheck className="fill-mainBlue absolute -bottom-2 -right-2 size-4 rounded-full bg-white dark:bg-background" />
                     )}
                   </div>
                 </div>
@@ -446,7 +439,7 @@ export function NavUser() {
                           </AvatarFallback>
                         </Avatar>
                         {connection.id === activeConnection?.id && otherConnections.length > 1 && (
-                          <CircleCheck className="fill-mainBlue absolute -bottom-2 -right-2 size-4 rounded-full bg-white dark:bg-black" />
+                          <CircleCheck className="fill-mainBlue absolute -bottom-2 -right-2 size-4 rounded-full bg-white dark:bg-background" />
                         )}
                       </div>
                     </div>
@@ -465,7 +458,7 @@ export function NavUser() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
-                    className="ml-3 min-w-56 bg-white font-medium dark:bg-[#131313]"
+                    className="ml-3 min-w-56 bg-white font-medium dark:bg-popover"
                     align="end"
                     side={'bottom'}
                     sideOffset={8}
@@ -507,22 +500,11 @@ export function NavUser() {
                 </DropdownMenu>
               )}
 
-              {isPro ? (
-                <AddConnectionDialog>
-                  <Button className="hover:bg-offsetLight/80 dark:hover:bg-offsetDark/80 flex h-7 w-7 cursor-pointer items-center justify-center rounded-[5px] border border-dashed bg-transparent px-0 text-black dark:bg-[#262626] dark:text-[#929292]">
-                    <Plus className="size-4" />
-                  </Button>
-                </AddConnectionDialog>
-              ) : (
-                <>
-                  <Button
-                    onClick={() => setPricingDialog('true')}
-                    className="hover:bg-offsetLight/80 dark:hover:bg-offsetDark/80 flex h-7 w-7 cursor-pointer items-center justify-center rounded-[5px] border border-dashed bg-transparent px-0 text-black dark:bg-[#262626] dark:text-[#929292]"
-                  >
-                    <Plus className="size-4" />
-                  </Button>
-                </>
-              )}
+              <AddConnectionDialog>
+                <Button className="hover:bg-offsetLight/80 dark:hover:bg-offsetDark/80 flex h-7 w-7 cursor-pointer items-center justify-center rounded-[5px] border border-dashed bg-transparent px-0 text-black dark:bg-muted dark:text-muted-foreground">
+                  <Plus className="size-4" />
+                </Button>
+              </AddConnectionDialog>
             </div>
 
             <div className="flex items-center justify-center gap-1">
@@ -538,20 +520,12 @@ export function NavUser() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="ml-3 min-w-56 bg-white font-medium dark:bg-[#131313]"
+                  className="ml-3 min-w-56 bg-white font-medium dark:bg-popover"
                   align="end"
                   side={'bottom'}
                   sideOffset={8}
                 >
                   <div className="space-y-1">
-                    {billingCustomer?.stripe_id ? (
-                      <DropdownMenuItem onClick={() => openBillingPortal()}>
-                        <div className="flex items-center gap-2">
-                          <BanknoteIcon size={16} className="opacity-60" />
-                          <p className="text-[13px] opacity-60">Billing</p>
-                        </div>
-                      </DropdownMenuItem>
-                    ) : null}
                     <DropdownMenuItem onClick={handleThemeToggle} className="cursor-pointer">
                       <div className="flex w-full items-center gap-2">
                         {theme === 'dark' ? (
@@ -639,22 +613,10 @@ export function NavUser() {
               <p className={cn('max-w-[14.5ch] truncate text-[13px]')}>
                 {activeAccount?.name || session.user.name || 'User'}
               </p>
-              {isPro ? (
-                <BadgeCheck className="h-4 w-4 text-white dark:text-[#141414]" fill="#1D9BF0" />
-              ) : null}
             </div>
             <div className="h-5 max-w-[200px] overflow-hidden truncate text-xs font-normal leading-none text-[#898989]">
               {activeAccount?.email || session.user.email}
             </div>
-            {!isPro && (
-              <button
-                onClick={() => setPricingDialog('true')}
-                className="flex h-5 items-center gap-1 rounded-full border px-1 pr-1.5 hover:bg-transparent"
-              >
-                <BadgeCheck className="h-4 w-4 text-white dark:text-[#141414]" fill="#1D9BF0" />
-                <span className="text-muted-foreground text-[10px] uppercase">Get verified</span>
-              </button>
-            )}
           </div>
         </div>
       )}

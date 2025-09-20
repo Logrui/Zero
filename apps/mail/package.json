@@ -56,7 +56,6 @@
     "accept-language-parser": "^1.5.0",
     "agents": "0.0.93",
     "ai": "^4.3.9",
-    "autumn-js": "catalog:",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
     "better-auth": "catalog:",
     "canvas-confetti": "1.9.3",

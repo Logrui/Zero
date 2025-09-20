@@ -12,7 +12,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { CreateEmail } from '../create/create-email';
 // import { useMutation } from '@tanstack/react-query';
 import { PencilCompose, X } from '../icons/icons';
-import { useBilling } from '@/hooks/use-billing';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,8 @@ import { useQueryState } from 'nuqs';
 // import { toast } from 'sonner';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { isPro, isLoading } = useBilling();
+  const isLoading = false;
+  const isPro = false;
   //   const trpc = useTRPC();
   //   const { mutateAsync: createMeet } = useMutation(trpc.meet.create.mutationOptions());
   const [showUpgrade, setShowUpgrade] = useState(() => {
@@ -126,44 +127,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
           </SidebarContent>
 
-          {!isLoading && !isPro && showUpgrade && state !== 'collapsed' && (
-            <div className="relative top-3 mx-3 mb-4 rounded-lg border bg-white px-4 py-4 backdrop-blur-sm dark:bg-[#1C1C1C]">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-2 h-6 w-6 rounded-full hover:bg-white/10 [&>svg]:h-2.5 [&>svg]:w-2.5"
-                onClick={() => {
-                  setShowUpgrade(false);
-                  localStorage.setItem('hideUpgradeCard', 'true');
-                }}
-              >
-                <X className="h-2.5 w-2.5 fill-black dark:fill-white/50" />
-              </Button>
-              <div className="flex items-start gap-2">
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-black dark:text-white/90">
-                      Get Zero Pro
-                    </h3>
-                  </div>
-                  <p className="text-[13px] leading-snug text-black dark:text-white/50">
-                    Get unlimited AI chats, auto-labeling, writing assistant, and more.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setPricingDialog('true')}
-                className="mt-3 inline-flex h-7 w-full items-center justify-center gap-0.5 overflow-hidden rounded-lg bg-[#8B5CF6] px-2"
-              >
-                <div className="flex items-center justify-center gap-2.5 px-0.5">
-                  <div className="justify-start whitespace-nowrap text-xs leading-none text-white md:text-sm">
-                    Start 7 day free trial
-                  </div>
-                </div>
-              </button>
-            </div>
-          )}
-
+          
           <SidebarFooter className={`px-0 pb-0 ${state === 'collapsed' ? 'md:px-2' : 'md:px-4'}`}>
             <NavMain items={bottomNavItems} />
           </SidebarFooter>
@@ -214,7 +178,7 @@ function ComposeButton() {
         </button>
       </DialogTrigger>
 
-      <DialogContent className="h-screen w-screen max-w-none border-none bg-[#FAFAFA] p-0 shadow-none dark:bg-[#141414]">
+      <DialogContent className="h-screen w-screen max-w-none border-none bg-[#FAFAFA] p-0 shadow-none dark:bg-background">
         <CreateEmail />
       </DialogContent>
     </Dialog>

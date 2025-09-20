@@ -192,12 +192,12 @@ export function NavMain({ items }: NavMainProps) {
             <SidebarMenuItem>
               {state !== 'collapsed' ? (
                 section.title ? (
-                  <p className="text-muted-foreground mx-2 mb-2 text-[13px] dark:text-[#898989]">
+                  <p className="text-muted-foreground mx-2 mb-2 text-[13px]">
                     {section.title}
                   </p>
                 ) : null
               ) : (
-                <div className="bg-muted-foreground/50 mx-2 mb-4 mt-2 h-[0.5px] dark:bg-[#262626]" />
+                <div className="bg-muted-foreground/50 mx-2 mb-4 mt-2 h-[0.5px] dark:bg-sidebar-border" />
               )}
               <div className="z-20 space-y-1 pb-2">
                 {section.items.map((item) => (
@@ -280,8 +280,8 @@ function NavItem(item: NavItemProps & { href: string }) {
           asChild
           tooltip={state === 'collapsed' ? item.title : undefined}
           className={cn(
-            'hover:bg-subtleWhite flex items-center dark:hover:bg-[#202020]',
-            item.isActive && 'bg-subtleWhite text-accent-foreground dark:bg-[#202020]',
+            'hover:bg-subtleWhite flex items-center dark:hover:bg-sidebar-accent',
+            item.isActive && 'bg-subtleWhite text-accent-foreground dark:bg-sidebar-accent'
           )}
           onClick={handleClick}
         >

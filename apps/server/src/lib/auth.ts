@@ -206,18 +206,7 @@ export const createAuth = () => {
           if (!request) throw new APIError('BAD_REQUEST', { message: 'Request object is missing' });
           const db = await getZeroDB(user.id);
           const connections = await db.findManyConnections();
-          const context = getContext<HonoContext>();
-          try {
-            const autumn = context?.var?.autumn;
-            if (autumn) {
-              await autumn.customers.delete(user.id);
-            } else {
-              console.warn('Autumn context not available during user deletion');
-            }
-          } catch (error) {
-            console.error('Failed to delete Autumn customer:', error);
-            // Continue with deletion process despite Autumn failure
-          }
+          // Autumn integration removed
 
           const revokedAccounts = (
             await Promise.allSettled(

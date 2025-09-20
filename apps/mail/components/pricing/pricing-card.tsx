@@ -1,7 +1,7 @@
 import { PurpleThickCheck, ThickCheck } from '../icons/icons';
 import { useSession, signIn } from '@/lib/auth-client';
 import { PricingSwitch } from '../ui/pricing-switch';
-import { useBilling } from '@/hooks/use-billing';
+
 import { useNavigate } from 'react-router';
 import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
@@ -83,29 +83,9 @@ export default function PricingCard() {
   const [isAnnual, setIsAnnual] = useState(false);
   const monthlyPrice = PRICING_CONSTANTS.MONTHLY_PRICE;
   const annualPrice = monthlyPrice * PRICING_CONSTANTS.ANNUAL_DISCOUNT;
-  const { attach } = useBilling();
   const { data: session } = useSession();
   const navigate = useNavigate();
 
-  const handleUpgrade = async () => {
-    if (!session) {
-      handleGoogleSignIn(`${window.location.origin}/pricing`);
-      return;
-    }
-
-    if (attach) {
-      toast.promise(
-        attach({
-          productId: isAnnual ? 'pro_annual' : 'pro-example',
-          successUrl: `${window.location.origin}/mail/inbox?success=true`,
-        }),
-        {
-          success: 'Redirecting to payment...',
-          error: 'Failed to process upgrade. Please try again later.',
-        },
-      );
-    }
-  };
   return (
     <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="relative z-20 mb-8 flex items-center justify-center gap-2">
@@ -239,7 +219,7 @@ export default function PricingCard() {
           </div>
           <button
             className="z-30 mt-auto inline-flex h-10 cursor-pointer items-center justify-center gap-2.5 self-stretch overflow-hidden rounded-lg bg-white p-3 outline outline-1 -outline-offset-1"
-            onClick={handleUpgrade}
+            onClick={() => handleGoogleSignIn(`${window.location.origin}/pricing`)}
           >
             <div className="flex items-center justify-center gap-2.5 px-1">
               <div className="justify-start text-center font-semibold leading-none text-black">

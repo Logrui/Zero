@@ -220,7 +220,7 @@ export function Navigation() {
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] sm:w-[400px] dark:bg-[#111111]">
+          <SheetContent side="left" className="w-[300px] sm:w-[400px] dark:bg-popover">
             <SheetHeader className="flex flex-row items-center justify-between">
               <SheetTitle>
                 <Link to="/" onClick={() => setOpen(false)}>

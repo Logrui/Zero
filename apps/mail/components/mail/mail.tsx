@@ -421,7 +421,7 @@ export function MailLayout() {
                       <Button
                         variant="outline"
                         className={cn(
-                          'text-muted-foreground relative flex h-8 w-full select-none items-center justify-start overflow-hidden rounded-lg border bg-white pl-2 text-left text-sm font-normal shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-none dark:bg-[#141414]',
+                          'text-muted-foreground relative flex h-8 w-full select-none items-center justify-start overflow-hidden rounded-lg border bg-white pl-2 text-left text-sm font-normal shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-none dark:bg-background',
                         )}
                         onClick={() => setIsCommandPaletteOpen('true')}
                       >
@@ -457,7 +457,7 @@ export function MailLayout() {
                               Clear
                             </Button>
                           )}
-                          <kbd className="bg-muted text-md leading-[0]! pointer-events-none mr-0.5 hidden h-7 select-none flex-row items-center gap-1 rounded-md border-none px-2 font-medium opacity-100 sm:flex dark:bg-[#262626] dark:text-[#929292]">
+                          <kbd className="bg-muted text-md leading-[0]! pointer-events-none mr-0.5 hidden h-7 select-none flex-row items-center gap-1 rounded-md border-none px-2 font-medium opacity-100 sm:flex dark:bg-muted dark:text-muted-foreground">
                             <span
                               className={cn(
                                 'leading-[0.2]! h-min',
@@ -492,7 +492,7 @@ export function MailLayout() {
                             onClick={() => {
                               setMail({ ...mail, bulkSelected: [] });
                             }}
-                            className="flex h-6 items-center gap-1 rounded-md bg-[#313131] px-2 text-xs text-[#A0A0A0] hover:bg-[#252525]"
+                            className="flex h-6 items-center gap-1 rounded-md bg-muted px-2 text-xs text-muted-foreground hover:bg-muted/80"
                           >
                             <X className="h-3 w-3 fill-[#A0A0A0]" />
                             <span>esc</span>

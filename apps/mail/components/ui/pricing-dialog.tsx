@@ -5,39 +5,22 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { PurpleThickCheck } from '@/components/icons/icons';
-import { useBilling } from '@/hooks/use-billing';
+
 import { PricingSwitch } from './pricing-switch';
 
-import { useState, } from 'react';
+import { useState } from 'react';
 import { useQueryState } from 'nuqs';
 
 import { Badge } from './badge';
 import { toast } from 'sonner';
 
 export function PricingDialog() {
-  const { attach } = useBilling();
   const [isLoading, setIsLoading] = useState(false);
   const [isAnnual, setIsAnnual] = useState(false);
   const [open, setOpen] = useQueryState('pricingDialog');
   const monthlyPrice = 20;
   const annualPrice = monthlyPrice * 0.5; // 50% off for annual billing
 
-  const handleUpgrade = async () => {
-    if (attach) {
-      setIsLoading(true);
-      toast.promise(
-        attach({
-          productId: isAnnual ? 'pro_annual' : 'pro-example',
-          successUrl: `${window.location.origin}/mail/inbox?success=true`,
-        }),
-        {
-          success: 'Redirecting to payment...',
-          error: 'Failed to process upgrade. Please try again later.',
-          finally: () => setIsLoading(false),
-        },
-      );
-    }
-  };
 
   return (
     <Dialog open={!!open} onOpenChange={(open) => setOpen(open ? 'true' : null)}>
@@ -175,12 +158,12 @@ export function PricingDialog() {
           </div>
           <button
             className="z-50 inline-flex h-24 cursor-pointer items-center justify-center gap-2.5 self-stretch overflow-hidden rounded-lg bg-white p-3 outline outline-1 -outline-offset-1 outline-gray-400 disabled:cursor-not-allowed disabled:opacity-50 dark:outline-[#2D2D2D]"
-            onClick={handleUpgrade}
-            disabled={isLoading}
+            onClick={() => {}}
+            disabled={true}
           >
             <div className="flex items-center justify-center gap-2.5 px-1">
               <div className="justify-start text-center font-semibold leading-none text-black">
-                {isLoading ? 'Processing...' : 'Start 7 day free trial'}
+                'Start 7 day free trial'
               </div>
             </div>
           </button>

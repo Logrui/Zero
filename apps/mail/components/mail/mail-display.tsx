@@ -321,11 +321,11 @@ const AiSummary = () => {
 
   return (
     <div
-      className="mt-2 max-w-3xl rounded-xl border border-[#8B5CF6] bg-white px-4 py-2 dark:bg-[#252525]"
+      className="mt-2 max-w-3xl rounded-xl border border-[#8B5CF6] bg-white px-4 py-2 dark:bg-card"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex cursor-pointer items-center" onClick={handleToggle}>
-        <TextShimmer className="text-xs font-medium text-[#929292]">Summary</TextShimmer>
+        <TextShimmer className="text-xs font-medium text-muted-foreground">Summary</TextShimmer>
 
         {!isLoading && (
           <ChevronDown
@@ -1253,7 +1253,7 @@ const MailDisplay = ({ emailData, index, totalEmails, demo, threadAttachments }:
                 <span className="inline-flex items-center gap-2 font-medium text-black dark:text-white">
                   <span>
                     {emailData.subject}{' '}
-                    <span className="text-muted-foreground dark:text-[#8C8C8C]">
+                    <span className="text-muted-foreground">
                       {totalEmails && totalEmails > 1 && `[${totalEmails}]`}
                     </span>
                   </span>
@@ -1270,7 +1270,7 @@ const MailDisplay = ({ emailData, index, totalEmails, demo, threadAttachments }:
                   {threadLabels.length ? (
                     <div className="bg-iconLight dark:bg-iconDark/20 relative h-3 w-0.5 rounded-full" />
                   ) : null}
-                  <div className="text-muted-foreground flex items-center gap-2 text-sm dark:text-[#8C8C8C]">
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
                     {(() => {
                       if (people.length <= 2) {
                         return people.map(renderPerson);
@@ -1353,7 +1353,7 @@ const MailDisplay = ({ emailData, index, totalEmails, demo, threadAttachments }:
                                 }}
                                 ref={triggerRef}
                               >
-                                <p className="text-muted-foreground text-xs underline dark:text-[#8C8C8C]">
+                                <p className="text-muted-foreground text-xs underline">
                                   {m['common.mailDisplay.details']()}
                                 </p>
                               </button>
@@ -1471,7 +1471,7 @@ const MailDisplay = ({ emailData, index, totalEmails, demo, threadAttachments }:
                         </div>
 
                         <div className="flex items-center justify-center">
-                          <div className="text-muted-foreground flex-nowrap! mr-2 flex flex-col items-end text-sm font-medium dark:text-[#8C8C8C]">
+                          <div className="text-muted-foreground flex-nowrap! mr-2 flex flex-col items-end text-sm font-medium">
                             <time className="whitespace-nowrap">
                               {emailData?.receivedOn ? formatDate(emailData.receivedOn) : ''}
                             </time>
@@ -1533,7 +1533,7 @@ const MailDisplay = ({ emailData, index, totalEmails, demo, threadAttachments }:
                       </div>
                       <div className="flex justify-between">
                         <div className="flex gap-1">
-                          <p className="text-muted-foreground text-sm font-medium dark:text-[#8C8C8C]">
+                          <p className="text-muted-foreground text-sm font-medium">
                             {m['common.mailDisplay.to']()}:{' '}
                             {(() => {
                               // Combine to and cc recipients
@@ -1568,7 +1568,7 @@ const MailDisplay = ({ emailData, index, totalEmails, demo, threadAttachments }:
                             })()}
                           </p>
                           {(emailData?.bcc?.length || 0) > 0 && (
-                            <p className="text-muted-foreground text-sm font-medium dark:text-[#8C8C8C]">
+                            <p className="text-muted-foreground text-sm font-medium">
                               Bcc:{' '}
                               {emailData?.bcc?.map((recipient, index) => (
                                 <span key={recipient.email}>
@@ -1660,22 +1660,22 @@ const MailDisplay = ({ emailData, index, totalEmails, demo, threadAttachments }:
                         className="flex"
                       >
                         <button
-                          className="flex cursor-pointer items-center gap-1 rounded-[5px] bg-[#FAFAFA] px-1.5 py-1 text-sm font-medium hover:bg-[#F0F0F0] dark:bg-[#262626] dark:hover:bg-[#303030]"
+                          className="flex cursor-pointer items-center gap-1 rounded-[5px] bg-[#FAFAFA] px-1.5 py-1 text-sm font-medium hover:bg-[#F0F0F0] dark:bg-muted dark:hover:bg-muted/80"
                           onClick={() => openAttachment(attachment)}
                         >
                           {getFileIcon(attachment.filename)}
                           <span className="max-w-[15ch] truncate text-sm text-black dark:text-white">
                             {attachment.filename}
                           </span>{' '}
-                          <span className="text-muted-foreground whitespace-nowrap text-sm dark:text-[#929292]">
+                          <span className="text-muted-foreground whitespace-nowrap text-sm">
                             {formatFileSize(attachment.size)}
                           </span>
                         </button>
                         <button
                           onClick={() => downloadAttachment(attachment)}
-                          className="flex cursor-pointer items-center gap-1 rounded-[5px] px-1.5 py-1 text-sm"
+                          className="flex cursor-pointer items-center gap-1 rounded-[5px] px-1.5 py-1 text-sm text-muted-foreground"
                         >
-                          <HardDriveDownload className="text-muted-foreground dark:text-muted-foreground h-4 w-4 fill-[#FAFAFA] dark:fill-[#262626]" />
+                          <HardDriveDownload className="h-4 w-4" />
                         </button>
                         {index < (messageAttachments?.length || 0) - 1 && (
                           <div className="m-auto h-2 w-px bg-[#E0E0E0] dark:bg-[#424242]" />

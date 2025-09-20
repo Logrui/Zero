@@ -5,7 +5,7 @@ import useComposeEditor from '@/hooks/use-compose-editor';
 import { useRef, useCallback, useEffect } from 'react';
 import type { useAgentChat } from 'agents/ai-react';
 import { Markdown } from '@react-email/components';
-import { useBilling } from '@/hooks/use-billing';
+
 import { TextShimmer } from '../ui/text-shimmer';
 import { useThread } from '@/hooks/use-threads';
 import { MailLabels } from '../mail/mail-list';
@@ -204,7 +204,6 @@ export function AIChat({
 }: ReturnType<typeof useAgentChat>): React.ReactElement {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const { chatMessages } = useBilling();
   const { isFullScreen } = useAIFullScreen();
   const [, setPricingDialog] = useQueryState('pricingDialog');
   const [aiSidebarOpen] = useQueryState('aiSidebar');
@@ -266,17 +265,7 @@ export function AIChat({
     <div className={cn('flex h-full flex-col', isFullScreen ? 'mx-auto max-w-xl' : '')}>
       <div className="no-scrollbar flex-1 overflow-y-auto" ref={messagesContainerRef}>
         <div className="min-h-full px-2 py-4">
-          {chatMessages && !chatMessages.enabled ? (
-            <div
-              onClick={() => setPricingDialog('true')}
-              className="absolute inset-0 flex flex-col items-center justify-center"
-            >
-              <TextShimmer className="text-center text-xl font-medium">
-                Upgrade to Zero Pro for unlimited AI chat
-              </TextShimmer>
-              <Button className="mt-2 h-8 w-52">Start 7 day free trial</Button>
-            </div>
-          ) : !messages.length ? (
+          {!messages.length ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="relative mb-4 h-[44px] w-[44px]">
                 <img src="/black-icon.svg" alt="Zero Logo" className="dark:hidden" />
@@ -399,8 +388,7 @@ export function AIChat({
                   form="ai-chat-form"
                   type="submit"
                   className="inline-flex cursor-pointer gap-1.5 rounded-lg"
-                  disabled={!chatMessages.enabled}
-                >
+                                  >
                   <div className="dark:bg[#141414] flex h-7 items-center justify-center gap-1 rounded-sm bg-[#262626] px-2 pr-1">
                     <CurvedArrow className="mt-1.5 h-4 w-4 fill-white dark:fill-[#929292]" />
                   </div>
