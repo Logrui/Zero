@@ -86,26 +86,39 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            'w-(--sidebar-width) relative h-svh bg-transparent transition-[width] duration-200 ease-in-out',
+            'w-(--sidebar-width) relative bg-transparent transition-[width] duration-200 ease-in-out',
             'group-data-[collapsible=offcanvas]:w-0',
             'group-data-[side=right]:rotate-180',
             variant === 'floating' || variant === 'inset'
               ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]'
               : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)',
           )}
+          style={{
+            // Reserve vertical space beneath the global topbar
+            height: 'calc(100svh - var(--app-topbar-height, 4rem))',
+            marginTop: 'var(--app-topbar-height, 4rem)',
+          }}
         />
         <div
           className={cn(
-            'w-(--sidebar-width) fixed inset-y-0 z-10 hidden h-svh transition-[left,right,width] duration-200 ease-in-out md:flex',
+            'w-(--sidebar-width) fixed z-10 hidden transition-[left,right,width] duration-200 ease-in-out md:flex',
             side === 'left'
-              ? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
-              : 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
+              ? 'left-0'
+              : 'right-0',
             // Adjust the padding for floating and inset variants.
             variant === 'floating' || variant === 'inset'
               ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
               : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=right]:border-l',
             className,
           )}
+          style={{
+            top: 'var(--app-topbar-height, 4rem)',
+            height: 'calc(100svh - var(--app-topbar-height, 4rem))',
+            // Maintain offcanvas translated positions
+            ...(side === 'left'
+              ? { left: undefined }
+              : { right: undefined }),
+          }}
           {...props}
         >
           <div

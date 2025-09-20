@@ -92,6 +92,28 @@ services:
       timeout: 5s
       retries: 5
 
+  worker:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: zerodotemail-worker
+    depends_on:
+      db:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      upstash-proxy:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - '8787:8787'
+    environment:
+      NODE_ENV: production
+    # Supply production vars if needed (do not commit real secrets)
+    # Create this file locally with the proper values
+    env_file:
+      - ./apps/server/.prod.vars
+
 volumes:
   valkey-data:
   postgres-data:

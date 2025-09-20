@@ -12,9 +12,10 @@ The email synchronization system is built on a robust, distributed architecture 
 #### Triggers
 - **User Login**: Automatically checks for sync needs on session initialization
 - **Manual Refresh**: User clicks the refresh button in the UI
+- **Scheduled**: Periodic background syncs, which are triggered by Cloudflare's cron triggers.
 - **Real-Time Push Notifications**: The system uses Google Pub/Sub to receive real-time updates. When a change occurs in a user's mailbox, Google sends a push notification to the `/a8n/notify/:providerId` endpoint in `apps/server/src/main.ts` (lines 749-818). This triggers a sync for the specific changes, rather than a full mailbox scan.
-
 #### Entry Points
+- `apps/server/src/trpc/routes/auth.ts` - Handles initial sync triggers
 - `apps/server/src/lib/auth.ts` - The `onSignIn` and `onSignUp` callbacks (lines 244-253) trigger the initial sync for new accounts.
 - `apps/server/src/main.ts` - Processes sync jobs from the queue
 - `apps/mail/components/mail/mail.tsx` - Contains the refresh button UI and handler

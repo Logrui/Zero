@@ -292,6 +292,28 @@ This setup gives you a single `docker compose up` workflow that runs the Worker 
 
 If you keep these services and port mappings consistent with the selected environment, the Worker should run locally without the opaque "internal error" crashes.
 
+### If you are NOT using a Worker Dockerfile
+
+If you prefer not to keep a dedicated `apps/server/Dockerfile` (or you removed it), you have two options:
+
+1. Run the Worker on the host and keep only DB/Valkey/Proxy in Docker
+
+   - Start backing services with the canonical compose file `docker-compose.prod.yaml` (it contains `db`, `valkey`, and `upstash-proxy`, plus app services).
+   - In a separate terminal, run the Worker from the host:
+
+     ```bash
+     cd apps/server
+     wrangler dev --env production --show-interactive-dev-session=false
+     ```
+
+   - In this mode, your browser and the web app can reach the Worker on the host at `http://localhost:8787`.
+
+2. Build your own Worker image ad-hoc
+
+   - Create a minimal Dockerfile locally (outside of the repo if desired), build and run it as in the examples above. You can point the `worker` service in Compose to `image: YOUR_IMAGE` instead of `build:`.
+
+For either approach, ensure the Worker process can reach Postgres (`db:5432` if running inside Docker; `localhost:5433/5432` if running on the host according to your mapping) and the HTTP Redis proxy (`http://upstash-proxy:80` if inside Docker; `http://localhost:8079` if on the host).
+
 ---
 
 ## From Dev to Production: Build, Push, and Run as a Docker Service
@@ -443,3 +465,33 @@ docker compose -f docker-compose.prod.yml up -d worker
 - Do not commit real secrets to `.prod.vars`. Use CI/CD secret injection.
 
 With this flow you can iteratively promote from dev to a production-ready self-hosted container deployment, or deploy to Cloudflare’s hosted Workers when that’s preferred.
+
+---
+
+## Choosing `NEXT_PUBLIC_BACKEND_URL`
+
+`NEXT_PUBLIC_BACKEND_URL` is the URL your web app (service `zero`) uses to talk to the Worker’s HTTP API. Choose one based on where the Worker is running:
+
+- Worker runs INSIDE Docker Compose (service name `worker`, port 8787):
+  - Use the internal DNS name from within other containers: `http://worker:8787`
+  - If the browser (on your host) must call the Worker directly, expose `8787` and use: `http://localhost:8787`
+
+- Worker runs ON THE HOST (you run `wrangler dev` from `apps/server`):
+  - From the browser and from the `zero` container (if it proxies to host), use: `http://localhost:8787`
+
+Tip: In `docker-compose.prod.yaml`, set
+
+```yaml
+services:
+  zero:
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://worker:8787}
+```
+
+Then override `NEXT_PUBLIC_BACKEND_URL` to `http://localhost:8787` when you’re running the Worker on the host.
+
+---
+
+## Canonical Compose File
+
+Use `docker-compose.prod.yaml` as the canonical production-like compose file. If you had a second file (e.g., `docker-compose.prod.yml`), prefer removing it to avoid drift. Keep all services consolidated in the `.yaml` file.
