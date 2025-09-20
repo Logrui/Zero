@@ -64,24 +64,24 @@ export function preprocessEmailHtml(html: string): string {
   const sanitized = sanitizeHtml(html, sanitizeConfig);
   const $ = cheerio.load(sanitized);
 
-  $('style').each((_, el) => {
-    const css = $(el).html() || '';
-    const safe = sanitizer.sanitizeCss(css, {
-      allowedProperties: [
-        'color',
-        'background-color',
-        'font-size',
-        'margin',
-        'padding',
-        'text-align',
-        'border',
-        'display',
-      ],
-      disallowedAtRules: ['import', 'keyframes'],
-      disallowedFunctions: ['expression', 'url'],
-    });
-    $(el).html(safe);
-  });
+  // $('style').each((_, el) => {
+  //   const css = $(el).html() || '';
+  //   const safe = sanitizer.sanitizeCss(css, {
+  //     allowedProperties: [
+  //       'color',
+  //       'background-color',
+  //       'font-size',
+  //       'margin',
+  //       'padding',
+  //       'text-align',
+  //       'border',
+  //       'display',
+  //     ],
+  //     disallowedAtRules: ['import', 'keyframes'],
+  //     disallowedFunctions: ['expression', 'url'],
+  //   });
+  //   $(el).html(safe);
+  // });
 
   // Collapse quoted text (structure only, no theme colors)
   const collapseQuoted = (selector: string) => {

@@ -1,4 +1,8 @@
 import { createRateLimiterMiddleware, privateProcedure, publicProcedure, router } from '../trpc';
+
+let connectionsCache: any = null;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+let cacheTimestamp: number | null = null;
 import { getActiveConnection, getZeroDB } from '../../lib/server-utils';
 import { Ratelimit } from '@upstash/ratelimit';
 import { TRPCError } from '@trpc/server';
@@ -13,6 +17,11 @@ export const connectionsRouter = router({
       }),
     )
     .query(async ({ ctx }) => {
+      const now = Date.now();
+      if (connectionsCache && cacheTimestamp && now - cacheTimestamp < CACHE_TTL) {
+        return connectionsCache;
+      }
+
       const { sessionUser } = ctx;
       const db = await getZeroDB(sessionUser.id);
       const connections = await db.findManyConnections();
@@ -21,7 +30,7 @@ export const connectionsRouter = router({
         .filter((c) => !c.accessToken || !c.refreshToken)
         .map((c) => c.id);
 
-      return {
+      const result = {
         connections: connections.map((connection) => {
           return {
             id: connection.id,
@@ -34,10 +43,19 @@ export const connectionsRouter = router({
         }),
         disconnectedIds,
       };
+
+      connectionsCache = result;
+      cacheTimestamp = now;
+
+      return result;
     }),
   setDefault: privateProcedure
     .input(z.object({ connectionId: z.string() }))
     .mutation(async ({ input, ctx }) => {
+      // Invalidate cache
+      connectionsCache = null;
+      cacheTimestamp = null;
+
       const { connectionId } = input;
       const user = ctx.sessionUser;
       const db = await getZeroDB(user.id);
@@ -48,6 +66,10 @@ export const connectionsRouter = router({
   delete: privateProcedure
     .input(z.object({ connectionId: z.string() }))
     .mutation(async ({ input, ctx }) => {
+      // Invalidate cache
+      connectionsCache = null;
+      cacheTimestamp = null;
+
       const { connectionId } = input;
       const user = ctx.sessionUser;
       const db = await getZeroDB(user.id);

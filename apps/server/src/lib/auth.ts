@@ -20,6 +20,7 @@ import { disableBrainFunction } from './brain';
 import { APIError } from 'better-auth/api';
 import { type EProviders } from '../types';
 import { createDriver } from './driver';
+import { logDebug } from './debug-logger';
 import { createDb } from '../db';
 import { Effect } from 'effect';
 import { env } from '../env';
@@ -88,6 +89,7 @@ const scheduleCampaign = (userInfo: { address: string; name: string }) =>
   });
 
 const connectionHandlerHook = async (account: Account) => {
+  logDebug(`connectionHandlerHook called for account: ${account.id}`);
   if (!account.accessToken || !account.refreshToken) {
     console.error('Missing Access/Refresh Tokens', { account });
     throw new APIError('EXPECTATION_FAILED', {
@@ -149,6 +151,7 @@ const connectionHandlerHook = async (account: Account) => {
   }
 
   if (env.GOOGLE_S_ACCOUNT && env.GOOGLE_S_ACCOUNT !== '{}') {
+    logDebug(`Sending message to subscribe_queue for connection: ${result.id}`);
     await env.subscribe_queue.send({
       connectionId: result.id,
       providerId: account.providerId,

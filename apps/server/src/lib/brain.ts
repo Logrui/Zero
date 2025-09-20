@@ -3,13 +3,16 @@ import { getSubscriptionFactory } from './factories/subscription-factory.registr
 import { AiChatPrompt, StyledEmailAssistantSystemPrompt } from './prompts';
 import { resetConnection } from './server-utils';
 import { EPrompts, EProviders } from '../types';
+import { logDebug } from './debug-logger';
 import { getPromptName } from '../pipelines';
 import { env } from '../env';
 
 export const enableBrainFunction = async (connection: { id: string; providerId: EProviders }) => {
+  logDebug(`enableBrainFunction called for connection: ${connection.id}`);
   try {
     const subscriptionFactory = getSubscriptionFactory(connection.providerId);
     await subscriptionFactory.subscribe({ body: { connectionId: connection.id } });
+    logDebug(`Successfully subscribed connection: ${connection.id}`);
   } catch (error) {
     console.error(`Failed to enable brain function: ${error}`);
     await resetConnection(connection.id);

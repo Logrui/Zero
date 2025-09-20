@@ -123,46 +123,56 @@ export class SyncThreadsCoordinatorWorkflow extends WorkflowEntrypoint<
             `[SyncThreadsCoordinatorWorkflow] Processing page ${pageNumber} for ${folder}`,
           );
 
-          // Create workflow for this page
-          const instance = await this.env.SYNC_THREADS_WORKFLOW.create({
-            params: {
-              connectionId,
-              folder,
-              pageNumber,
-              pageToken: currentPageToken,
-              maxCount,
-              singlePageMode: true,
-            },
-          });
+          try {
+            // Create workflow for this page
+            const instance = await this.env.SYNC_THREADS_WORKFLOW.create({
+              params: {
+                connectionId,
+                folder,
+                pageNumber,
+                pageToken: currentPageToken,
+                maxCount,
+                singlePageMode: true,
+              },
+            });
 
-          console.info(
-            `[SyncThreadsCoordinatorWorkflow] Created workflow ${instance.id} for page ${pageNumber}`,
-          );
+            console.info(
+              `[SyncThreadsCoordinatorWorkflow] Created workflow ${instance.id} for page ${pageNumber}`,
+            );
 
-          // Simple polling to wait for completion
-          let attempts = 0;
-          const maxAttempts = 60; // 5 minutes
+            // Simple polling to wait for completion
+            let attempts = 0;
+            const maxAttempts = 24; // 2 minutes (5s * 24 = 120s)
 
-          while (attempts < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+            while (attempts < maxAttempts) {
+              await new Promise((resolve) => setTimeout(resolve, 5000));
 
-            try {
-              const status = await instance.status();
-              if (status.status === 'complete') {
-                return { result: status.output, workflowId: instance.id };
-              } else if (status.status === 'errored') {
-                throw new Error(`Workflow ${instance.id} failed`);
+              try {
+                const status = await instance.status();
+                console.info(`[SyncThreadsCoordinatorWorkflow] Workflow ${instance.id} status: ${status.status} (attempt ${attempts + 1}/${maxAttempts})`);
+                
+                if (status.status === 'complete') {
+                  return { result: status.output, workflowId: instance.id };
+                } else if (status.status === 'errored') {
+                  console.error(`[SyncThreadsCoordinatorWorkflow] Workflow ${instance.id} errored:`, status.error);
+                  const errorMessage = typeof status.error === 'string' ? status.error : (status.error as any)?.message || 'Unknown error';
+                  throw new Error(`Workflow ${instance.id} failed: ${errorMessage}`);
+                }
+              } catch (statusError) {
+                console.warn(`[SyncThreadsCoordinatorWorkflow] Error checking status for workflow ${instance.id}:`, statusError);
+                if (attempts === maxAttempts - 1) {
+                  throw statusError;
+                }
               }
-            } catch (error) {
-              if (attempts === maxAttempts - 1) {
-                throw error;
-              }
+
+              attempts++;
             }
 
-            attempts++;
+            throw new Error(`Workflow ${instance.id} timed out after ${maxAttempts * 5} seconds`);
+          } catch (workflowError) {
+            console.error(`[SyncThreadsCoordinatorWorkflow] Failed to create or execute workflow for page ${pageNumber}:`, workflowError);
+            throw workflowError;
           }
-
-          throw new Error(`Workflow ${instance.id} timed out`);
         },
       );
 
@@ -185,8 +195,26 @@ export class SyncThreadsCoordinatorWorkflow extends WorkflowEntrypoint<
         // Get next page token from workflow result if available
         currentPageToken = workflowResult.nextPageToken || null;
       } else {
-        // If no result, we can't continue
-        break;
+        // Log the failure but continue with next page if possible
+        console.error(`[SyncThreadsCoordinatorWorkflow] Page ${pageNumber} workflow failed for ${folder}, workflowId: ${pageResult?.workflowId}`);
+        result.pageWorkflowResults.push({
+          pageNumber,
+          workflowId: pageResult?.workflowId || 'unknown',
+          status: 'failed',
+          synced: 0,
+        });
+        
+        // Try to continue with a synthetic page token if we can estimate it
+        // This is a fallback to prevent complete sync failure
+        if (pageNumber === 1) {
+          // If first page fails, we can't continue safely
+          console.error(`[SyncThreadsCoordinatorWorkflow] First page failed, cannot continue sync for ${folder}`);
+          break;
+        } else {
+          // For subsequent pages, try to continue (this may miss some emails but prevents total failure)
+          console.warn(`[SyncThreadsCoordinatorWorkflow] Attempting to continue sync despite page ${pageNumber} failure`);
+          currentPageToken = null; // This will end the loop, but we've synced what we could
+        }
       }
 
       // If no more pages, stop

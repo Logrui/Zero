@@ -28,6 +28,7 @@ export class GoogleMailManager implements MailManager {
   private gmail;
 
   private labelIdCache: Record<string, string> = {};
+  private userLabelsCache: Label[] | null = null;
 
   private readonly systemLabelIds = new Set<string>([
     'INBOX',
@@ -786,22 +787,27 @@ export class GoogleMailManager implements MailManager {
       { data },
     );
   }
-  public async getUserLabels() {
+  public async getUserLabels(): Promise<Label[]> {
+    if (this.userLabelsCache) {
+      return this.userLabelsCache;
+    }
+
     const res = await this.gmail.users.labels.list({
       userId: 'me',
     });
-    // wtf google, null values for EVERYTHING?
-    return (
-      res.data.labels?.map((label) => ({
-        id: label.id ?? '',
-        name: label.name ?? '',
-        type: label.type ?? '',
-        color: mapGoogleLabelColor({
-          backgroundColor: label.color?.backgroundColor ?? '',
-          textColor: label.color?.textColor ?? '',
-        }),
-      })) ?? []
-    );
+
+    const labels = res.data.labels?.map((label) => ({
+      id: label.id ?? '',
+      name: label.name ?? '',
+      type: label.type ?? 'user',
+      color: mapGoogleLabelColor({
+        backgroundColor: label.color?.backgroundColor ?? '',
+        textColor: label.color?.textColor ?? '',
+      }),
+    })) ?? [];
+
+    this.userLabelsCache = labels;
+    return labels;
   }
   public async getLabel(labelId: string): Promise<Label> {
     const res = await this.gmail.users.labels.get({
@@ -818,10 +824,16 @@ export class GoogleMailManager implements MailManager {
       type: res.data.type ?? 'user',
     };
   }
+  public clearLabelCache() {
+    this.userLabelsCache = null;
+    this.labelIdCache = {};
+  }
+
   public async createLabel(label: {
     name: string;
     color?: { backgroundColor: string; textColor: string };
   }) {
+    this.clearLabelCache(); // Invalidate cache
     await this.gmail.users.labels.create({
       userId: 'me',
       requestBody: {
@@ -838,6 +850,7 @@ export class GoogleMailManager implements MailManager {
     });
   }
   public async updateLabel(id: string, label: Label) {
+    this.clearLabelCache(); // Invalidate cache
     await this.gmail.users.labels.update({
       userId: 'me',
       id: id,
@@ -853,6 +866,7 @@ export class GoogleMailManager implements MailManager {
     });
   }
   public async deleteLabel(id: string) {
+    this.clearLabelCache(); // Invalidate cache
     await this.gmail.users.labels.delete({
       userId: 'me',
       id: id,

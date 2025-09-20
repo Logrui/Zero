@@ -41,6 +41,7 @@ import { ZeroMCP } from './routes/agent/mcp';
 import { publicRouter } from './routes/auth';
 import { WorkflowRunner } from './pipelines';
 import { initTracing } from './lib/tracing';
+import { logDebug } from './lib/debug-logger';
 import { env, type ZeroEnv } from './env';
 import type { HonoContext } from './ctx';
 import { createDb, type DB } from './db';
@@ -747,6 +748,7 @@ const app = new Hono<HonoContext>()
     }
   })
   .post('/a8n/notify/:providerId', async (c) => {
+    logDebug('Received notification at /a8n/notify/:providerId');
     const tracer = initTracing();
     const span = tracer.startSpan('a8n_notify', {
       attributes: {
@@ -791,6 +793,7 @@ const app = new Hono<HonoContext>()
         span.setAttributes({ 'auth.status': 'valid' });
 
         try {
+          logDebug(`Sending message to thread_queue with historyId: ${body.historyId}`);
           await env.thread_queue.send({
             providerId,
             historyId: body.historyId,
@@ -939,6 +942,7 @@ export default class Entry extends WorkerEntrypoint<ZeroEnv> {
         return;
       }
       case batch.queue.startsWith('thread-queue'): {
+        logDebug('Processing batch from thread-queue');
         const tracer = initTracing();
 
         await Promise.all(

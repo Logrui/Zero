@@ -167,8 +167,8 @@
         "VOICE_SECRET": "1234567890",
         "GOOGLE_S_ACCOUNT": "{}",
         "DROP_AGENT_TABLES": "false",
-        "THREAD_SYNC_MAX_COUNT": "60",
-        "THREAD_SYNC_LOOP": "false",
+        "THREAD_SYNC_MAX_COUNT": "500",
+        "THREAD_SYNC_LOOP": "true",
         "DISABLE_WORKFLOWS": "true",
         "AUTORAG_ID": "",
         "USE_OPENAI": "true",
@@ -178,7 +178,9 @@
         "OTEL_EXPORTER_OTLP_ENDPOINT": "https://api.axiom.co/v1/traces",
         "OTEL_SERVICE_NAME": "zero-email-server-local",
         "GEMINI_FLASH_MODEL": "gemini-2.5-flash",
-        "GOOGLE_GENERATIVE_AI_API_KEY": ""
+        "GOOGLE_GENERATIVE_AI_API_KEY": "",
+        "EMAIL_SYNC_DEBUG": "true",
+        "FRESH_ACCOUNT_BATCH_SIZE": "10"
       },
       "kv_namespaces": [
         {
@@ -658,3 +660,4 @@
     },
   },
 }
+
