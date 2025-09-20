@@ -40,7 +40,7 @@ export function useKeyboardLayout() {
     const updateLayoutInfo = () => {
       const info = keyboardLayoutMapper.getDetectedLayout();
       setLayoutInfo(info);
-      console.log('Detected keyboard layout:', info);
+      // console.log('Detected keyboard layout:', info);
     };
 
     updateLayoutInfo();
@@ -48,7 +48,7 @@ export function useKeyboardLayout() {
     const handleFocus = () => {
       setTimeout(() => {
         updateLayoutInfo();
-        console.log('Window focused, updated keyboard layout');
+        // console.log('Window focused, updated keyboard layout');
       }, 100);
     };
 

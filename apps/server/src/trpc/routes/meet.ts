@@ -27,11 +27,10 @@ export const meetRouter = router({
         generatePrefix: ({ sessionUser }) => `ratelimit:meet-create-${sessionUser?.id}`,
       }),
     )
-    .mutation(async ({ ctx }) => {
+    .mutation(async () => {
       const enableMeet = env.ENABLE_MEET === 'true';
       if (!enableMeet) return new Response('Not implemented', { status: 501 });
       // Autumn integration removed - assuming non-pro customer
-      const customer = { data: null };
 
       if (!isProCustomer()) {
         throw new TRPCError({

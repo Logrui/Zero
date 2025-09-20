@@ -12,11 +12,9 @@ import { useState } from 'react';
 import { useQueryState } from 'nuqs';
 
 import { Badge } from './badge';
-import { toast } from 'sonner';
 
 export function PricingDialog() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAnnual, setIsAnnual] = useState(false);
+    const [isAnnual, setIsAnnual] = useState(false);
   const [open, setOpen] = useQueryState('pricingDialog');
   const monthlyPrice = 20;
   const annualPrice = monthlyPrice * 0.5; // 50% off for annual billing

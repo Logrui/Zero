@@ -11,11 +11,10 @@ import { navigationConfig, bottomNavItems } from '@/config/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
 import { CreateEmail } from '../create/create-email';
 // import { useMutation } from '@tanstack/react-query';
-import { PencilCompose, X } from '../icons/icons';
+import { PencilCompose } from '../icons/icons';
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import React, { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useMemo } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useAIFullScreen } from './ai-sidebar';
 import { useStats } from '@/hooks/use-stats';
@@ -29,18 +28,9 @@ import { useQueryState } from 'nuqs';
 // import { toast } from 'sonner';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const isLoading = false;
-  const isPro = false;
   //   const trpc = useTRPC();
   //   const { mutateAsync: createMeet } = useMutation(trpc.meet.create.mutationOptions());
-  const [showUpgrade, setShowUpgrade] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('hideUpgradeCard') !== 'true';
-    }
-    return true;
-  });
-  const [, setPricingDialog] = useQueryState('pricingDialog');
-  const { isFullScreen } = useAIFullScreen();
+    const { isFullScreen } = useAIFullScreen();
   const { data: stats } = useStats();
   const location = useLocation();
   const { data: session } = useSession();

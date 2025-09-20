@@ -395,181 +395,189 @@ export function MailLayout() {
   return (
     <TooltipProvider>
       <div className="h-full w-full">
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex h-full w-full"
-          key={layoutKey}
-        >
-          <ResizablePanel
-            className={cn(
-              'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 rounded-2xl shadow-sm lg:h-[calc(100dvh-8px)]',
-            )}
-            defaultSize={28}
-            minSize={20}
-          >
-          <div className="w-full md:h-[calc(100dvh-10px)]">
-            <div
-              className={cn(
-                'z-15 sticky top-0 flex items-center justify-between gap-1.5 p-2 pb-0 transition-colors',
-              )}
-            >
-              <div className="w-full">
-                <div className="mt-1 grid grid-cols-12 gap-2">
-                  <SidebarToggle className="col-span-1 h-fit px-2" />
-                  {mail.bulkSelected.length === 0 ? (
-                    <div className="col-span-10 flex gap-2">
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          'text-muted-foreground relative flex h-8 w-full select-none items-center justify-start overflow-hidden rounded-lg border bg-white pl-2 text-left text-sm font-normal shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-none dark:bg-background',
-                        )}
-                        onClick={() => setIsCommandPaletteOpen('true')}
-                      >
-                        <Search className="fill-[#71717A] dark:fill-[#6F6F6F]" />
-
-                        <span className="hidden truncate pr-20 lg:inline-block">
-                          {activeFilters.length > 0
-                            ? activeFilters.map((f) => f.display).join(', ')
-                            : 'Search'}
-                        </span>
-                        <span className="inline-block truncate pr-20 lg:hidden">
-                          {activeFilters.length > 0
-                            ? `${activeFilters.length} filter${activeFilters.length > 1 ? 's' : ''}`
-                            : 'Search'}
-                        </span>
-
-                        <span className="absolute right-[0rem] flex items-center gap-1">
-                          {/* {activeFilters.length > 0 && (
-                          <Badge variant="secondary" className="ml-2 h-5 rounded px-1">
-                            {activeFilters.length}
-                          </Badge>
-                        )} */}
-                          {activeFilters.length > 0 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="my-auto h-5 rounded-xl px-1.5 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                clearAllFilters();
-                              }}
-                            >
-                              Clear
-                            </Button>
-                          )}
-                          <kbd className="bg-muted text-md leading-[0]! pointer-events-none mr-0.5 hidden h-7 select-none flex-row items-center gap-1 rounded-md border-none px-2 font-medium opacity-100 sm:flex dark:bg-muted dark:text-muted-foreground">
-                            <span
-                              className={cn(
-                                'leading-[0.2]! h-min',
-                                isMac ? 'mt-px text-lg' : 'text-sm',
-                              )}
-                            >
-                              {isMac ? '⌘' : 'Ctrl'}{' '}
-                            </span>
-                            <span className="leading-[0.2]! h-min text-sm"> K</span>
-                          </kbd>
-                        </span>
-                      </Button>
-                      {activeConnection?.providerId === 'google' && folder === 'inbox' && (
-                        <CategoryDropdown isMultiSelectMode={mail.bulkSelected.length > 0} />
-                      )}
-                    </div>
-                  ) : null}
-                  <Button
-                    onClick={() => {
-                      refetchThreads();
-                    }}
-                    variant="ghost"
-                    className="md:h-fit md:px-2"
-                  >
-                    <RefreshCcw className="text-muted-foreground h-4 w-4 cursor-pointer" />
-                  </Button>
-                  {mail.bulkSelected.length > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={() => {
-                              setMail({ ...mail, bulkSelected: [] });
-                            }}
-                            className="flex h-6 items-center gap-1 rounded-md bg-muted px-2 text-xs text-muted-foreground hover:bg-muted/80"
-                          >
-                            <X className="h-3 w-3 fill-[#A0A0A0]" />
-                            <span>esc</span>
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {m['common.actions.exitSelectionModeEsc']()}
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            <div
-              className={cn(
-                `${category === 'Important' ? 'bg-[#F59E0D]' : category === 'All Mail' ? 'bg-[#006FFE]' : category === 'Personal' ? 'bg-[#39ae4a]' : category === 'Updates' ? 'bg-[#8B5CF6]' : category === 'Promotions' ? 'bg-[#F43F5E]' : category === 'Unread' ? 'bg-[#FF4800]' : 'bg-[#F59E0D]'}`,
-                'z-5 relative h-0.5 w-full transition-opacity',
-                isFetching ? 'opacity-100' : 'opacity-0',
-              )}
-            />
-            <div className="z-1 relative h-[calc(100dvh-(2px+2px))] overflow-hidden pt-0 md:h-[calc(100dvh-4rem)]">
-              <MailList />
-            </div>
-          </div>
-        </ResizablePanel>
-
-        {isDesktop && (
-          <ResizableHandle className="mr-0.5 hidden md:block" withHandle />
-        )}
-
-        {isDesktop && (
-          <ResizablePanel
-            className={cn(
-              'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 w-full rounded-2xl shadow-sm lg:h-[calc(100dvh-8px)]',
-            )}
-            defaultSize={showRightPanel ? 52 : 72}
-            minSize={20}
-          >
-            <div className="relative flex-1">
-              <ThreadDisplay />
-            </div>
-          </ResizablePanel>
-        )}
-
-          {/* Right handle and AI sidebar panel - render only when AI is open in sidebar mode */}
-          {isDesktop && !!activeConnection?.id && aiOpen && aiIsSidebar && !aiIsFullScreen && (
+        <div className="h-full w-full">
+          {isDesktop ? (
             <>
-              <ResizableHandle className="mr-0.5 hidden md:block" withHandle />
-              <ResizablePanel
-                defaultSize={20}
-                minSize={16}
-                maxSize={40}
-                className={cn('mb-1 w-fit rounded-2xl lg:h-[calc(100dvh-8px)]')}
+              <ResizablePanelGroup
+                direction="horizontal"
+                className="flex h-full w-full"
+                key={layoutKey}
               >
-                <AISidebar asPanelContent />
-              </ResizablePanel>
+                <ResizablePanel
+                  id="mail-list"
+                  order={1}
+                  className={cn(
+                    'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 rounded-2xl shadow-sm lg:h-[calc(100dvh-8px)]',
+                  )}
+                  defaultSize={28}
+                  minSize={20}
+                >
+                  <div className="w-full md:h-[calc(100dvh-10px)]">
+                    <div
+                      className={cn(
+                        'z-15 sticky top-0 flex items-center justify-between gap-1.5 p-2 pb-0 transition-colors',
+                      )}
+                    >
+                      <div className="w-full">
+                        <div className="mt-1 grid grid-cols-12 gap-2">
+                          <SidebarToggle className="col-span-1 h-fit px-2" />
+                          {mail.bulkSelected.length === 0 ? (
+                            <div className="col-span-10 flex gap-2">
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  'text-muted-foreground relative flex h-8 w-full select-none items-center justify-start overflow-hidden rounded-lg border bg-white pl-2 text-left text-sm font-normal shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-none dark:bg-background',
+                                )}
+                                onClick={() => setIsCommandPaletteOpen('true')}
+                              >
+                                <Search className="fill-[#71717A] dark:fill-[#6F6F6F]" />
+
+                                <span className="hidden truncate pr-20 lg:inline-block">
+                                  {activeFilters.length > 0
+                                    ? activeFilters.map((f) => f.display).join(', ')
+                                    : 'Search'}
+                                </span>
+                                <span className="inline-block truncate pr-20 lg:hidden">
+                                  {activeFilters.length > 0
+                                    ? `${activeFilters.length} filter${
+                                        activeFilters.length > 1 ? 's' : ''
+                                      }`
+                                    : 'Search'}
+                                </span>
+
+                                <span className="absolute right-[0rem] flex items-center gap-1">
+                                  {activeFilters.length > 0 && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="my-auto h-5 rounded-xl px-1.5 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        clearAllFilters();
+                                      }}
+                                    >
+                                      Clear
+                                    </Button>
+                                  )}
+                                  <kbd className="bg-muted text-md leading-[0]! pointer-events-none mr-0.5 hidden h-7 select-none flex-row items-center gap-1 rounded-md border-none px-2 font-medium opacity-100 sm:flex dark:bg-muted dark:text-muted-foreground">
+                                    <span
+                                      className={cn(
+                                        'leading-[0.2]! h-min',
+                                        isMac ? 'mt-px text-lg' : 'text-sm',
+                                      )}
+                                    >
+                                      {isMac ? '⌘' : 'Ctrl'}{' '}
+                                    </span>
+                                    <span className="leading-[0.2]! h-min text-sm"> K</span>
+                                  </kbd>
+                                </span>
+                              </Button>
+                              {activeConnection?.providerId === 'google' && folder === 'inbox' && (
+                                <CategoryDropdown isMultiSelectMode={mail.bulkSelected.length > 0} />
+                              )}
+                            </div>
+                          ) : null}
+                          <Button
+                            onClick={() => {
+                              refetchThreads();
+                            }}
+                            variant="ghost"
+                            className="md:h-fit md:px-2"
+                          >
+                            <RefreshCcw className="text-muted-foreground h-4 w-4 cursor-pointer" />
+                          </Button>
+                          {mail.bulkSelected.length > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={() => {
+                                      setMail({ ...mail, bulkSelected: [] });
+                                    }}
+                                    className="flex h-6 items-center gap-1 rounded-md bg-muted px-2 text-xs text-muted-foreground hover:bg-muted/80"
+                                  >
+                                    <X className="h-3 w-3 fill-[#A0A0A0]" />
+                                    <span>esc</span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {m['common.actions.exitSelectionModeEsc']()}
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={cn(
+                        `${category === 'Important' ? 'bg-[#F59E0D]' : category === 'All Mail' ? 'bg-[#006FFE]' : category === 'Personal' ? 'bg-[#39ae4a]' : category === 'Updates' ? 'bg-[#8B5CF6]' : category === 'Promotions' ? 'bg-[#F43F5E]' : category === 'Unread' ? 'bg-[#FF4800]' : 'bg-[#F59E0D]'} `,
+                        'z-5 relative h-0.5 w-full transition-opacity',
+                        isFetching ? 'opacity-100' : 'opacity-0',
+                      )}
+                    />
+                    <div className="z-1 relative h-[calc(100dvh-(2px+2px))] overflow-hidden pt-0 md:h-[calc(100dvh-4rem)]">
+                      <MailList />
+                    </div>
+                  </div>
+                </ResizablePanel>
+
+                {isDesktop && <ResizableHandle className="mr-0.5 hidden md:block" withHandle />}
+
+                {isDesktop && (
+                  <ResizablePanel
+                    id="thread-display"
+                    order={2}
+                    className={cn(
+                      'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 w-full rounded-2xl shadow-sm lg:h-[calc(100dvh-8px)]',
+                    )}
+                    defaultSize={showRightPanel ? 52 : 72}
+                    minSize={20}
+                  >
+                    <div className="relative flex-1">
+                      <ThreadDisplay />
+                    </div>
+                  </ResizablePanel>
+                )}
+
+                {/* Right handle and AI sidebar panel - render only when AI is open in sidebar mode */}
+                {isDesktop && !!activeConnection?.id && aiOpen && aiIsSidebar && !aiIsFullScreen && (
+                  <>
+                    <ResizableHandle className="mr-0.5 hidden md:block" withHandle />
+                    <ResizablePanel
+                      id="ai-sidebar"
+                      order={3}
+                      defaultSize={20}
+                      minSize={16}
+                      maxSize={40}
+                      className={cn('mb-1 w-fit rounded-2xl lg:h-[calc(100dvh-8px)]')}
+                    >
+                      <AISidebar asPanelContent />
+                    </ResizablePanel>
+                  </>
+                )}
+
+                {/* Mobile Thread View */}
+                {isMobile && threadId && (
+                  <div className="bg-panelLight dark:bg-panelDark fixed inset-0 z-50">
+                    <div className="flex h-full flex-col">
+                      <div className="h-full overflow-y-auto outline-none">
+                        <ThreadDisplay />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeConnection?.id ? <AIToggleButton /> : null}
+              </ResizablePanelGroup>
+              {/* Overlay instance for popup/fullscreen modes */}
+              <AISidebar />
             </>
+          ) : (
+            <MailList />
           )}
-
-          {/* Mobile Thread View */}
-          {isMobile && threadId && (
-            <div className="bg-panelLight dark:bg-panelDark fixed inset-0 z-50">
-              <div className="flex h-full flex-col">
-                <div className="h-full overflow-y-auto outline-none">
-                  <ThreadDisplay />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeConnection?.id ? <AIToggleButton /> : null}
-        </ResizablePanelGroup>
-
-        {/* Overlay instance for popup/fullscreen modes */}
-        <AISidebar />
+        </div>
       </div>
     </TooltipProvider>
   );

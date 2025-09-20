@@ -35,7 +35,6 @@ export default function ConnectionsPage() {
   const trpc = useTRPC();
   const { mutateAsync: deleteConnection } = useMutation(trpc.connections.delete.mutationOptions());
   const [{ refetch: refetchThreads }] = useThreads();
-  const [, setPricingDialog] = useQueryState('pricingDialog');
   const disconnectAccount = async (connectionId: string) => {
     await deleteConnection(
       { connectionId },

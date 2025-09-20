@@ -5,8 +5,6 @@ import {
   Settings,
   Plus,
   CopyCheckIcon,
-  BadgeCheck,
-  BanknoteIcon,
   RefreshCcw,
   Trash2,
 } from 'lucide-react';
@@ -94,15 +92,14 @@ export function NavUser() {
   const { state } = useSidebar();
   const trpc = useTRPC();
   const [, setThreadId] = useQueryState('threadId');
+  const threadIdState = useQueryState('threadId');
   const { mutateAsync: setDefaultConnection } = useMutation(
     trpc.connections.setDefault.mutationOptions(),
   );
   const { mutateAsync: handleForceSync } = useMutation(trpc.mail.forceSync.mutationOptions());
-  const isPro = false;
   const pathname = useLocation().pathname;
   const queryClient = useQueryClient();
   const { data: activeConnection, refetch: refetchActiveConnection } = useActiveConnection();
-  const [, setPricingDialog] = useQueryState('pricingDialog');
   const [category] = useQueryState('category', { defaultValue: 'All Mail' });
   const { setLoading } = useLoading();
   const [{ isSyncing, syncingFolders, storageSize, shards }] = useDoState();

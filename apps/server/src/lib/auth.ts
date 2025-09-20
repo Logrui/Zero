@@ -19,8 +19,6 @@ import { defaultUserSettings } from './schemas';
 import { disableBrainFunction } from './brain';
 import { APIError } from 'better-auth/api';
 import { type EProviders } from '../types';
-import { getContext } from 'hono/context-storage';
-import type { HonoContext } from '../ctx';
 import { createDriver } from './driver';
 import { createDb } from '../db';
 import { Effect } from 'effect';

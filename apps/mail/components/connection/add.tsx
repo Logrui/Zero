@@ -14,8 +14,6 @@ import { m } from '@/paraglide/messages';
 import { motion } from 'motion/react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
-import { useMemo } from 'react';
-import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
 
 export const AddConnectionDialog = ({

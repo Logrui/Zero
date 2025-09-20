@@ -17,7 +17,6 @@ import { useLabels } from '@/hooks/use-labels';
 import { useAgentChat } from 'agents/ai-react';
 import { X, Expand, Plus } from 'lucide-react';
 import { IncomingMessageType } from '../party';
-import { Gauge } from '@/components/ui/gauge';
 import { useParams } from 'react-router';
 import { useAgent } from 'agents/react';
 import { useQueryState } from 'nuqs';
@@ -42,8 +41,7 @@ function ChatHeader({
   isPopup,
   onNewChat,
 }: ChatHeaderProps) {
-  const [, setPricingDialog] = useQueryState('pricingDialog');
-  return (
+    return (
     <div className="relative flex items-center justify-between px-2.5 pb-[10px] pt-[13px]">
       <TooltipProvider delayDuration={0}>
         <Tooltip>
@@ -312,8 +310,7 @@ function AISidebar({ className, asPanelContent = false }: AISidebarProps) {
     isPopup,
     setViewMode,
   } = useAISidebar();
-  const isPro = false;
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
   const trpc = useTRPC();
   const [threadId] = useQueryState('threadId');
   const { folder } = useParams<{ folder: string }>();

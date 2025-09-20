@@ -15,7 +15,6 @@ import { VoiceButton } from '../voice-button';
 import { EditorContent } from '@tiptap/react';
 import { CurvedArrow } from '../icons/icons';
 import { Tools } from '../../types/tools';
-import { Button } from '../ui/button';
 import { format } from 'date-fns-tz';
 import { useQueryState } from 'nuqs';
 
@@ -205,8 +204,7 @@ export function AIChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { isFullScreen } = useAIFullScreen();
-  const [, setPricingDialog] = useQueryState('pricingDialog');
-  const [aiSidebarOpen] = useQueryState('aiSidebar');
+    const [aiSidebarOpen] = useQueryState('aiSidebar');
   const { toggleOpen } = useAISidebar();
 
   const scrollToBottom = useCallback(() => {
