@@ -404,7 +404,6 @@ export function MailLayout() {
                 key={layoutKey}
                 style={{
                   height: 'calc(100vh - var(--app-topbar-height, 4rem))',
-                  marginTop: 'var(--app-topbar-height, 4rem)',
                   paddingTop: '0.5rem',
                   paddingBottom: '0.5rem',
                   paddingLeft: '0.5rem',
