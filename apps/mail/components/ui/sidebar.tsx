@@ -83,51 +83,76 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
-        {/* This is what handles the sidebar gap on desktop */}
-        <div
-          className={cn(
-            'w-(--sidebar-width) relative bg-transparent transition-[width] duration-200 ease-in-out',
-            'group-data-[collapsible=offcanvas]:w-0',
-            'group-data-[side=right]:rotate-180',
-            variant === 'floating' || variant === 'inset'
-              ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]'
-              : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)',
-          )}
-          style={{
-            // Reserve vertical space beneath the global topbar
-            height: 'calc(100svh - var(--app-topbar-height, 4rem))',
-            marginTop: 'var(--app-topbar-height, 4rem)',
-          }}
-        />
-        <div
-          className={cn(
-            'w-(--sidebar-width) fixed z-10 hidden transition-[left,right,width] duration-200 ease-in-out md:flex',
-            side === 'left'
-              ? 'left-0'
-              : 'right-0',
-            // Adjust the padding for floating and inset variants.
-            variant === 'floating' || variant === 'inset'
-              ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
-              : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=right]:border-l',
-            className,
-          )}
-          style={{
-            top: 'var(--app-topbar-height, 4rem)',
-            height: 'calc(100svh - var(--app-topbar-height, 4rem))',
-            // Maintain offcanvas translated positions
-            ...(side === 'left'
-              ? { left: undefined }
-              : { right: undefined }),
-          }}
-          {...props}
-        >
+        {/* Only use fixed positioning if not overridden by className */}
+        {!className?.includes('h-full') ? (
+          <>
+            {/* This is what handles the sidebar gap on desktop */}
+            <div
+              className={cn(
+                'w-(--sidebar-width) relative bg-transparent transition-[width] duration-200 ease-in-out',
+                'group-data-[collapsible=offcanvas]:w-0',
+                'group-data-[side=right]:rotate-180',
+                variant === 'floating' || variant === 'inset'
+                  ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]'
+                  : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)',
+              )}
+              style={{
+                // Reserve vertical space beneath the global topbar
+                height: 'calc(100svh - var(--app-topbar-height, 4rem))',
+                marginTop: 'var(--app-topbar-height, 4rem)',
+              }}
+            />
+            <div
+              className={cn(
+                'w-(--sidebar-width) fixed z-10 hidden transition-[left,right,width] duration-200 ease-in-out md:flex',
+                side === 'left'
+                  ? 'left-0'
+                  : 'right-0',
+                // Adjust the padding for floating and inset variants.
+                variant === 'floating' || variant === 'inset'
+                  ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
+                  : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=right]:border-l',
+                className,
+              )}
+              style={{
+                top: 'var(--app-topbar-height, 4rem)',
+                height: 'calc(100svh - var(--app-topbar-height, 4rem))',
+                // Maintain offcanvas translated positions
+                ...(side === 'left'
+                  ? { left: undefined }
+                  : { right: undefined }),
+              }}
+              {...props}
+            >
+              <div
+                data-sidebar="sidebar"
+                className="group-data-[variant=floating]:border-sidebar-border bg-sidebar dark:bg-sidebar flex h-full w-full flex-col overflow-hidden duration-300 ease-in-out group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow"
+              >
+                {children}
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Static positioning for flex layout */
           <div
-            data-sidebar="sidebar"
-            className="group-data-[variant=floating]:border-sidebar-border bg-sidebar dark:bg-sidebar flex h-full w-full flex-col overflow-hidden duration-300 ease-in-out group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow"
+            className={cn(
+              'w-(--sidebar-width) flex flex-col transition-[width] duration-200 ease-in-out',
+              'group-data-[collapsible=offcanvas]:w-0',
+              variant === 'floating' || variant === 'inset'
+                ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]'
+                : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)',
+              className,
+            )}
+            {...props}
           >
-            {children}
+            <div
+              data-sidebar="sidebar"
+              className="group-data-[variant=floating]:border-sidebar-border bg-sidebar dark:bg-sidebar flex h-full w-full flex-col overflow-hidden duration-300 ease-in-out group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow"
+            >
+              {children}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   },

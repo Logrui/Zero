@@ -708,20 +708,20 @@ export function ThreadDisplay() {
   return (
     <div
       className={cn(
-        'flex flex-col',
-        isFullscreen ? 'h-screen' : isMobile ? 'h-full' : 'h-[calc(100dvh-19px)] rounded-xl',
+        'flex flex-col h-full',
+        isFullscreen ? 'h-screen' : isMobile ? 'h-full' : 'h-full rounded-xl',
       )}
     >
       <div
         className={cn(
-          'bg-panelLight dark:bg-panelDark relative flex flex-col overflow-hidden rounded-xl duration-300',
+          'bg-panelLight dark:bg-panelDark relative flex flex-col overflow-hidden rounded-xl duration-300 h-full',
           isMobile ? 'h-full' : 'h-full',
           !isMobile && !isFullscreen && 'rounded-r-lg',
           isFullscreen ? 'fixed inset-0 z-50' : '',
         )}
       >
         {!id ? (
-          <div className="flex h-full items-center justify-center">
+          <div className="flex h-full w-full items-center justify-center">
             <div className="flex flex-col items-center justify-center gap-2 text-center">
               <EmptyStateIcon width={200} height={200} />
               <div className="mt-4">

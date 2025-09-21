@@ -461,8 +461,8 @@ function AISidebar({ className, asPanelContent = false }: AISidebarProps) {
 
   // Sidebar panel content (to be embedded inside a ResizablePanel by the parent)
   const SidebarPanelContent = (
-    <div className={cn('h-[calc(98vh)]', 'flex flex-col', '', className)}>
-      <div className="flex h-full flex-col">
+    <div className={cn('h-full', 'flex flex-col', '', className)}>
+      <div className="bg-panelLight dark:bg-panelDark flex h-full flex-col overflow-hidden rounded-2xl border border-[#E7E7E7] shadow-lg dark:border-[#252525]">
         <ChatHeader
           onClose={() => {
             setOpen(false);

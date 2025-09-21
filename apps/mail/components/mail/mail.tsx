@@ -400,26 +400,32 @@ export function MailLayout() {
             <>
               <ResizablePanelGroup
                 direction="horizontal"
-                className="flex h-full w-full"
+                className="flex w-full"
                 key={layoutKey}
+                style={{
+                  height: 'calc(100vh - var(--app-topbar-height, 4rem))',
+                  marginTop: 'var(--app-topbar-height, 4rem)',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                }}
               >
                 <ResizablePanel
                   id="mail-list"
                   order={1}
                   className={cn(
-                    'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 rounded-2xl shadow-sm lg:h-[calc(100dvh-8px)]',
+                    'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 rounded-2xl shadow-sm lg:h-full',
                   )}
                   defaultSize={28}
                   minSize={20}
                 >
-                  <div className="w-full md:h-[calc(100dvh-10px)]">
+                  <div className="w-full h-full">
                     <div
                       className={cn(
                         'z-15 sticky top-0 flex items-center justify-between gap-1.5 p-2 pb-0 transition-colors',
                       )}
                     >
                       <div className="w-full">
-                        <div className="mt-1 grid grid-cols-12 gap-2">
+                        <div className="mt-0 grid grid-cols-12 gap-2">
                           <SidebarToggle className="col-span-1 h-fit px-2" />
                           {mail.bulkSelected.length === 0 ? (
                             <div className="col-span-10 flex gap-2">
@@ -517,7 +523,7 @@ export function MailLayout() {
                         isFetching ? 'opacity-100' : 'opacity-0',
                       )}
                     />
-                    <div className="z-1 relative h-[calc(100dvh-(2px+2px))] overflow-hidden pt-0 md:h-[calc(100dvh-4rem)]">
+                    <div className="z-1 relative h-full overflow-hidden pt-0 md:h-full">
                       <MailList />
                     </div>
                   </div>
@@ -530,12 +536,12 @@ export function MailLayout() {
                     id="thread-display"
                     order={2}
                     className={cn(
-                      'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 w-full rounded-2xl shadow-sm lg:h-[calc(100dvh-8px)]',
+                      'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 w-full rounded-2xl shadow-sm lg:h-full',
                     )}
                     defaultSize={showRightPanel ? 52 : 72}
                     minSize={20}
                   >
-                    <div className="relative flex-1">
+                    <div className="relative flex-1 h-full">
                       <ThreadDisplay />
                     </div>
                   </ResizablePanel>
@@ -551,7 +557,7 @@ export function MailLayout() {
                       defaultSize={20}
                       minSize={16}
                       maxSize={40}
-                      className={cn('mb-1 w-fit rounded-2xl lg:h-[calc(100dvh-8px)]')}
+                      className={cn('mb-1 w-fit rounded-2xl lg:h-full')}
                     >
                       <AISidebar asPanelContent />
                     </ResizablePanel>
