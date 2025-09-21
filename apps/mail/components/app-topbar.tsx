@@ -31,7 +31,7 @@ export function AppTopbar() {
   // elements (like the sidebar) can offset correctly below the topbar.
   useEffect(() => {
     const updateVar = () => {
-      const h = headerRef.current?.offsetHeight ?? 64; // default 4rem (h-16)
+      const h = headerRef.current?.offsetHeight ?? 48; // default 3rem (h-12)
       document.documentElement.style.setProperty("--app-topbar-height", `${h}px`);
     };
     updateVar();
@@ -41,7 +41,7 @@ export function AppTopbar() {
 
   return (
     <header ref={headerRef} className="fixed inset-x-0 top-0 z-50 w-full bg-background">
-      <div className="flex h-14 items-center justify-between px-4 md:px-6">
+      <div className="flex h-12 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
             {/* Brand icon temporarily disabled */}
@@ -54,6 +54,9 @@ export function AppTopbar() {
           </div>
 
           <nav className="hidden md:flex items-center space-x-1">
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
+              <Link to="/dashboard">Dashboard</Link>
+            </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
               <Link to="/mail">Mail</Link>
             </Button>
@@ -156,6 +159,9 @@ export function AppTopbar() {
                 />
               </div>
             )}
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
+              <Link to="/dashboard">Dashboard</Link>
+            </Button>
             <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
               <Link to="/mail">Mail</Link>
             </Button>

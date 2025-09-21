@@ -407,6 +407,8 @@ export function MailLayout() {
                   marginTop: 'var(--app-topbar-height, 4rem)',
                   paddingTop: '0.5rem',
                   paddingBottom: '0.5rem',
+                  paddingLeft: '0.5rem',
+                  paddingRight: '0.5rem',
                 }}
               >
                 <ResizablePanel
