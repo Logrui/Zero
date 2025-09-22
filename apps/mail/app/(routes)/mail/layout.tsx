@@ -8,7 +8,7 @@ export default function MailLayout() {
     <HotkeyProviderWrapper>
       <div className="flex w-full h-full overflow-hidden">
         <AppSidebar />
-        <div className="bg-sidebar dark:bg-sidebar w-full">
+        <div className="bg-sidebar dark:bg-sidebar w-full h-full">
           <Outlet />
         </div>
       </div>

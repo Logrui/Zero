@@ -13,6 +13,7 @@ import { AddConnectionDialog } from '@/components/connection/add';
 
 import { useSession, authClient } from '@/lib/auth-client';
 import { useConnections } from '@/hooks/use-connections';
+import type { Connection } from '@/lib/types';
 import { useTRPC } from '@/providers/query-provider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMutation } from '@tanstack/react-query';
@@ -23,7 +24,6 @@ import { emailProviders } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { m } from '@/paraglide/messages';
-import { useQueryState } from 'nuqs';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -78,7 +78,7 @@ export default function ConnectionsPage() {
             </div>
           ) : data?.connections?.length ? (
             <div className="lg: grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-              {data.connections.map((connection) => {
+              {data.connections.map((connection: Connection) => {
                 const Icon = emailProviders.find(
                   (p) => p.providerId === connection.providerId,
                 )?.icon;

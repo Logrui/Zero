@@ -35,6 +35,7 @@ import { useTheme } from 'next-themes';
 import { useQueryState } from 'nuqs';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
+import type { Connection } from '@/lib/types';
 import { toast } from 'sonner';
 
 const bytesToMB = (bytes: number) => (bytes / 1024 / 1024).toFixed(2);
@@ -188,7 +189,7 @@ export function NavUser() {
                       <AvatarFallback className="rounded-[5px] text-[10px]">
                         {(activeAccount?.name || activeAccount?.email || '')
                           .split(' ')
-                          .map((n: string) => n[0])
+                          .map((n) => n[0])
                           .join('')
                           .toUpperCase()
                           .slice(0, 2)}
@@ -243,8 +244,8 @@ export function NavUser() {
                     </p>
 
                     {data?.connections
-                      ?.filter((connection) => connection.id !== activeConnection?.id)
-                      .map((connection) => (
+                      ?.filter((connection: Connection) => connection.id !== activeConnection?.id)
+                      .map((connection: Connection) => (
                         <DropdownMenuItem
                           key={connection.id}
                           onClick={handleAccountSwitch(connection.id)}
@@ -259,7 +260,7 @@ export function NavUser() {
                             <AvatarFallback className="rounded-lg text-[10px]">
                               {(connection.name || connection.email)
                                 .split(' ')
-                                .map((n) => n[0])
+                                .map((n: string) => n[0])
                                 .join('')
                                 .toUpperCase()
                                 .slice(0, 2)}
@@ -375,7 +376,7 @@ export function NavUser() {
                   key={activeAccount.id}
                   onClick={handleAccountSwitch(activeAccount.id)}
                   className={`flex cursor-pointer items-center ${
-                    activeAccount.id === activeConnection?.id && data.connections.length > 1
+                    activeAccount.id === activeConnection?.id && (data?.connections?.length ?? 0) > 1
                       ? 'outline-mainBlue rounded-[5px] outline outline-2'
                       : ''
                   }`}
@@ -396,7 +397,7 @@ export function NavUser() {
                           .slice(0, 2)}
                       </AvatarFallback>
                     </Avatar>
-                    {activeAccount.id === activeConnection?.id && data.connections.length > 1 && (
+                    {activeAccount.id === activeConnection?.id && (data?.connections?.length ?? 0) > 1 && (
                       <CircleCheck className="fill-mainBlue absolute -bottom-2 -right-2 size-4 rounded-full bg-white dark:bg-background" />
                     )}
                   </div>
@@ -408,7 +409,7 @@ export function NavUser() {
                   </div>
                 </div>
               )}
-              {otherConnections.slice(0, 2).map((connection) => (
+              {otherConnections.slice(0, 2).map((connection: Connection) => (
                 <Tooltip key={connection.id}>
                   <TooltipTrigger asChild>
                     <div
@@ -460,7 +461,7 @@ export function NavUser() {
                     side={'bottom'}
                     sideOffset={8}
                   >
-                    {otherConnections.slice(3).map((connection) => (
+                    {otherConnections.slice(3).map((connection: Connection) => (
                       <DropdownMenuItem
                         key={connection.id}
                         onClick={handleAccountSwitch(connection.id)}

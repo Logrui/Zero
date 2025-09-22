@@ -70,6 +70,13 @@ export const navigationConfig: Record<string, NavConfig> = {
             icon: Plane2,
             shortcut: 'g + t',
           },
+          {
+            id: 'calendar',
+            title: 'Calendar',
+            url: '/calendar',
+            icon: Sheet, // TODO: Replace with a real calendar icon
+            shortcut: 'g + c',
+          },
         ],
       },
       {

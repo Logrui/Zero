@@ -8,7 +8,7 @@ import { redis } from '../lib/services';
 import type { Context } from 'hono';
 import superjson from 'superjson';
 
-type TrpcContext = {
+export type TrpcContext = {
   c: Context<HonoContext>;
 } & HonoVariables;
 

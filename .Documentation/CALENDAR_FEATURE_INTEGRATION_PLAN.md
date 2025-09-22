@@ -1,10 +1,26 @@
 # Calendar Feature Integration Plan
 
+**Last Updated:** 2025-09-21T23:08:44-04:00
+
 This document outlines the detailed, stage-by-stage plan for integrating the standalone `zero-calendar` project into the main ZeroOS application as a self-contained feature module. The goal is to achieve a clean, maintainable, and scalable integration following the "Monolithic with Feature Modules" architecture.
 
 ---
 
-## Phase 1: Establish the Module Foundation
+## Current Status
+
+*   [x] **Phase 1: Establish the Module Foundation** - Completed
+*   [x] **Phase 2: Port the Calendar Feature** - Completed
+*   [x] **Phase 3: Wire up the Module System** - Completed. Calendar route is working and accessible.
+*   [x] **Phase 3.5: Routing Integration** - Completed. Fixed React Router configuration.
+*   [ ] **Phase 4: Integrate AI Capabilities** - Pending
+
+---
+
+This document outlines the detailed, stage-by-stage plan for integrating the standalone `zero-calendar` project into the main ZeroOS application as a self-contained feature module. The goal is to achieve a clean, maintainable, and scalable integration following the "Monolithic with Feature Modules" architecture.
+
+---
+
+## Phase 1: Establish the Module Foundation (Completed)
 
 **Goal:** Create the basic directory structure for the module system and the new calendar module without modifying any existing application logic.
 
@@ -73,7 +89,7 @@ This document outlines the detailed, stage-by-stage plan for integrating the sta
 
 ---
 
-## Phase 2: Port the Calendar Feature
+## Phase 2: Port the Calendar Feature (Completed)
 
 **Goal:** Move the code from the `zero-calendar` project into the new module and adapt it to the new structure.
 
@@ -97,7 +113,7 @@ This document outlines the detailed, stage-by-stage plan for integrating the sta
 
 ---
 
-## Phase 3: Wire up the Module System
+## Phase 3: Wire up the Module System (In Progress)
 
 **Goal:** Modify the main application to discover, load, and render the new calendar module dynamically.
 
@@ -122,7 +138,7 @@ This document outlines the detailed, stage-by-stage plan for integrating the sta
         3.  For each module, call its `getNavigation()` function.
         4.  Dynamically render a navigation `Button` and `Link` for each module that returns a navigation link.
 
-### Stage 3.3: Update Backend and API Hooks
+### Stage 3.3: Update Backend and API Hooks (Read operations complete)
 
 1.  **Edit Existing File:**
     *   **File:** `apps/server/src/trpc/routes/...`
@@ -131,6 +147,91 @@ This document outlines the detailed, stage-by-stage plan for integrating the sta
 2.  **Edit Existing File(s):**
     *   **Files:** `apps/mail/modules/calendar/pages/calendar-page.tsx` and any related hooks.
     *   **Action:** Update all `useTRPC` calls to use the main application's tRPC client and point to the newly added backend procedures.
+
+---
+
+## Progress Log
+
+### Session: 2025-09-21
+
+*   **Backend Event Management:**
+    *   Successfully implemented the `createEvent` and `updateEvent` mutations for the calendar.
+    *   This involved adding the necessary logic to the tRPC router, the `CalendarManager`, and the `ZeroDB` durable object.
+    *   Overcame several challenges to correct the structure and syntax in `apps/server/src/main.ts`, resolving all related build errors.
+
+*   **Frontend Type-Safety & Bug Fixes:**
+    *   Systematically eliminated recurring `implicit 'any' type` errors by creating and applying a new, strongly-typed `Connection` type to `nav-user.tsx` and `settings/connections/page.tsx`.
+    *   Refactored the `useConnections` hook to provide a more stable return type, resolving a `Property 'connections' does not exist` error.
+    *   Updated the `Connection` type to include the missing `providerId`, fixing the final related bug.
+
+*   **Calendar Page Creation:**
+    *   Created a new page component at `apps/mail/app/(routes)/calendar/page.tsx`.
+    *   Added a "Calendar" link to the main sidebar navigation in `config/navigation.ts`, making the page accessible within the application.
+
+*   **Routing Architecture Discovery & Fix:**
+    *   **Problem Identified:** Initially attempted to use Next.js-style dynamic routing (`[...slug]/page.tsx`) in what is actually a React Router v7 application.
+    *   **Root Cause:** The application uses explicit route registration in `apps/mail/app/routes.ts`, not file-based routing.
+    *   **Solution Implemented:**
+        1. **Created Dedicated Route File:** `apps/mail/app/(routes)/calendar/page.tsx` - a direct route handler that imports and renders the calendar module component.
+        2. **Updated Route Registration:** Modified `apps/mail/app/routes.ts` to explicitly register the `/calendar` route pointing to the dedicated page file.
+        3. **Verified Functionality:** Calendar is now accessible at `http://localhost:3500/calendar` with proper console logging and component rendering.
+    *   **Key Insight:** React Router requires explicit route registration in `routes.ts`. File-based routing patterns from Next.js don't apply here.
+    *   **Architecture Decision:** Chose direct route registration over dynamic module loading for simplicity and consistency with existing application patterns.
+
+*   **Auth Integration (Mail App System):**
+    *   Replaced NextAuth assumptions with the mail app's existing connection-based auth.
+    *   Updated `apps/mail/modules/calendar/components/multi-calendar-view.tsx` to use `useActiveConnection()` from `@/hooks/use-connections` and derive `activeUserId`.
+    *   Data fetching (`getEvents`, `getSharedEvents`, `getUserCategories`) now gates on `activeUserId`.
+    *   Added `apps/mail/modules/calendar/components/google-calendar-sync.tsx` that uses `useActiveConnection()` and a module-local `hasGoogleCalendarConnected()` stub.
+    *   Introduced a module-local client shim at `apps/mail/modules/calendar/lib/calendar.ts` with typed stubs for events, categories, import/export, and Google connection until tRPC endpoints are wired.
+
+*   **tRPC Wiring (Client and Server):**
+    *   Verified calendar router exists server-side at `apps/server/src/trpc/routes/calendar.ts` with `getEvents`, `getUserCategories`, `createEvent`, and `updateEvent` procedures.
+    *   Wired module client functions in `apps/mail/modules/calendar/lib/calendar.ts` to call:
+        - `trpcClient.calendar.getEvents.query({ start, end })`
+        - `trpcClient.calendar.getUserCategories.query()`
+        - `trpcClient.calendar.createEvent.mutate(payload)`
+        - `trpcClient.calendar.updateEvent.mutate({ id, data })`
+    *   Updated `EventDialog` to call the module client’s `createEvent/updateEvent/deleteEvent` (delete currently soft-deletes via `updateEvent` placeholder until a dedicated endpoint is added).
+    *   `getSharedEvents` remains a no-op for now; will add when backend support is available.
+
+*   **UI Porting Audit (excluding old app top bar):**
+    *   Present & Wired:
+        - Main views Month/Week/Day/Year/Agenda with navigation (Today/prev/next), search box, tabs, and filters drawer (`apps/mail/modules/calendar/components/multi-calendar-view.tsx`).
+        - Event creation/edit dialog (`apps/mail/modules/calendar/components/event-dialog.tsx`) using module client and tRPC.
+        - Category and calendar visibility filters in the drawer.
+    *   Partially Integrated / Stubbed:
+        - Chat Panel: app-level shim at `apps/mail/components/chat-panel.tsx`; imported by calendar. Needs prop-shape alignment with usage in `MultiCalendarView`.
+        - Natural Language Event Dialog: placeholder `apps/mail/modules/calendar/components/natural-language-event-dialog.tsx` to satisfy imports until enabled.
+    *   TypeScript Polishing:
+        - Tabs `onValueChange` handlers adjusted to typed casts.
+        - Week view end-time guard added when `event.end` is missing. Similar guards should be reviewed for Day/Agenda/Year computations.
+        - Implemented right-side Calendars panel (toggle via Layers button) with checkboxes for default calendars and categories. Initial UI-only wiring; filtering will be hooked next.
+        - Fixed compile errors from drawer integration (removed duplicate `Checkbox` import, restored Week view body grid).
+        - Ported AI sidebar behavior: introduced `apps/mail/components/ai-sidebar.tsx` and integrated it in `apps/mail/modules/calendar/components/multi-calendar-view.tsx` so the AI ChatPanel opens as a right-side drawer matching the mail app style.
+        - Replaced blocking full-page loader with a small non-blocking spinner in the calendar card header. Added non-blocking error and no-connection banners.
+        - Sidebar made visible by default; added a floating open button when closed.
+        - Sidebar structure refactored to closely match zero-calendar (header, collapsible "My Calendars" and "Shared Calendars", styled rows, categories section, disabled nav placeholders).
+        - Header updated to match zero-calendar: search input, View `Select` (Day/Week/Month), Filter icon, Event button style, and Layers toggle; kept AI button per ZeroOS design.
+        - Month grid refined to match zero-calendar (mono palette for Today badge and cell highlight, tighter event pill spacing, min height and borders).
+        - Mounted visible AI ChatPanel in `apps/mail/components/chat-panel.tsx` and integrated in `AISidebar`; fixed `DialogContent` positioning to render as a right-side drawer (override default centered modal transforms) and added a11y `DialogTitle`/`DialogDescription`.
+
+*   **Component Porting Decisions:**
+    *   Use the mail app Chat Panel. Exposed a temporary shim at `apps/mail/components/chat-panel.tsx` so feature modules can import `@/components/chat-panel` consistently. This should be replaced by the real app-level chat panel when available.
+    *   Do NOT port Natural Language dialog and Chat Panel from `zero-calendar` now (per decision). A placeholder `natural-language-event-dialog.tsx` exists to satisfy imports without UI.
+    *   Remaining components to port (from `d:\DevelopmentFiles\zero-calendar\components\`):
+        - `import-export-dialog.tsx`
+        - `keyboard-shortcuts-dialog.tsx`
+        - (Optional) any minor component helpers these depend on
+
+*   **Next Implementation Steps:**
+    1. Wire Import/Export dialog into the calendar action bar (button/command) and plumb open/close state in `multi-calendar-view.tsx`.
+    2. Wire Keyboard Shortcuts dialog (add a trigger with the current shortcuts list).
+    3. Render Google Calendar Sync control in the action bar (disabled state when not connected) and wire server endpoint when available.
+    4. Align Chat Panel shim prop types with `MultiCalendarView` usage to remove TS errors; keep as no-op until the real panel is available.
+    5. Add remaining date-fns guards in Day/Agenda/Year computations to avoid undefined inputs.
+    6. Add a real `calendar.deleteEvent` endpoint server-side and update the client to call it (replacing the soft-delete placeholder).
+    7. Add a `getSharedEvents` endpoint and wire `getSharedEvents` client call.
 
 ---
 

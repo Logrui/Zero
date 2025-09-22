@@ -3,7 +3,7 @@ export const logDebug = (message: string) => {
   try {
     // Use a simple console.log with a prefix for now to avoid env issues
     console.log(`[EMAIL_SYNC_DEBUG] ${message}`);
-  } catch (error) {
+  } catch {
     // Silently fail to prevent crashes
   }
 };
@@ -14,7 +14,7 @@ export const logDebugWithEnv = (message: string, debugEnabled?: boolean) => {
     if (debugEnabled) {
       console.log(`[EMAIL_SYNC_DEBUG] ${message}`);
     }
-  } catch (error) {
+  } catch {
     // Silently fail to prevent crashes
   }
 };

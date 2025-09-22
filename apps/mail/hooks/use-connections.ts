@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 
 export const useConnections = () => {
   const trpc = useTRPC();
-  const connectionsQuery = useQuery(trpc.connections.list.queryOptions());
-  return connectionsQuery;
+  const { data, isLoading } = useQuery(trpc.connections.list.queryOptions());
+  return { data, isLoading };
 };
 
 export const useActiveConnection = () => {

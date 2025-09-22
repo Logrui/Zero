@@ -14,6 +14,8 @@ import {
   userSettings,
   writingStyleMatrix,
   emailTemplate,
+  calendarEvent,
+  calendarCategory,
 } from './db/schema';
 import {
   toAttachmentFiles,
@@ -29,7 +31,7 @@ import { ShardRegistry, ZeroAgent, ZeroDriver } from './routes/agent';
 import { ThreadSyncWorker } from './routes/agent/sync-worker';
 import { oAuthDiscoveryMetadata } from 'better-auth/plugins';
 import { EProviders, type IEmailSendBatch } from './types';
-import { eq, and, desc, asc, inArray } from 'drizzle-orm';
+import { eq, and, desc, asc, inArray, gte, lte } from 'drizzle-orm';
 import { ThinkingMCP } from './lib/sequential-thinking';
 import { contextStorage } from 'hono/context-storage';
 import { defaultUserSettings } from './lib/schemas';
@@ -198,6 +200,22 @@ export class DbRpcDO extends RpcTarget {
 
   async updateEmailTemplate(templateId: string, data: Partial<typeof emailTemplate.$inferInsert>) {
     return await this.mainDo.updateEmailTemplate(this.userId, templateId, data);
+  }
+
+  async findEventsByDateRange(start: Date, end: Date) {
+    return await this.mainDo.findEventsByDateRange(this.userId, start, end);
+  }
+
+  async findUserCategories() {
+    return await this.mainDo.findUserCategories(this.userId);
+  }
+
+  async updateEvent(eventId: string, event: any) { // TODO: Use Partial<UnsavedCalendarEvent> type
+    return await this.mainDo.updateEvent(this.userId, eventId, event);
+  }
+
+  async createEvent(event: any) { // TODO: Use CalendarEvent type
+    return await this.mainDo.createEvent(this.userId, event);
   }
 }
 
@@ -560,6 +578,43 @@ class ZeroDB extends DurableObject<ZeroEnv> {
       .set({ ...data, updatedAt: new Date() })
       .where(and(eq(emailTemplate.id, templateId), eq(emailTemplate.userId, userId)))
       .returning();
+  }
+
+  async findEventsByDateRange(userId: string, start: Date, end: Date) {
+    return await this.db.query.calendarEvent.findMany({
+      where: and(
+        eq(calendarEvent.userId, userId),
+        gte(calendarEvent.start, start),
+        lte(calendarEvent.end, end),
+      ),
+      orderBy: [asc(calendarEvent.start)],
+    });
+  }
+
+  async createEvent(userId: string, event: any) { // TODO: Use CalendarEvent type
+    const newId = crypto.randomUUID();
+    return await this.db.insert(calendarEvent).values({ ...event, id: newId, userId });
+  }
+
+  async updateEvent(userId: string, eventId: string, event: any) { // TODO: Use Partial<UnsavedCalendarEvent> type
+    return await this.db.update(calendarEvent).set(event).where(and(eq(calendarEvent.id, eventId), eq(calendarEvent.userId, userId)));
+  }
+
+  async findUserCategories(userId: string) {
+    const categories = await this.db.query.calendarCategory.findMany({
+      where: eq(calendarCategory.userId, userId),
+    });
+
+    if (!categories || categories.length === 0) {
+      // Return default categories if none are found
+      return [
+        { id: "personal", name: "Personal", color: "#3b82f6", userId, visible: true },
+        { id: "work", name: "Work", color: "#10b981", userId, visible: true },
+        { id: "family", name: "Family", color: "#8b5cf6", userId, visible: true },
+      ];
+    }
+
+    return categories;
   }
 }
 

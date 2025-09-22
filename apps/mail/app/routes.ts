@@ -22,6 +22,7 @@ export default [
   // route('/zero/login', '(auth)/zero/login/page.tsx'),
 
   layout('(routes)/layout.tsx', [
+    route('/calendar', '(routes)/calendar/page.tsx'),
     route('/developer', '(routes)/developer/page.tsx'),
     layout(
       '(routes)/mail/layout.tsx',

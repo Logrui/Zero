@@ -11,8 +11,8 @@ export default function Layout() {
       <HotkeyProviderWrapper>
         <div className="relative flex h-screen w-full flex-col overflow-hidden">
           <AppTopbar />
-          {/* Globally offset all in-app content below the topbar */}
-          <div className="flex-1 min-h-0 pt-[var(--app-topbar-height)]">
+          {/* Content area - flexbox handles positioning naturally */}
+          <div className="flex-1 min-h-0">
             <Outlet />
           </div>
         </div>

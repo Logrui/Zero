@@ -301,6 +301,63 @@ export const oauthConsent = createTable(
   ],
 );
 
+export const calendarCategory = createTable(
+  'calendar_category',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    color: text('color').notNull(),
+    visible: boolean('visible').notNull().default(true),
+  },
+  (t) => [
+    index('idx_mail0_calendar_category_user_id').on(t.userId),
+    unique('mail0_calendar_category_user_id_name_unique').on(t.userId, t.name),
+  ],
+);
+
+export const calendarEvent = createTable(
+  'calendar_event',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    description: text('description'),
+    start: timestamp('start', { withTimezone: true }).notNull(),
+    end: timestamp('end', { withTimezone: true }).notNull(),
+    allDay: boolean('all_day').notNull().default(false),
+    location: text('location'),
+    color: text('color'),
+    categoryId: text('category_id'),
+    source: text('source'),
+    sourceId: text('source_id'),
+    recurrence: jsonb('recurrence'),
+    exceptions: jsonb('exceptions'),
+    attendees: jsonb('attendees'),
+    categories: jsonb('categories'),
+    reminders: jsonb('reminders'),
+    timezone: text('timezone'),
+    isRecurring: boolean('is_recurring'),
+    isShared: boolean('is_shared'),
+    sharedBy: text('shared_by'),
+    sharedWith: jsonb('shared_with'),
+    isRecurringInstance: boolean('is_recurring_instance'),
+    originalEventId: text('original_event_id'),
+    exceptionDate: text('exception_date'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('idx_mail0_calendar_event_user_id').on(t.userId),
+    index('idx_mail0_calendar_event_start').on(t.start),
+    index('idx_mail0_calendar_event_end').on(t.end),
+  ],
+);
+
 export const emailTemplate = createTable(
   'email_template',
   {
