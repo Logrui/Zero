@@ -1,6 +1,6 @@
 import { HotkeyProviderWrapper } from '@/components/providers/hotkey-provider-wrapper';
 import { CommandPaletteProvider } from '@/components/context/command-palette-context';
-import { AppTopbar } from '@/components/app-topbar';
+import { AppBottombar } from '@/components/app-bottombar';
 
 import { Outlet } from 'react-router';
 
@@ -10,11 +10,11 @@ export default function Layout() {
     <CommandPaletteProvider>
       <HotkeyProviderWrapper>
         <div className="relative flex h-screen w-full flex-col overflow-hidden">
-          <AppTopbar />
-          {/* Globally offset all in-app content below the topbar */}
-          <div className="flex-1 min-h-0 pt-[var(--app-topbar-height)]">
+          {/* Globally offset all in-app content above the bottombar */}
+          <div className="flex-1 min-h-0 pb-[var(--app-bottombar-height)]">
             <Outlet />
           </div>
+          <AppBottombar />
         </div>
       </HotkeyProviderWrapper>
     </CommandPaletteProvider>

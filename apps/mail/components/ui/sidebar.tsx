@@ -97,9 +97,9 @@ const Sidebar = React.forwardRef<
                   : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)',
               )}
               style={{
-                // Reserve vertical space beneath the global topbar
-                height: 'calc(100svh - var(--app-topbar-height, 4rem))',
-                marginTop: 'var(--app-topbar-height, 4rem)',
+                // Reserve vertical space above the global bottombar
+                height: 'calc(100svh - var(--app-bottombar-height, 4rem))',
+                marginBottom: 'var(--app-bottombar-height, 4rem)',
               }}
             />
             <div
@@ -115,8 +115,8 @@ const Sidebar = React.forwardRef<
                 className,
               )}
               style={{
-                top: 'var(--app-topbar-height, 4rem)',
-                height: 'calc(100svh - var(--app-topbar-height, 4rem))',
+                top: '0',
+                height: 'calc(100svh - var(--app-bottombar-height, 4rem))',
                 // Maintain offcanvas translated positions
                 ...(side === 'left'
                   ? { left: undefined }

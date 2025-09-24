@@ -40,7 +40,7 @@ export function AppBottombar() {
   }, []);
 
   return (
-    <header ref={headerRef} className="fixed inset-x-0 bottom-0 z-50 w-full bg-background border-t">
+    <header ref={headerRef} className="fixed inset-x-0 bottom-0 z-50 w-full bg-background outline-none m-0 mt-0 p-0 pt-0">
       <div className="flex h-12 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
@@ -54,25 +54,25 @@ export function AppBottombar() {
           </div>
 
           <nav className="hidden md:flex items-center space-x-1">
-            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/dashboard">Dashboard</Link>
             </Button>
-            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/mail">Mail</Link>
             </Button>
-            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/calendar">Calendar</Link>
             </Button>
-            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/agents">Agents</Link>
             </Button>
-            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/scheduling">Scheduling</Link>
             </Button>
-            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/tasks">Tasks</Link>
             </Button>
-            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/workspaces">Workspaces</Link>
             </Button>
           </nav>
@@ -90,7 +90,7 @@ export function AppBottombar() {
             </div>
           )}
 
-          <ThemeToggle className="rounded-lg h-9 w-9" />
+          <ThemeToggle className="rounded-lg h-9 w-9 outline-none focus:outline-none" />
 
           {/* Desktop create button temporarily disabled */}
           {false && (
@@ -100,44 +100,47 @@ export function AppBottombar() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="relative rounded-lg h-9 w-9">
+          <Button variant="ghost" size="icon" className="relative rounded-lg h-9 w-9 outline-none focus:outline-none">
             <BellIcon className="h-4 w-4" />
             <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-foreground rounded-full"></span>
           </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-lg overflow-hidden h-9 w-9">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-foreground">
-                  {/* Placeholder initial until wired to auth */}
-                  U
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-lg p-1">
-              <DropdownMenuLabel className="py-2 px-3">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">User</p>
-                  <p className="text-xs text-muted-foreground">user@example.com</p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="py-2 px-3 text-sm rounded-md cursor-pointer">
-                <SettingsIcon className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="py-2 px-3 text-sm rounded-md cursor-pointer">
-                <LogOutIcon className="mr-2 h-4 w-4" />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* User dropdown menu temporarily disabled */}
+          {false && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-lg overflow-hidden h-9 w-9 outline-none focus:outline-none">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-foreground">
+                    {/* Placeholder initial until wired to auth */}
+                    U
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-lg p-1">
+                <DropdownMenuLabel className="py-2 px-3">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">User</p>
+                    <p className="text-xs text-muted-foreground">user@example.com</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="py-2 px-3 text-sm rounded-md cursor-pointer">
+                  <SettingsIcon className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="py-2 px-3 text-sm rounded-md cursor-pointer">
+                  <LogOutIcon className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-lg md:hidden h-9 w-9"
+            className="rounded-lg md:hidden h-9 w-9 outline-none focus:outline-none"
             onClick={() => setShowMobileMenu((v) => !v)}
             aria-label="Toggle menu"
           >
@@ -159,25 +162,25 @@ export function AppBottombar() {
                 />
               </div>
             )}
-            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/dashboard">Dashboard</Link>
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/mail">Mail</Link>
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/calendar">Calendar</Link>
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/agents">Agents</Link>
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/scheduling">Scheduling</Link>
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/tasks">Tasks</Link>
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted">
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/workspaces">Workspaces</Link>
             </Button>
             {/* Mobile create button temporarily disabled */}
