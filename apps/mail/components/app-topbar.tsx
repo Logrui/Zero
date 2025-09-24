@@ -40,7 +40,7 @@ export function AppTopbar() {
   }, []);
 
   return (
-    <header ref={headerRef} className="w-full bg-background">
+    <header ref={headerRef} className="fixed inset-x-0 top-0 z-50 w-full bg-background">
       <div className="flex h-12 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">

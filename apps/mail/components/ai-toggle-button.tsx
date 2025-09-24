@@ -1,14 +1,20 @@
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { Button } from './ui/button';
+import { useAISidebar } from './ui/ai-sidebar';
 
 type Props = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 // AI Toggle Button Component (props-based)
 const AIToggleButton = ({ open, onOpenChange }: Props) => {
-  if (open) return null;
+  // Fallback to global AI sidebar state if props are not provided
+  const { open: hookOpen, setOpen: setHookOpen } = useAISidebar();
+  const isOpen = typeof open === 'boolean' ? open : !!hookOpen;
+  const handleOpenChange = onOpenChange ?? setHookOpen;
+
+  if (isOpen) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -19,9 +25,11 @@ const AIToggleButton = ({ open, onOpenChange }: Props) => {
             size="icon"
             className="dark:bg-sidebar border h-12 w-12 rounded-lg"
             onClick={(e) => {
-              if (!open) {
+              if (!isOpen) {
                 e.stopPropagation();
-                onOpenChange(true);
+                if (typeof handleOpenChange === 'function') {
+                  handleOpenChange(true);
+                }
               }
             }}
           >

@@ -34,6 +34,283 @@ import { useQueryState } from 'nuqs';
 import { cn } from '@/lib/utils';
 import { useAtom } from 'jotai';
 
+// const AutoLabelingSettings = () => {
+//   const trpc = useTRPC();
+//   const [open, setOpen] = useState(false);
+//   const { data: storedLabels, refetch: refetchStoredLabels } = useQuery(
+//     trpc.brain.getLabels.queryOptions(void 0, {
+//       staleTime: 1000 * 60 * 60, // 1 hour
+//     }),
+//   );
+//   const { mutateAsync: updateLabels, isPending } = useMutation(
+//     trpc.brain.updateLabels.mutationOptions({
+//       onSuccess: () => {
+//         refetchStoredLabels();
+//       },
+//     }),
+//   );
+//   const [, setPricingDialog] = useQueryState('pricingDialog');
+//   const [labels, setLabels] = useState<ITag[]>([]);
+//   const [newLabel, setNewLabel] = useState({ name: '', usecase: '' });
+//   const { mutateAsync: EnableBrain, isPending: isEnablingBrain } = useMutation(
+//     trpc.brain.enableBrain.mutationOptions(),
+//   );
+//   const { mutateAsync: DisableBrain, isPending: isDisablingBrain } = useMutation(
+//     trpc.brain.disableBrain.mutationOptions(),
+//   );
+//   const { data: brainState, refetch: refetchBrainState } = useBrainState();
+//   const { isLoading, isPro } = useBilling();
+
+//   useEffect(() => {
+//     if (storedLabels) {
+//       setLabels(
+//         storedLabels.map((label) => ({
+//           id: label.name,
+//           name: label.name,
+//           text: label.name,
+//           usecase: label.usecase,
+//         })),
+//       );
+//     }
+//   }, [storedLabels]);
+
+//   const handleResetToDefault = useCallback(() => {
+//     setLabels(
+//       defaultLabels.map((label) => ({
+//         id: label.name,
+//         name: label.name,
+//         text: label.name,
+//         usecase: label.usecase,
+//       })),
+//     );
+//   }, [storedLabels]);
+
+//   const handleAddLabel = () => {
+//     if (!newLabel.name || !newLabel.usecase) return;
+//     setLabels([...labels, { id: newLabel.name, ...newLabel, text: newLabel.name }]);
+//     setNewLabel({ name: '', usecase: '' });
+//   };
+
+//   const handleDeleteLabel = (id: string) => {
+//     setLabels(labels.filter((label) => label.id !== id));
+//   };
+
+//   const handleUpdateLabel = (id: string, field: 'name' | 'usecase', value: string) => {
+//     setLabels(
+//       labels.map((label) =>
+//         label.id === id
+//           ? { ...label, [field]: value, text: field === 'name' ? value : label.text }
+//           : label,
+//       ),
+//     );
+//   };
+
+//   const handleSubmit = async () => {
+//     const updatedLabels = labels.map((label) => ({
+//       name: label.name,
+//       usecase: label.usecase,
+//     }));
+
+//     if (newLabel.name.trim() && newLabel.usecase.trim()) {
+//       updatedLabels.push({
+//         name: newLabel.name,
+//         usecase: newLabel.usecase,
+//       });
+//     }
+//     await updateLabels({ labels: updatedLabels });
+//     setOpen(false);
+//     toast.success('Labels updated successfully, Zero will start using them.');
+//   };
+
+//   const handleEnableBrain = useCallback(async () => {
+//     toast.promise(EnableBrain, {
+//       loading: 'Enabling autolabeling...',
+//       success: 'Autolabeling enabled successfully',
+//       error: 'Failed to enable autolabeling',
+//       finally: async () => {
+//         await refetchBrainState();
+//       },
+//     });
+//   }, []);
+
+//   const handleDisableBrain = useCallback(async () => {
+//     toast.promise(DisableBrain, {
+//       loading: 'Disabling autolabeling...',
+//       success: 'Autolabeling disabled successfully',
+//       error: 'Failed to disable autolabeling',
+//       finally: async () => {
+//         await refetchBrainState();
+//       },
+//     });
+//   }, []);
+
+//   const handleToggleAutolabeling = useCallback(() => {
+//     if (brainState?.enabled) {
+//       handleDisableBrain();
+//     } else {
+//       handleEnableBrain();
+//     }
+//   }, [brainState?.enabled]);
+
+//   return (
+//     <Dialog
+//       open={open}
+//       onOpenChange={(state) => {
+//         if (!isPro) {
+//           setPricingDialog('true');
+//         } else {
+//           setOpen(state);
+//         }
+//       }}
+//     >
+//       <DialogTrigger asChild>
+//         <div className="flex items-center gap-2">
+//           <Switch
+//             disabled={isEnablingBrain || isDisablingBrain || isLoading}
+//             checked={brainState?.enabled ?? false}
+//           />
+//           <span className="text-muted-foreground cursor-pointer text-xs font-medium">
+//             Auto label
+//           </span>
+//         </div>
+//       </DialogTrigger>
+//       <DialogContent showOverlay className="max-w-2xl">
+//         <DialogHeader>
+//           <div className="flex items-center justify-between">
+//             <DialogTitle>Label Settings</DialogTitle>
+//             <button
+//               onClick={handleToggleAutolabeling}
+//               className="bg-offsetLight dark:bg-offsetDark flex items-center gap-2 rounded-lg border px-1.5 py-1"
+//             >
+//               <span className="text-muted-foreground text-sm">
+//                 {isEnablingBrain || isDisablingBrain
+//                   ? 'Updating...'
+//                   : brainState?.enabled
+//                     ? 'Disable autolabeling'
+//                     : 'Enable autolabeling'}
+//               </span>
+//               <Switch checked={brainState?.enabled} />
+//             </button>
+//           </div>
+//           <DialogDescription className="mt-2">
+//             Configure the labels that Zero uses to automatically organize your emails.
+//           </DialogDescription>
+//         </DialogHeader>
+
+//         <ScrollArea className="h-[400px]">
+//           <div className="space-y-3">
+//             {labels.map((label, index) => (
+//               <div
+//                 key={label.id}
+//                 className="bg-card group relative space-y-2 rounded-lg border p-4 shadow-sm transition-shadow hover:shadow-md"
+//               >
+//                 <div className="flex items-center justify-between">
+//                   <Label
+//                     htmlFor={`label-name-${index}`}
+//                     className="text-muted-foreground text-xs font-medium"
+//                   >
+//                     Label Name
+//                   </Label>
+//                   <Button
+//                     variant="ghost"
+//                     size="icon"
+//                     className="h-6 w-6 transition-opacity group-hover:opacity-100"
+//                     onClick={() => handleDeleteLabel(label.id)}
+//                   >
+//                     <Trash className="h-3 w-3 fill-[#F43F5E]" />
+//                   </Button>
+//                 </div>
+//                 <Input
+//                   id={`label-name-${index}`}
+//                   type="text"
+//                   value={label.name}
+//                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+//                     handleUpdateLabel(label.id, 'name', e.target.value)
+//                   }
+//                   className="h-8"
+//                   placeholder="e.g., Important, Follow-up, Archive"
+//                 />
+//                 <div className="space-y-2">
+//                   <Label
+//                     htmlFor={`label-usecase-${index}`}
+//                     className="text-muted-foreground text-xs font-medium"
+//                   >
+//                     Use Case Description
+//                   </Label>
+//                   <Textarea
+//                     id={`label-usecase-${index}`}
+//                     value={label.usecase}
+//                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+//                       handleUpdateLabel(label.id, 'usecase', e.target.value)
+//                     }
+//                     className="min-h-[60px] resize-none"
+//                     placeholder="Describe when this label should be applied..."
+//                   />
+//                 </div>
+//               </div>
+//             ))}
+
+//             <div className="bg-muted/50 mt-3 space-y-2 rounded-lg border border-dashed p-4">
+//               <div className="space-y-2">
+//                 <Label
+//                   htmlFor="new-label-name"
+//                   className="text-muted-foreground text-xs font-medium"
+//                 >
+//                   New Label Name
+//                 </Label>
+//                 <Input
+//                   id="new-label-name"
+//                   type="text"
+//                   value={newLabel.name}
+//                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+//                     setNewLabel({ ...newLabel, name: e.target.value })
+//                   }
+//                   className="h-8 dark:bg-[#141414]"
+//                   placeholder="Enter a new label name"
+//                 />
+//               </div>
+//               <div className="space-y-2">
+//                 <Label
+//                   htmlFor="new-label-usecase"
+//                   className="text-muted-foreground text-xs font-medium"
+//                 >
+//                   Use Case Description
+//                 </Label>
+//                 <Textarea
+//                   id="new-label-usecase"
+//                   value={newLabel.usecase}
+//                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+//                     setNewLabel({ ...newLabel, usecase: e.target.value })
+//                   }
+//                   className="min-h-[60px] resize-none dark:bg-[#141414]"
+//                   placeholder="Describe when this label should be applied..."
+//                 />
+//               </div>
+//               <Button
+//                 className="mt-2 h-8 w-full"
+//                 onClick={handleAddLabel}
+//                 disabled={!newLabel.name || !newLabel.usecase}
+//               >
+//                 Add New Label
+//               </Button>
+//             </div>
+//           </div>
+//         </ScrollArea>
+//         <DialogFooter className="mt-4">
+//           <div className="flex w-full justify-end gap-2">
+//             <Button size="xs" variant="outline" onClick={handleResetToDefault}>
+//               Default Labels
+//             </Button>
+//             <Button size="xs" onClick={handleSubmit} disabled={isPending}>
+//               Save Changes
+//             </Button>
+//           </div>
+//         </DialogFooter>
+//       </DialogContent>
+//     </Dialog>
+//   );
+// };
+
 export function MailLayout() {
   const params = useParams<{ folder: string }>();
   const folder = params?.folder ?? 'inbox';
@@ -48,9 +325,10 @@ export function MailLayout() {
   const { activeFilters, clearAllFilters } = useCommandPalette();
   const [, setIsCommandPaletteOpen] = useQueryState('isCommandPaletteOpen');
   const isDesktop = useMediaQuery('(min-width: 768px)');
-  const { open: aiOpen, isSidebar: aiIsSidebar, isFullScreen: aiIsFullScreen, setOpen } = useAISidebar();
+  const { open: aiOpen, isSidebar: aiIsSidebar, isFullScreen: aiIsFullScreen } = useAISidebar();
   const showRightPanel = !!(isDesktop && activeConnection?.id && aiOpen && aiIsSidebar && !aiIsFullScreen);
-  
+  const layoutKey = showRightPanel ? 'with-ai' : 'no-ai';
+
   // (removed debug AI/layout state changes)
 
   useEffect(() => {
@@ -116,18 +394,27 @@ export function MailLayout() {
   const [category] = useQueryState('category', { defaultValue: defaultCategoryId });
   return (
     <TooltipProvider>
-      <div className="h-full">
-        {isDesktop ? (
-          <>
-            <ResizablePanelGroup
-              direction="horizontal"
-              className="h-full"
-            >
+      <div className="h-full w-full">
+        <div className="h-full w-full">
+          {isDesktop ? (
+            <>
+              <ResizablePanelGroup
+                direction="horizontal"
+                className="flex w-full"
+                key={layoutKey}
+                style={{
+                  height: 'calc(100vh - var(--app-topbar-height, 4rem))',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  paddingLeft: '0.5rem',
+                  paddingRight: '0.5rem',
+                }}
+              >
                 <ResizablePanel
                   id="mail-list"
                   order={1}
                   className={cn(
-                    'bg-panelLight dark:bg-panelDark mr-0.5 rounded-2xl shadow-sm',
+                    'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 rounded-2xl shadow-sm lg:h-full',
                   )}
                   defaultSize={28}
                   minSize={20}
@@ -135,7 +422,7 @@ export function MailLayout() {
                   <div className="w-full h-full">
                     <div
                       className={cn(
-                        'z-15 flex items-center justify-between gap-1.5 p-2 pb-0 transition-colors',
+                        'z-15 sticky top-0 flex items-center justify-between gap-1.5 p-2 pb-0 transition-colors',
                       )}
                     >
                       <div className="w-full">
@@ -250,12 +537,12 @@ export function MailLayout() {
                     id="thread-display"
                     order={2}
                     className={cn(
-                      'bg-panelLight dark:bg-panelDark mr-0.5 w-full rounded-2xl shadow-sm',
+                      'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 w-full rounded-2xl shadow-sm lg:h-full',
                     )}
-                      defaultSize={showRightPanel ? 50 : 72}
+                    defaultSize={showRightPanel ? 52 : 72}
                     minSize={20}
                   >
-                    <div className="relative w-full h-full">
+                    <div className="relative flex-1 h-full">
                       <ThreadDisplay />
                     </div>
                   </ResizablePanel>
@@ -268,11 +555,11 @@ export function MailLayout() {
                     <ResizablePanel
                       id="ai-sidebar"
                       order={3}
-                      defaultSize={22}
+                      defaultSize={20}
                       minSize={16}
                       maxSize={40}
-                      className={cn('w-fit rounded-2xl')}
-                        >
+                      className={cn('mb-1 w-fit rounded-2xl lg:h-full')}
+                    >
                       <AISidebar asPanelContent />
                     </ResizablePanel>
                   </>
@@ -289,9 +576,7 @@ export function MailLayout() {
                   </div>
                 )}
 
-                {activeConnection?.id ? (
-                  <AIToggleButton open={aiOpen} onOpenChange={setOpen} />
-                ) : null}
+                {activeConnection?.id ? <AIToggleButton /> : null}
               </ResizablePanelGroup>
               {/* Overlay instance for popup/fullscreen modes */}
               <AISidebar />
@@ -299,6 +584,7 @@ export function MailLayout() {
           ) : (
             <MailList />
           )}
+        </div>
       </div>
     </TooltipProvider>
   );

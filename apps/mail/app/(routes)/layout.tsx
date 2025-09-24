@@ -9,9 +9,10 @@ export default function Layout() {
   return (
     <CommandPaletteProvider>
       <HotkeyProviderWrapper>
-        <div className="h-screen flex flex-col">
+        <div className="relative flex h-screen w-full flex-col overflow-hidden">
           <AppTopbar />
-          <div className="flex-1 overflow-hidden">
+          {/* Globally offset all in-app content below the topbar */}
+          <div className="flex-1 min-h-0 pt-[var(--app-topbar-height)]">
             <Outlet />
           </div>
         </div>
