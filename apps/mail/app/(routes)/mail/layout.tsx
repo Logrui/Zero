@@ -6,9 +6,9 @@ import { Outlet } from 'react-router';
 export default function MailLayout() {
   return (
     <HotkeyProviderWrapper>
-      <div className="flex w-full h-full overflow-hidden">
+      <div className="flex h-full">
         <AppSidebar />
-        <div className="bg-sidebar dark:bg-sidebar w-full h-full">
+        <div className="bg-sidebar dark:bg-sidebar flex-1 overflow-hidden">
           <Outlet />
         </div>
       </div>

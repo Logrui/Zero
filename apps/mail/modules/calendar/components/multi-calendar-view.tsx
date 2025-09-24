@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { type CalendarEvent, getEvents, getUserCategories, getSharedEvents } from "../lib/calendar"
 import { EventDialog } from "./event-dialog"
-import { ChatPanel } from "@/components/chat-panel"
+import { ChatPanel } from "./chat-panel"
 import { AISidebar } from "@/components/ai-sidebar"
 import AIToggleButton from "@/components/ai-toggle-button"
 import { Input } from "@/components/ui/input"

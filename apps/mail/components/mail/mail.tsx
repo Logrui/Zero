@@ -48,7 +48,7 @@ export function MailLayout() {
   const { activeFilters, clearAllFilters } = useCommandPalette();
   const [, setIsCommandPaletteOpen] = useQueryState('isCommandPaletteOpen');
   const isDesktop = useMediaQuery('(min-width: 768px)');
-  const { open: aiOpen, isSidebar: aiIsSidebar, isFullScreen: aiIsFullScreen } = useAISidebar();
+  const { open: aiOpen, isSidebar: aiIsSidebar, isFullScreen: aiIsFullScreen, setOpen } = useAISidebar();
   const showRightPanel = !!(isDesktop && activeConnection?.id && aiOpen && aiIsSidebar && !aiIsFullScreen);
   
   // (removed debug AI/layout state changes)
@@ -116,19 +116,18 @@ export function MailLayout() {
   const [category] = useQueryState('category', { defaultValue: defaultCategoryId });
   return (
     <TooltipProvider>
-      <div className="flex flex-col w-full h-full">
-        <div className="flex-1 h-full w-full " style={{ marginTop: 'calc(var(--app-topbar-height))' }}>
-          {isDesktop ? (
-            <>
-              <ResizablePanelGroup
-                direction="horizontal"
-                className="flex w-full h-full"
-                              >
+      <div className="h-full">
+        {isDesktop ? (
+          <>
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="h-full"
+            >
                 <ResizablePanel
                   id="mail-list"
                   order={1}
                   className={cn(
-                    'bg-panelLight dark:bg-panelDark mr-0.5 min-w-0 rounded-2xl shadow-sm',
+                    'bg-panelLight dark:bg-panelDark mr-0.5 rounded-2xl shadow-sm',
                   )}
                   defaultSize={28}
                   minSize={20}
@@ -251,12 +250,12 @@ export function MailLayout() {
                     id="thread-display"
                     order={2}
                     className={cn(
-                      'bg-panelLight dark:bg-panelDark mb-1 mr-0.5 min-w-0 w-full rounded-2xl shadow-sm',
+                      'bg-panelLight dark:bg-panelDark mr-0.5 w-full rounded-2xl shadow-sm',
                     )}
-                    defaultSize={showRightPanel ? 52 : 72}
+                      defaultSize={showRightPanel ? 50 : 72}
                     minSize={20}
                   >
-                    <div className="relative flex-1 h-full">
+                    <div className="relative w-full h-full">
                       <ThreadDisplay />
                     </div>
                   </ResizablePanel>
@@ -269,11 +268,11 @@ export function MailLayout() {
                     <ResizablePanel
                       id="ai-sidebar"
                       order={3}
-                      defaultSize={20}
+                      defaultSize={22}
                       minSize={16}
                       maxSize={40}
-                      className={cn('mb-2 w-fit rounded-2xl')}
-                    >
+                      className={cn('w-fit rounded-2xl')}
+                        >
                       <AISidebar asPanelContent />
                     </ResizablePanel>
                   </>
@@ -290,7 +289,9 @@ export function MailLayout() {
                   </div>
                 )}
 
-                {activeConnection?.id ? <AIToggleButton /> : null}
+                {activeConnection?.id ? (
+                  <AIToggleButton open={aiOpen} onOpenChange={setOpen} />
+                ) : null}
               </ResizablePanelGroup>
               {/* Overlay instance for popup/fullscreen modes */}
               <AISidebar />
@@ -298,7 +299,6 @@ export function MailLayout() {
           ) : (
             <MailList />
           )}
-        </div>
       </div>
     </TooltipProvider>
   );

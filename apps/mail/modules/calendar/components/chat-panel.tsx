@@ -1,7 +1,6 @@
 "use client";
 
-// Restored: Minimal, visible Chat Panel so the calendar module always has a working panel.
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
