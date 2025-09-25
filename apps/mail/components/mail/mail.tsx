@@ -578,7 +578,7 @@ export function MailLayout() {
 
                 {activeConnection?.id ? <AIToggleButton /> : null}
               </ResizablePanelGroup>
-              {/* Overlay instance for popup/fullscreen modes */}
+              {/* Overlay instance for popup/fullscreen modes - only for mail pages */}
               <AISidebar />
             </>
           ) : (

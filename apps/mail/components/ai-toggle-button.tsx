@@ -1,6 +1,7 @@
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { Button } from './ui/button';
 import { useAISidebar } from './ui/ai-sidebar';
+import { useLocation } from 'react-router';
 
 type Props = {
   open?: boolean;
@@ -9,15 +10,21 @@ type Props = {
 
 // AI Toggle Button Component (props-based)
 const AIToggleButton = ({ open, onOpenChange }: Props) => {
+  const location = useLocation();
+  
+  // Only show AI toggle button on mail pages, not on calendar or other pages
+  const isMailPage = location.pathname.startsWith('/mail');
+  if (!isMailPage) return null;
+  
   // Fallback to global AI sidebar state if props are not provided
   const { open: hookOpen, setOpen: setHookOpen } = useAISidebar();
   const isOpen = typeof open === 'boolean' ? open : !!hookOpen;
   const handleOpenChange = onOpenChange ?? setHookOpen;
 
   if (isOpen) return null;
-
+//AI Toggle Button Positioning
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-8 right-8 z-[60]"> 
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 
 import {
@@ -24,15 +23,11 @@ import {
 } from "lucide-react"
 import { type CalendarEvent, getEvents, getUserCategories, getSharedEvents } from "../lib/calendar"
 import { EventDialog } from "./event-dialog"
-import { ChatPanel } from "./chat-panel"
-import { AISidebar } from "@/components/ai-sidebar"
-import AIToggleButton from "@/components/ai-toggle-button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useActiveConnection } from "@/hooks/use-connections"
-// (removed duplicate Checkbox import)
 import {
   format,
   startOfWeek,
@@ -102,7 +97,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [showNaturalLanguageDialog, setShowNaturalLanguageDialog] = useState(false)
-  const [showChatPanel, setShowChatPanel] = useState(false)
+  // const [showChatPanel, setShowChatPanel] = useState(false) // Removed to prevent duplicate AI panel
   const [searchQuery, setSearchQuery] = useState("")
   const [categories, setCategories] = useState<string[]>(initialCategories)
   const [visibleCalendars, setVisibleCalendars] = useState<Record<string, boolean>>({
@@ -514,7 +509,6 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
     })
   }, [])
 
-
   const getEventColor = useCallback((event: CalendarEvent) => {
     // Prefer categoryId-driven coloring if available
     if ((event as any).categoryId && CATEGORY_COLORS[(event as any).categoryId as keyof typeof CATEGORY_COLORS]) {
@@ -566,239 +560,282 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
   }, [currentDate, view, agendaRange])
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <h2 className="text-3xl font-bold text-mono-900 dark:text-mono-50 tracking-tight">{viewTitle}</h2>
-          </div>
-          <div className="flex items-center gap-1 ml-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handlePrevious}
-              className="rounded-lg h-9 w-9 bg-mono-100 dark:bg-mono-800"
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleNext}
-              className="rounded-lg h-9 w-9 bg-mono-100 dark:bg-mono-800"
-            >
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleToday}
-            className="rounded-lg h-9 border-mono-200 dark:border-mono-700"
-          >
-            Today
-          </Button>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap justify-end">
-          <div className="relative w-56">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-mono-400" />
-            <Input
-              placeholder="Search events..."
-              className="pl-9 rounded-lg bg-mono-50 dark:bg-mono-900 h-9 text-sm focus-visible:ring-mono-400 dark:focus-visible:ring-mono-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          {(() => {
-            const selectViewValue = view === "year" || view === "agenda" ? "month" : view
-            return (
-              <Select value={selectViewValue} onValueChange={(v) => setView(v as "month" | "week" | "day") }>
-                <SelectTrigger className="w-32 rounded-lg h-9 border-mono-200 dark:border-mono-700">
-                  <SelectValue placeholder="View" />
-                </SelectTrigger>
-                <SelectContent className="rounded-lg border-mono-200 dark:border-mono-700">
-                  <SelectItem value="month" className="rounded-md my-1 cursor-pointer">Month</SelectItem>
-                  <SelectItem value="week" className="rounded-md my-1 cursor-pointer">Week</SelectItem>
-                  <SelectItem value="day" className="rounded-md my-1 cursor-pointer">Day</SelectItem>
-                </SelectContent>
-              </Select>
-            )
-          })()}
-
-          {/* Filter button (icon) */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-lg h-9 w-9 bg-mono-100 dark:bg-mono-800"
-            onClick={() => setShowFilterMenu((p) => !p)}
-          >
-            <FilterIcon className="h-4 w-4" />
-          </Button>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+    <div className="h-[85vh] w-full mx-auto flex flex-col bg-background rounded-2xl shadow-2xl border border-border/20 overflow-hidden backdrop-blur-sm scrollbar-hide">
+      {/* Enhanced Modern Header */}
+      <div className="relative border-b border-border/30 bg-background sticky top-0 z-20">
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 p-8">
+          <div className="flex items-center gap-8">
+            <div className="flex flex-col space-y-1">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-full" />
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent tracking-tight">{viewTitle}</h1>
+              </div>
+              <p className="text-sm text-muted-foreground/80 ml-4 font-medium">Organize your time, achieve your goals</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center bg-background/60 backdrop-blur-sm rounded-full p-1 border border-border/40 shadow-sm">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={cn(
-                    "rounded-lg h-9 w-9",
-                    isCalendarDrawerOpen ? "bg-mono-200 dark:bg-mono-700" : "bg-mono-100 dark:bg-mono-800",
-                  )}
-                  onClick={() => setIsCalendarDrawerOpen(!isCalendarDrawerOpen)}
+                  onClick={handlePrevious}
+                  className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
                 >
-                  <LayersIcon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Toggle calendars</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="default" size="sm" className="rounded-lg h-9 gap-1 shadow-soft">
-                <PlusIcon className="h-4 w-4" />
-                <span>Event</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2">
-              <div className="grid gap-1">
-                <Button variant="ghost" className="justify-start font-normal h-9" onClick={handleCreateEvent}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  <span>Create Event</span>
+                  <ChevronLeftIcon className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
-                  className="justify-start font-normal h-9"
-                  onClick={handleCreateWithNaturalLanguage}
+                  size="icon"
+                  onClick={handleNext}
+                  className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-105"
                 >
-                  <ZapIcon className="mr-2 h-4 w-4" />
-                  <span>Natural Language</span>
+                  <ChevronRightIcon className="h-4 w-4" />
                 </Button>
               </div>
-            </PopoverContent>
-          </Popover>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToday}
+                className="h-9 px-4 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30 hover:from-primary/20 hover:to-accent/20 hover:border-primary/50 transition-all duration-300 text-sm font-semibold hover:shadow-lg hover:scale-105"
+              >
+                Today
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Enhanced Search */}
+            <div className="relative group">
+              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
+              <Input
+                placeholder="Search events..."
+                className="pl-11 pr-4 w-72 h-10 rounded-2xl border-border/40 bg-background/60 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md focus-visible:shadow-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="rounded-lg h-9 gap-1 bg-mono-100 dark:bg-mono-800"
-            onClick={() => setShowChatPanel(true)}
-          >
-            <ZapIcon className="h-4 w-4" />
-            <span>AI</span>
-          </Button>
+            {/* Enhanced View Selector */}
+            {(() => {
+              const selectViewValue = view === "year" || view === "agenda" ? "month" : view
+              return (
+                <Select value={selectViewValue} onValueChange={(v) => setView(v as "month" | "week" | "day") }>
+                  <SelectTrigger className="w-32 h-10 rounded-2xl border-border/40 bg-background/60 backdrop-blur-md text-sm font-medium hover:bg-background/80 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <SelectValue placeholder="View" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/30 backdrop-blur-xl bg-background/95 shadow-xl">
+                    <SelectItem value="month" className="rounded-xl cursor-pointer hover:bg-primary/10 transition-colors duration-200">Month</SelectItem>
+                    <SelectItem value="week" className="rounded-xl cursor-pointer hover:bg-primary/10 transition-colors duration-200">Week</SelectItem>
+                    <SelectItem value="day" className="rounded-xl cursor-pointer hover:bg-primary/10 transition-colors duration-200">Day</SelectItem>
+                  </SelectContent>
+                </Select>
+              )
+            })()}
+
+            {/* Enhanced Action Buttons */}
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "h-10 w-10 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md",
+                        isCalendarDrawerOpen 
+                          ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 hover:scale-105" 
+                          : "bg-background/60 backdrop-blur-md border border-border/40 hover:bg-primary/10 hover:border-primary/30 hover:scale-105"
+                      )}
+                      onClick={() => setIsCalendarDrawerOpen(!isCalendarDrawerOpen)}
+                    >
+                      <LayersIcon className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="rounded-xl bg-background/95 backdrop-blur-md border-border/30">
+                    <p>Toggle calendars</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-2xl bg-background/60 backdrop-blur-md border border-border/40 hover:bg-accent/50 hover:border-accent/40 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105"
+                onClick={() => setShowFilterMenu((p) => !p)}
+              >
+                <FilterIcon className="h-4 w-4" />
+              </Button>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    className="h-10 px-6 rounded-2xl bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-2xl transition-all duration-300 text-sm font-semibold hover:scale-105 border border-primary/20"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    New Event
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-2 rounded-2xl border-border/30 backdrop-blur-xl bg-background/95 shadow-2xl">
+                  <div className="grid gap-2">
+                    <Button variant="ghost" className="justify-start font-medium h-10 rounded-xl hover:bg-primary/10 transition-all duration-200" onClick={handleCreateEvent}>
+                      <CalendarIcon className="mr-3 h-4 w-4 text-primary" />
+                      <span>Create Event</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start font-medium h-10 rounded-xl hover:bg-accent/10 transition-all duration-200"
+                      onClick={handleCreateWithNaturalLanguage}
+                    >
+                      <ZapIcon className="mr-3 h-4 w-4 text-accent" />
+                      <span>Natural Language</span>
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Non-blocking error banner */}
+      {/* Modern Error Banner */}
       {loadError && (
-        <div className="mb-2 p-3 rounded-lg border border-red-200 bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200 dark:border-red-900">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-sm">{loadError}</div>
-            <Button size="sm" variant="outline" onClick={() => setReloadTick((t) => t + 1)}>
+        <div className="mx-6 mb-4 p-4 rounded-xl border border-destructive/20 bg-destructive/5 backdrop-blur">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+              <div className="text-sm font-medium text-destructive">{loadError}</div>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setReloadTick((t) => t + 1)} className="h-7 px-3 rounded-lg">
               Retry
             </Button>
           </div>
         </div>
       )}
 
-      {/* Info banner when no active connection */}
+      {/* Modern Info Banner */}
       {!activeUserId && (
-        <div className="mb-2 p-3 rounded-lg border border-blue-200 bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 dark:border-blue-900">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-sm">No active account connected. Connect an account to load your calendars.</div>
+        <div className="mx-6 mb-4 p-4 rounded-xl border border-blue-200/50 bg-blue-50/50 dark:border-blue-800/50 dark:bg-blue-900/20 backdrop-blur">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            <div className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              No active account connected. Connect an account to load your calendars.
+            </div>
           </div>
         </div>
       )}
 
-      <div className="flex gap-4">
-        {/* Left Sidebar: Calendars / Categories (styled like zero-calendar) */}
+      {/* Main Content Container */}
+      <div className="flex-1 flex gap-6 p-6 min-h-0">
+        {/* Enhanced Modern Left Sidebar */}
         {isCalendarDrawerOpen && (
-          <div className="relative w-64 flex-shrink-0 h-[calc(90vh-200px)] border-r bg-card rounded-lg">
-            <div className="flex h-12 items-center justify-between border-b px-4">
-              <span className="font-medium">Calendars</span>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsCalendarDrawerOpen(false)}>
+          <div className="w-80 flex-shrink-0 bg-gradient-to-b from-card/60 via-card/50 to-card/40 backdrop-blur-xl border border-border/30 rounded-3xl shadow-2xl overflow-hidden">
+            <div className="relative flex h-16 items-center justify-between px-8 border-b border-border/30 bg-gradient-to-r from-background/80 via-background/60 to-background/80">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
+              <div className="relative flex items-center gap-4">
+                <div className="h-3 w-3 rounded-full bg-gradient-to-br from-primary to-primary/60 shadow-sm" />
+                <span className="font-bold text-lg text-foreground">Calendars</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative h-9 w-9 rounded-2xl hover:bg-accent/20 hover:scale-105 transition-all duration-300 shadow-sm" 
+                onClick={() => setIsCalendarDrawerOpen(false)}
+              >
                 <XIcon className="h-4 w-4" />
               </Button>
             </div>
-            <ScrollArea className="h-[calc(100%-3rem)]">
-              <div className="px-3 py-3 space-y-4">
-                {/* My Calendars */}
-                <div className="space-y-1">
-                  <div
-                    className="flex items-center justify-between py-1 px-2 cursor-pointer hover:bg-muted rounded-md"
+            <ScrollArea className="h-[calc(80vh-200px)] scrollbar-hide">
+              <div className="p-8 space-y-8">
+                {/* Enhanced My Calendars Section */}
+                <div className="space-y-4">
+                  <button
+                    className="flex items-center justify-between w-full py-3 px-4 rounded-2xl hover:bg-gradient-to-r hover:from-accent/10 hover:to-primary/5 transition-all duration-300 group shadow-sm hover:shadow-md"
                     onClick={() => setExpandedSections((s) => ({ ...s, myCalendars: !s.myCalendars }))}
                   >
-                    <div className="flex items-center text-sm font-medium">
-                      <ChevronDownIcon
-                        className={`h-4 w-4 mr-1 transition-transform ${expandedSections.myCalendars ? "" : "-rotate-90"}`}
-                      />
-                      My Calendars
+                    <div className="flex items-center gap-4">
+                      <div className="h-2 w-2 rounded-full bg-gradient-to-br from-primary to-primary/60 shadow-sm" />
+                      <span className="text-sm font-semibold text-foreground">My Calendars</span>
                     </div>
-                  </div>
+                    <ChevronDownIcon
+                      className={`h-4 w-4 text-muted-foreground transition-all duration-200 ${
+                        expandedSections.myCalendars ? "rotate-0" : "-rotate-90"
+                      } group-hover:text-foreground`}
+                    />
+                  </button>
                   {expandedSections.myCalendars && (
-                    <div className="space-y-1 ml-2">
+                    <div className="space-y-2 pl-6">
                       {Object.entries(CALENDAR_TYPES).map(([key, { name, color }]) => (
-                        <div
+                        <button
                           key={key}
-                          className="flex items-center py-1 px-2 rounded-md hover:bg-muted cursor-pointer"
+                          className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-accent/50 transition-all duration-200 group"
                           onClick={() =>
                             setVisibleCalendars((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))
                           }
                         >
-                          <span className="mr-2 h-3 w-3 rounded-full" style={{ opacity: visibleCalendars[key] ? 1 : 0.4 }}>
-                            <span className={`block h-3 w-3 rounded-full ${CALENDAR_TYPES[key as keyof typeof CALENDAR_TYPES].color}`} />
+                          <div className={`h-3 w-3 rounded-full transition-all duration-200 ${
+                            CALENDAR_TYPES[key as keyof typeof CALENDAR_TYPES].color
+                          } ${visibleCalendars[key] ? 'opacity-100 scale-100' : 'opacity-40 scale-90'}`} />
+                          <span className={`text-sm transition-colors duration-200 ${
+                            visibleCalendars[key] ? "text-foreground font-medium" : "text-muted-foreground"
+                          } group-hover:text-foreground`}>
+                            {name}
                           </span>
-                          <span className={`text-sm ${visibleCalendars[key] ? "" : "text-muted-foreground"}`}>{name}</span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   )}
                 </div>
 
-                {/* Shared Calendars */}
-                <div className="space-y-1">
-                  <div
-                    className="flex items-center justify-between py-1 px-2 cursor-pointer hover:bg-muted rounded-md"
+                {/* Shared Calendars Section */}
+                <div className="space-y-3">
+                  <button
+                    className="flex items-center justify-between w-full py-2 px-3 rounded-xl hover:bg-accent/50 transition-all duration-200 group"
                     onClick={() => setExpandedSections((s) => ({ ...s, sharedCalendars: !s.sharedCalendars }))}
                   >
-                    <div className="flex items-center text-sm font-medium">
-                      <ChevronDownIcon
-                        className={`h-4 w-4 mr-1 transition-transform ${expandedSections.sharedCalendars ? "" : "-rotate-90"}`}
-                      />
-                      Shared Calendars
+                    <div className="flex items-center gap-3">
+                      <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                      <span className="text-sm font-medium text-foreground">Shared Calendars</span>
+                      <Badge variant="secondary" className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                        Beta
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-xs bg-muted text-muted-foreground ml-1">Beta</Badge>
-                  </div>
+                    <ChevronDownIcon
+                      className={`h-4 w-4 text-muted-foreground transition-all duration-200 ${
+                        expandedSections.sharedCalendars ? "rotate-0" : "-rotate-90"
+                      } group-hover:text-foreground`}
+                    />
+                  </button>
                   {expandedSections.sharedCalendars && (
-                    <div className="ml-2 py-2 px-2">
-                      <div className="text-sm text-muted-foreground italic">Coming soon</div>
+                    <div className="pl-6 py-3">
+                      <div className="text-sm text-muted-foreground italic bg-muted/30 rounded-lg p-3 text-center">
+                        Coming soon
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Categories */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm font-medium text-mono-500">
-                    <span>Categories</span>
+                {/* Categories Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between px-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                      <span className="text-sm font-medium text-foreground">Categories</span>
+                    </div>
                     {selectedCategories.length > 0 && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 text-xs"
+                        className="h-6 px-2 text-xs rounded-full hover:bg-accent"
                         onClick={() => setSelectedCategories([])}
                       >
                         Clear
                       </Button>
                     )}
                   </div>
-                  <div className="space-y-1 ml-2">
+                  <div className="space-y-2 pl-6">
                     {categories.map((category) => (
-                      <div key={category} className="flex items-center py-1 px-2 rounded-md hover:bg-muted cursor-pointer">
+                      <label 
+                        key={category} 
+                        className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-accent/50 cursor-pointer transition-all duration-200 group"
+                      >
                         <Checkbox
                           id={`category-${category}`}
                           checked={selectedCategories.includes(category)}
@@ -809,93 +846,106 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
                                 : prev.filter((c) => c !== category),
                             )
                           }
+                          className="rounded-md"
                         />
-                        <label htmlFor={`category-${category}`} className="ml-2 text-sm font-medium flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded-full ${CATEGORY_COLORS[category] || "bg-gray-500"}`}></span>
-                          {category}
-                        </label>
-                      </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-3 h-3 rounded-full ${CATEGORY_COLORS[category] || "bg-gray-500"}`} />
+                          <span className="text-sm group-hover:text-foreground transition-colors">{category}</span>
+                        </div>
+                      </label>
                     ))}
-                    {categories.length === 0 && <div className="text-sm text-mono-500 italic">No categories found</div>}
+                    {categories.length === 0 && (
+                      <div className="text-sm text-muted-foreground italic bg-muted/30 rounded-lg p-3 text-center">
+                        No categories found
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Navigation (disabled placeholder) */}
-                <div className="space-y-1 pt-2">
-                  <Button variant="ghost" className="w-full justify-start font-normal" disabled>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    Calendar
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start font-normal" disabled>
-                    <ListIcon className="mr-2 h-4 w-4" />
-                    Tasks
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start font-normal" disabled>
-                    <UsersIcon className="mr-2 h-4 w-4" />
-                    People
-                  </Button>
+                {/* Quick Actions */}
+                <div className="space-y-3 pt-6 border-t border-border/50">
+                  <div className="flex items-center gap-3 px-3">
+                    <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    <span className="text-sm font-medium text-foreground">Quick Actions</span>
+                  </div>
+                  <div className="space-y-2 pl-6">
+                    <Button variant="ghost" className="w-full justify-start font-normal h-8 rounded-lg" disabled>
+                      <CalendarIcon className="mr-3 h-4 w-4" />
+                      <span className="text-sm">Calendar View</span>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start font-normal h-8 rounded-lg" disabled>
+                      <ListIcon className="mr-3 h-4 w-4" />
+                      <span className="text-sm">Task List</span>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start font-normal h-8 rounded-lg" disabled>
+                      <UsersIcon className="mr-3 h-4 w-4" />
+                      <span className="text-sm">People</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </ScrollArea>
           </div>
         )}
 
-        {/* Calendar View */}
-        <Card className="rounded-xl border-mono-200 dark:border-mono-700 shadow-soft overflow-hidden flex-1 relative">
+        {/* Modern Calendar View */}
+        <div className="flex-1 bg-card/30 backdrop-blur border border-border/50 rounded-2xl shadow-xl overflow-hidden relative">
           {isLoading && (
-            <div className="absolute top-2 right-3 z-10 flex items-center gap-2 text-xs text-mono-500 dark:text-mono-400">
-              <div className="animate-spin h-4 w-4 border-2 border-mono-300 border-t-mono-900 rounded-full"></div>
-              <span>Loading…</span>
+            <div className="absolute top-4 right-4 z-10 flex items-center gap-3 px-3 py-2 bg-background/80 backdrop-blur rounded-full border border-border/50 shadow-lg">
+              <div className="animate-spin h-4 w-4 border-2 border-primary/30 border-t-primary rounded-full" />
+              <span className="text-sm font-medium text-foreground">Loading events...</span>
             </div>
           )}
 
-          {/* Month View */}
-          {view === "month" && (
-            <div className="h-[calc(90vh-200px)] overflow-hidden">
-              <div className="h-full overflow-y-auto scrollbar-hide flex flex-col">
-                <div className="grid grid-cols-7 border-b border-mono-200 dark:border-mono-700 bg-mono-50 dark:bg-mono-900">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                    <div key={day} className="text-center py-3 font-medium text-sm text-mono-500 dark:text-mono-400">
-                      {day}
-                    </div>
-                  ))}
+          {/* Calendar Views Container */}
+          <div className="flex-1 min-h-0">
+            {/* Enhanced Modern Month View */}
+            {view === "month" && (
+              <div className="h-full flex flex-col rounded-2xl overflow-hidden bg-gradient-to-br from-background/50 to-muted/20 backdrop-blur-sm">
+                <div className="grid grid-cols-7 border-b border-border/20 bg-gradient-to-r from-background/80 via-background/60 to-background/80 backdrop-blur-md shadow-sm">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                  <div key={day} className="text-center py-5 font-bold text-sm text-muted-foreground/80 border-r border-border/10 last:border-r-0 hover:bg-primary/5 transition-colors duration-200">
+                    {day}
+                  </div>
+                ))}
                 </div>
                 <div
-                  className="grid grid-cols-7 flex-1 bg-background"
+                  className="grid grid-cols-7 flex-1"
                   style={{ gridTemplateRows: "repeat(6, minmax(0, 1fr))" }}
                 >
                   {daysInMonth.map((day, index) => (
                     <div
                       key={index}
                       className={cn(
-                        "min-h-[100px] p-1 border-b border-r border-mono-200 dark:border-mono-700",
-                        !day.isCurrentMonth && "bg-mono-50/50 dark:bg-mono-900/50",
-                        isSameDay(day.date, new Date()) && "bg-mono-100/50 dark:bg-mono-800/50",
+                        "min-h-[140px] p-4 border-b border-r border-border/10 hover:bg-gradient-to-br hover:from-accent/10 hover:to-primary/5 transition-all duration-300 group cursor-pointer hover:shadow-lg hover:scale-[1.02] hover:z-10 relative",
+                        !day.isCurrentMonth && "bg-gradient-to-br from-muted/10 to-muted/5 text-muted-foreground/60",
+                        isSameDay(day.date, new Date()) && "bg-gradient-to-br from-primary/10 via-primary/5 to-accent/5 border-primary/30 shadow-md",
                       )}
                     >
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center justify-between mb-3">
                         <span
                           className={cn(
-                            "text-sm font-medium",
-                            !day.isCurrentMonth && "text-mono-400 dark:text-mono-600",
-                            isSameDay(day.date, new Date()) && "text-mono-900 dark:text-mono-50",
+                            "text-sm font-bold transition-all duration-200 flex items-center justify-center w-7 h-7 rounded-xl",
+                            !day.isCurrentMonth && "text-muted-foreground/60",
+                            isSameDay(day.date, new Date()) && "text-primary-foreground bg-gradient-to-br from-primary to-primary/80 shadow-lg font-extrabold",
                           )}
                         >
                           {format(day.date, "d")}
                         </span>
                         {isSameDay(day.date, new Date()) && (
-                          <Badge className="h-5 text-xs bg-mono-200 text-mono-700 dark:bg-mono-700 dark:text-mono-200 rounded-md px-1.5">
+                          <Badge className="h-5 text-xs bg-primary/10 text-primary border-primary/20 rounded-full px-2">
                             Today
                           </Badge>
                         )}
                       </div>
-                      <div className="mt-1 space-y-1">
+                      <div className="space-y-1">
                         {day.events.slice(0, 3).map((event) => (
                           <div
                             key={event.id}
                             className={cn(
-                              "text-xs px-2 py-1 rounded truncate cursor-pointer",
+                              "text-xs px-2 py-1 rounded-md truncate cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-sm",
                               getEventColor(event),
+                              "text-white font-medium"
                             )}
                             onClick={() => handleEventClick(event)}
                           >
@@ -903,28 +953,27 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
                           </div>
                         ))}
                         {day.events.length > 3 && (
-                          <div
-                            className="text-xs text-center cursor-pointer hover:underline text-mono-500 dark:text-mono-400"
+                          <button
+                            className="text-xs w-full text-center py-1 cursor-pointer hover:bg-accent/50 rounded-md transition-colors text-muted-foreground hover:text-foreground font-medium"
                             onClick={() => {
                               setCurrentDate(day.date)
                               setView("day")
                             }}
                           >
                             +{day.events.length - 3} more
-                          </div>
+                          </button>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Week View */}
           {view === "week" && (
             <div className="h-[calc(90vh-200px)]">
-              <div className="h-full overflow-y-auto scrollbar-hide">
+              <div className="h-full overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {/* Sticky header inside the scroll container to match widths */}
                 <div
                   className="grid sticky top-0 z-10 border-b border-mono-200 dark:border-mono-700 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
@@ -1285,70 +1334,26 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
               </div>
             </div>
           )}
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Calendars Side Panel */}
-      {isCalendarDrawerOpen && (
-        <div className="fixed top-20 right-4 z-40 w-72 max-h-[80vh] rounded-xl border border-mono-200 dark:border-mono-700 bg-background shadow-lg">
-          <div className="p-4 border-b border-mono-200 dark:border-mono-700">
-            <div className="text-sm font-medium">Calendars</div>
-            <div className="text-xs text-mono-500">Show or hide calendars</div>
-          </div>
-          <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(80vh-56px)]">
-            <div className="space-y-2">
-              <div className="text-xs uppercase tracking-wide text-mono-500">Default</div>
-              {([
-                { key: "personal", label: "Personal", color: "bg-blue-500" },
-                { key: "work", label: "Work", color: "bg-green-500" },
-                { key: "family", label: "Family", color: "bg-purple-500" },
-                { key: "shared", label: "Shared", color: "bg-yellow-500" },
-              ] as const).map((cal) => (
-                <label key={cal.key} className="flex items-center gap-2 text-sm cursor-pointer">
-                  <Checkbox
-                    checked={visibleCalendars[cal.key]}
-                    onCheckedChange={(checked) =>
-                      setVisibleCalendars((prev) => ({ ...prev, [cal.key]: Boolean(checked) }))
-                    }
-                  />
-                  <span className={cn("w-2 h-2 rounded-full", cal.color)} />
-                  <span>{cal.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-xs uppercase tracking-wide text-mono-500">Categories</div>
-              {categories.length === 0 ? (
-                <div className="text-xs text-mono-500">No categories</div>
-              ) : (
-                categories.map((cat) => (
-                  <label key={cat} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <Checkbox
-                      checked={selectedCategories.includes(cat)}
-                      onCheckedChange={(checked) =>
-                        setSelectedCategories((prev) =>
-                          Boolean(checked) ? Array.from(new Set([...prev, cat])) : prev.filter((c) => c !== cat),
-                        )
-                      }
-                    />
-                    <span className={cn("w-2 h-2 rounded-full", CATEGORY_COLORS[cat] ?? "bg-mono-400")} />
-                    <span>{cat}</span>
-                  </label>
-                ))
-              )}
-            </div>
-
-            <div className="pt-2">
-              <Button variant="outline" className="w-full" onClick={() => setIsCalendarDrawerOpen(false)}>
-                Close
-              </Button>
-            </div>
-          </div>
+      {/* Open Calendars Sidebar button (only when closed) */}
+      {!isCalendarDrawerOpen && (
+        <div className="fixed top-20 left-4 z-40">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 rounded-lg"
+            onClick={() => setIsCalendarDrawerOpen(true)}
+            aria-label="Open Calendars Sidebar"
+          >
+            <LayersIcon className="h-4 w-4" />
+          </Button>
         </div>
       )}
 
-      {/* Event Dialog */}
+      {/* Event Dialogs */}
       <EventDialog
         open={showEventDialog}
         onOpenChange={setShowEventDialog}
@@ -1378,33 +1383,6 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
           }
         }}
       />
-
-      {/* AI Chat Panel in right sidebar */}
-      <AISidebar open={showChatPanel} onOpenChange={setShowChatPanel}>
-        <ChatPanel
-          open={showChatPanel}
-          onOpenChange={setShowChatPanel}
-          onToolExecution={handleAIToolExecution}
-        />
-      </AISidebar>
-
-      {/* AI Toggle Button (shared) */}
-      <AIToggleButton open={showChatPanel} onOpenChange={setShowChatPanel} />
-
-      {/* Open Calendars Sidebar button (only when closed) */}
-      {!isCalendarDrawerOpen && (
-        <div className="fixed top-20 left-4 z-40">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-9 w-9 rounded-lg"
-            onClick={() => setIsCalendarDrawerOpen(true)}
-            aria-label="Open Calendars Sidebar"
-          >
-            <LayersIcon className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
     </div>
   )
 }
