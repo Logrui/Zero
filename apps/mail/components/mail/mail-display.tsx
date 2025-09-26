@@ -1266,7 +1266,7 @@ const MailDisplay = ({ emailData, index, totalEmails, demo, threadAttachments }:
                   {emailData?.tags?.length ? (
                     <div className="bg-iconLight dark:bg-iconDark/20 relative h-3 w-0.5 rounded-full" />
                   ) : null}
-                  <RenderLabels labels={threadLabels} />
+                  <RenderLabels labels={threadLabels} count={5} />
                   {threadLabels.length ? (
                     <div className="bg-iconLight dark:bg-iconDark/20 relative h-3 w-0.5 rounded-full" />
                   ) : null}

@@ -63,25 +63,67 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { NaturalLanguageEventDialog } from "./natural-language-event-dialog"
 
 
-const CALENDAR_TYPES = {
-  personal: { name: "Personal", color: "bg-blue-500" },
-  work: { name: "Work", color: "bg-green-500" },
-  family: { name: "Family", color: "bg-purple-500" },
-  shared: { name: "Shared", color: "bg-yellow-500" },
-}
+// Dynamic calendar types based on user's actual calendars
+const getCalendarTypes = (activeConnection: any) => {
+  const baseTypes = {
+    personal: { name: "Personal", color: "bg-blue-500" },
+    work: { name: "Work", color: "bg-green-500" },
+    family: { name: "Family", color: "bg-purple-500" },
+    shared: { name: "Shared", color: "bg-yellow-500" },
+  };
+  
+  // Add provider-specific calendars if available
+  if (activeConnection?.data?.providerId === 'google') {
+    return {
+      ...baseTypes,
+      google: { name: "Google Calendar", color: "bg-red-500" },
+    };
+  }
+  
+  if (activeConnection?.data?.providerId === 'outlook') {
+    return {
+      ...baseTypes,
+      outlook: { name: "Outlook Calendar", color: "bg-blue-600" },
+    };
+  }
+  
+  return baseTypes;
+};
 
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Work: "bg-green-500",
-  Personal: "bg-blue-500",
-  Family: "bg-purple-500",
-  Imported: "bg-yellow-500",
-  Meeting: "bg-red-500",
-  Appointment: "bg-indigo-500",
-  Holiday: "bg-pink-500",
-  Travel: "bg-orange-500",
-  Birthday: "bg-teal-500",
-}
+// Dynamic category colors - generates colors based on category names
+const getCategoryColor = (categoryName: string): string => {
+  const predefinedColors: Record<string, string> = {
+    Work: "bg-green-500",
+    Personal: "bg-blue-500",
+    Family: "bg-purple-500",
+    Imported: "bg-yellow-500",
+    Meeting: "bg-red-500",
+    Appointment: "bg-indigo-500",
+    Holiday: "bg-pink-500",
+    Travel: "bg-orange-500",
+    Birthday: "bg-teal-500",
+  };
+  
+  // Return predefined color if exists
+  if (predefinedColors[categoryName]) {
+    return predefinedColors[categoryName];
+  }
+  
+  // Generate consistent color based on category name hash
+  const colors = [
+    "bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500",
+    "bg-purple-500", "bg-pink-500", "bg-indigo-500", "bg-teal-500",
+    "bg-orange-500", "bg-cyan-500", "bg-lime-500", "bg-amber-500"
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < categoryName.length; i++) {
+    hash = ((hash << 5) - hash + categoryName.charCodeAt(i)) & 0xffffffff;
+  }
+  
+  return colors[Math.abs(hash) % colors.length];
+};
 
 interface MultiCalendarViewProps {
   initialEvents: CalendarEvent[]
@@ -90,10 +132,10 @@ interface MultiCalendarViewProps {
 
 export function MultiCalendarView({ initialEvents, initialCategories = [] }: MultiCalendarViewProps) {
   const activeConnection = useActiveConnection()
-  const activeUserId = activeConnection.data?.id
+  const calendarTypes = useMemo(() => getCalendarTypes(activeConnection), [activeConnection])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
-  const [view, setView] = useState<"month" | "week" | "day" | "year" | "agenda">("month")
+  const [view, setView] = useState<"month" | "week" | "day" | "year" | "agenda">("week")
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [showNaturalLanguageDialog, setShowNaturalLanguageDialog] = useState(false)
@@ -129,9 +171,14 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
 
 
   useEffect(() => {
-    if (!activeUserId) return
-
     const fetchEvents = async () => {
+      console.log('🚀 [MultiCalendarView] Starting fetchEvents', {
+        currentDate: currentDate.toISOString(),
+        view,
+        agendaRange,
+        activeConnection: activeConnection?.data
+      });
+
       setIsLoading(true)
       setLoadError(null)
       try {
@@ -179,12 +226,26 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
         }
 
 
-        const fetchedEvents = await getEvents(activeUserId, startDate, endDate)
+        console.log('📅 [MultiCalendarView] Fetching events for date range', {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
+        });
+
+        const fetchedEvents = await getEvents(startDate, endDate)
+        console.log('📊 [MultiCalendarView] Events received from getEvents', {
+          eventCount: fetchedEvents?.length || 0,
+          events: fetchedEvents
+        });
+
+        if (!fetchedEvents || fetchedEvents.length === 0) {
+          console.log('⚠️ [MultiCalendarView] No events returned from getEvents')
+        }
+
         setEvents(fetchedEvents || [])
 
 
         try {
-          const fetchedSharedEvents = await getSharedEvents(activeUserId, startDate, endDate)
+          const fetchedSharedEvents = await getSharedEvents(startDate, endDate)
 
           const filteredSharedEvents = (fetchedSharedEvents || []).filter((event) => {
             if (!event || !event.start) return false
@@ -203,17 +264,17 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
         }
 
 
-        try {
-          const fetchedCategories = await getUserCategories(activeUserId)
-          // Normalize to a string[] of category names/ids for filtering UI
-          const names: string[] = (fetchedCategories || []).map((c: any) =>
-            typeof c === "string" ? c : (c?.name ?? c?.id ?? "")
-          ).filter(Boolean)
-          setCategories(names)
-        } catch (categoriesError) {
-          console.error("[Calendar] Error fetching categories:", categoriesError)
-          setCategories([])
-        }
+        // try {
+        //   const fetchedCategories = await getUserCategories()
+        //   // Normalize to a string[] of category names/ids for filtering UI
+        //   const names: string[] = (fetchedCategories || []).map((c: any) =>
+        //     typeof c === "string" ? c : (c?.name ?? c?.id ?? "")
+        //   ).filter(Boolean)
+        //   setCategories(names)
+        // } catch (categoriesError) {
+        //   console.error("[Calendar] Error fetching categories:", categoriesError)
+        //   setCategories([])
+        // }
       } catch (error: any) {
         console.error("[Calendar] Error fetching calendar data:", error)
         setEvents([])
@@ -225,7 +286,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
     }
 
     fetchEvents()
-  }, [currentDate, view, activeUserId, agendaRange, reloadTick])
+  }, [currentDate, view, agendaRange, reloadTick])
 
 
   const filteredEvents = useMemo(() => {
@@ -247,9 +308,9 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
     }
 
 
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter((event) => event.categoryId && selectedCategories.includes(event.categoryId as string))
-    }
+    // if (selectedCategories.length > 0) {
+    //   filtered = filtered.filter((event) => event.categoryId && selectedCategories.includes(event.categoryId as string))
+    // }
 
 
     filtered = filtered.filter((event) => {
@@ -479,16 +540,13 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
 
   const handleAIToolExecution = useCallback(
     async (result: any) => {
+      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
 
-      if (activeUserId) {
-        const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
-
-        const refreshedEvents = await getEvents(activeUserId, startDate, endDate)
-        setEvents(refreshedEvents)
-      }
+      const refreshedEvents = await getEvents(startDate, endDate)
+      setEvents(refreshedEvents)
     },
-    [currentDate, activeUserId],
+    [currentDate],
   )
 
 
@@ -499,34 +557,34 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
     }))
   }, [])
 
-  const toggleCategoryFilter = useCallback((category: string) => {
-    setSelectedCategories((prev) => {
-      if (prev.includes(category)) {
-        return prev.filter((c) => c !== category)
-      } else {
-        return [...prev, category]
-      }
-    })
-  }, [])
+  // const toggleCategoryFilter = useCallback((category: string) => {
+  //   setSelectedCategories((prev) => {
+  //     if (prev.includes(category)) {
+  //       return prev.filter((c) => c !== category)
+  //     } else {
+  //       return [...prev, category]
+  //     }
+  //   })
+  // }, [])
 
   const getEventColor = useCallback((event: CalendarEvent) => {
     // Prefer categoryId-driven coloring if available
-    if ((event as any).categoryId && CATEGORY_COLORS[(event as any).categoryId as keyof typeof CATEGORY_COLORS]) {
-      return CATEGORY_COLORS[(event as any).categoryId as keyof typeof CATEGORY_COLORS]
-    }
+    // if ((event as any).categoryId) {
+    //   return getCategoryColor((event as any).categoryId as string)
+    // }
 
     // Shared events color
     if ((event as any).isShared) {
-      return CALENDAR_TYPES.shared.color
+      return calendarTypes.shared.color
     }
 
     // Source-based fallback
     if (event.source === "google") {
-      return CALENDAR_TYPES.personal.color
+      return calendarTypes.personal.color
     }
 
     return "bg-gray-500"
-  }, [])
+  }, [calendarTypes])
 
 
   const viewTitle = useMemo(() => {
@@ -560,7 +618,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
   }, [currentDate, view, agendaRange])
 
   return (
-    <div className="h-[85vh] w-full mx-auto flex flex-col bg-background rounded-2xl shadow-2xl border border-border/20 overflow-hidden backdrop-blur-sm scrollbar-hide">
+    <div className="h-full w-full mx-auto flex flex-col bg-background rounded-2xl shadow-2xl border border-border/20 overflow-hidden backdrop-blur-sm scrollbar-hide">
       {/* Enhanced Modern Header */}
       <div className="relative border-b border-border/30 bg-background sticky top-0 z-20">
         <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 p-8">
@@ -711,7 +769,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
       )}
 
       {/* Modern Info Banner */}
-      {!activeUserId && (
+      {!activeConnection?.data?.id && (
         <div className="mx-6 mb-4 p-4 rounded-xl border border-blue-200/50 bg-blue-50/50 dark:border-blue-800/50 dark:bg-blue-900/20 backdrop-blur">
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 rounded-full bg-blue-500" />
@@ -723,7 +781,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
       )}
 
       {/* Main Content Container */}
-      <div className="flex-1 flex gap-6 p-6 min-h-0">
+      <div className="flex-1 flex gap-6 p-6 min-h-0 h-full">
         {/* Enhanced Modern Left Sidebar */}
         {isCalendarDrawerOpen && (
           <div className="w-80 flex-shrink-0 bg-gradient-to-b from-card/60 via-card/50 to-card/40 backdrop-blur-xl border border-border/30 rounded-3xl shadow-2xl overflow-hidden">
@@ -762,7 +820,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
                   </button>
                   {expandedSections.myCalendars && (
                     <div className="space-y-2 pl-6">
-                      {Object.entries(CALENDAR_TYPES).map(([key, { name, color }]) => (
+                      {Object.entries(calendarTypes).map(([key, { name, color }]) => (
                         <button
                           key={key}
                           className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-accent/50 transition-all duration-200 group"
@@ -771,7 +829,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
                           }
                         >
                           <div className={`h-3 w-3 rounded-full transition-all duration-200 ${
-                            CALENDAR_TYPES[key as keyof typeof CALENDAR_TYPES].color
+                            calendarTypes[key as keyof typeof calendarTypes].color
                           } ${visibleCalendars[key] ? 'opacity-100 scale-100' : 'opacity-40 scale-90'}`} />
                           <span className={`text-sm transition-colors duration-200 ${
                             visibleCalendars[key] ? "text-foreground font-medium" : "text-muted-foreground"
@@ -804,16 +862,34 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
                     />
                   </button>
                   {expandedSections.sharedCalendars && (
-                    <div className="pl-6 py-3">
-                      <div className="text-sm text-muted-foreground italic bg-muted/30 rounded-lg p-3 text-center">
-                        Coming soon
-                      </div>
+                    <div className="space-y-2 pl-6">
+                      {sharedEvents.length > 0 ? (
+                        <div className="space-y-2">
+                          <button
+                            className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-accent/50 transition-all duration-200 group"
+                            onClick={() => setVisibleCalendars((prev) => ({ ...prev, shared: !prev.shared }))}
+                          >
+                            <div className={`h-3 w-3 rounded-full transition-all duration-200 ${
+                              calendarTypes.shared.color
+                            } ${visibleCalendars.shared ? 'opacity-100 scale-100' : 'opacity-40 scale-90'}`} />
+                            <span className={`text-sm transition-colors duration-200 ${
+                              visibleCalendars.shared ? "text-foreground font-medium" : "text-muted-foreground"
+                            } group-hover:text-foreground`}>
+                              Shared Events ({sharedEvents.length})
+                            </span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground italic bg-muted/30 rounded-lg p-3 text-center">
+                          No shared calendars available
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
 
                 {/* Categories Section */}
-                <div className="space-y-3">
+                {/* <div className="space-y-3">
                   <div className="flex items-center justify-between px-3">
                     <div className="flex items-center gap-3">
                       <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
@@ -832,8 +908,8 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
                   </div>
                   <div className="space-y-2 pl-6">
                     {categories.map((category) => (
-                      <label 
-                        key={category} 
+                      <label
+                        key={category}
                         className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-accent/50 cursor-pointer transition-all duration-200 group"
                       >
                         <Checkbox
@@ -849,18 +925,21 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
                           className="rounded-md"
                         />
                         <div className="flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded-full ${CATEGORY_COLORS[category] || "bg-gray-500"}`} />
+                          <span className={`w-3 h-3 rounded-full ${getCategoryColor(category)}`} />
                           <span className="text-sm group-hover:text-foreground transition-colors">{category}</span>
                         </div>
                       </label>
                     ))}
                     {categories.length === 0 && (
                       <div className="text-sm text-muted-foreground italic bg-muted/30 rounded-lg p-3 text-center">
-                        No categories found
+                        <div className="mb-2">No categories found</div>
+                        <div className="text-xs">
+                          Categories will appear here when you create events with categories
+                        </div>
                       </div>
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Quick Actions */}
                 <div className="space-y-3 pt-6 border-t border-border/50">
@@ -869,17 +948,35 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
                     <span className="text-sm font-medium text-foreground">Quick Actions</span>
                   </div>
                   <div className="space-y-2 pl-6">
-                    <Button variant="ghost" className="w-full justify-start font-normal h-8 rounded-lg" disabled>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start font-normal h-8 rounded-lg hover:bg-accent/50"
+                      onClick={() => setView(view === "agenda" ? "month" : "agenda")}
+                    >
                       <CalendarIcon className="mr-3 h-4 w-4" />
-                      <span className="text-sm">Calendar View</span>
+                      <span className="text-sm">{view === "agenda" ? "Calendar View" : "Agenda View"}</span>
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start font-normal h-8 rounded-lg" disabled>
-                      <ListIcon className="mr-3 h-4 w-4" />
-                      <span className="text-sm">Task List</span>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start font-normal h-8 rounded-lg hover:bg-accent/50"
+                      onClick={() => {
+                        // Toggle between different view modes
+                        const viewCycle = ["month", "week", "day"];
+                        const currentIndex = viewCycle.indexOf(view);
+                        const nextIndex = (currentIndex + 1) % viewCycle.length;
+                        setView(viewCycle[nextIndex] as typeof view);
+                      }}
+                    >
+                      <GridIcon className="mr-3 h-4 w-4" />
+                      <span className="text-sm">Switch View ({view})</span>
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start font-normal h-8 rounded-lg" disabled>
-                      <UsersIcon className="mr-3 h-4 w-4" />
-                      <span className="text-sm">People</span>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start font-normal h-8 rounded-lg hover:bg-accent/50"
+                      onClick={() => setCurrentDate(new Date())}
+                    >
+                      <ClockIcon className="mr-3 h-4 w-4" />
+                      <span className="text-sm">Go to Today</span>
                     </Button>
                   </div>
                 </div>
@@ -898,7 +995,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
           )}
 
           {/* Calendar Views Container */}
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 h-full">
             {/* Enhanced Modern Month View */}
             {view === "month" && (
               <div className="h-full flex flex-col rounded-2xl overflow-hidden bg-gradient-to-br from-background/50 to-muted/20 backdrop-blur-sm">
@@ -972,7 +1069,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
 
           {/* Week View */}
           {view === "week" && (
-            <div className="h-[calc(90vh-200px)]">
+            <div className="h-full">
               <div className="h-full overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {/* Sticky header inside the scroll container to match widths */}
                 <div
@@ -1080,7 +1177,7 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
 
           {/* Day View */}
           {view === "day" && (
-            <div className="h-[calc(90vh-200px)]">
+            <div className="h-full">
               <div className="h-full overflow-y-auto scrollbar-hide">
                 {/* Sticky header inside scroll container */}
                 <div className="sticky top-0 z-10 border-b border-mono-200 dark:border-mono-700 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -1370,17 +1467,14 @@ export function MultiCalendarView({ initialEvents, initialCategories = [] }: Mul
       />
 
       <NaturalLanguageEventDialog
-        open={showNaturalLanguageDialog && !!activeUserId}
+        open={showNaturalLanguageDialog}
         onOpenChange={(open: boolean) => setShowNaturalLanguageDialog(open)}
-        userId={activeUserId || ""}
         onEventCreated={() => {
-          if (activeUserId) {
-            const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-            const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
-            getEvents(activeUserId, startDate, endDate).then((refreshedEvents) => {
-              setEvents(refreshedEvents)
-            })
-          }
+          const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+          const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
+          getEvents(startDate, endDate).then((refreshedEvents) => {
+            setEvents(refreshedEvents)
+          })
         }}
       />
     </div>

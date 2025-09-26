@@ -314,49 +314,64 @@ export const calendarCategory = createTable(
   },
   (t) => [
     index('idx_mail0_calendar_category_user_id').on(t.userId),
-    unique('mail0_calendar_category_user_id_name_unique').on(t.userId, t.name),
   ],
 );
 
-export const calendarEvent = createTable(
-  'calendar_event',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => user.id, { onDelete: 'cascade' }),
-    title: text('title').notNull(),
-    description: text('description'),
-    start: timestamp('start', { withTimezone: true }).notNull(),
-    end: timestamp('end', { withTimezone: true }).notNull(),
-    allDay: boolean('all_day').notNull().default(false),
-    location: text('location'),
-    color: text('color'),
-    categoryId: text('category_id'),
-    source: text('source'),
-    sourceId: text('source_id'),
-    recurrence: jsonb('recurrence'),
-    exceptions: jsonb('exceptions'),
-    attendees: jsonb('attendees'),
-    categories: jsonb('categories'),
-    reminders: jsonb('reminders'),
-    timezone: text('timezone'),
-    isRecurring: boolean('is_recurring'),
-    isShared: boolean('is_shared'),
-    sharedBy: text('shared_by'),
-    sharedWith: jsonb('shared_with'),
-    isRecurringInstance: boolean('is_recurring_instance'),
-    originalEventId: text('original_event_id'),
-    exceptionDate: text('exception_date'),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  },
-  (t) => [
-    index('idx_mail0_calendar_event_user_id').on(t.userId),
-    index('idx_mail0_calendar_event_start').on(t.start),
-    index('idx_mail0_calendar_event_end').on(t.end),
-  ],
-);
+export const calendarEvent = createTable('calendar_event', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  start: timestamp('start').notNull(),
+  end: timestamp('end').notNull(),
+  allDay: boolean('all_day').default(false).notNull(),
+  location: text('location'),
+  color: text('color'),
+  categoryId: text('category_id'),
+  
+  // Recurrence fields
+  recurrenceRule: text('recurrence_rule'), // RRULE string
+  recurrenceException: text('recurrence_exception'), // EXDATE string
+  isRecurringInstance: boolean('is_recurring_instance').default(false),
+  originalEventId: text('original_event_id'),
+  exceptionDate: text('exception_date'),
+  
+  // Attendees and reminders (JSON fields)
+  attendees: text('attendees'), // JSON string of email addresses
+  reminders: text('reminders'), // JSON string of reminder objects
+  
+  // Status and metadata
+  status: text('status').default('confirmed'), // confirmed, tentative, cancelled
+  visibility: text('visibility').default('default'), // default, public, private
+  transparency: text('transparency').default('opaque'), // opaque, transparent
+  
+  // Google Calendar sync fields
+  googleEventId: text('google_event_id'), // Google Calendar event ID
+  googleCalendarId: text('google_calendar_id'), // Google Calendar ID
+  syncStatus: text('sync_status').default('synced'), // synced, pending, failed, local_only
+  lastSynced: timestamp('last_synced'),
+  
+  // External integration fields (for future providers)
+  source: text('source').default('local'), // local, google, outlook, etc.
+  externalId: text('external_id'), // ID from external calendar service
+  externalCalendarId: text('external_calendar_id'), // Calendar ID from external service
+  
+  // Additional Google Calendar fields
+  htmlLink: text('html_link'), // Google Calendar event URL
+  hangoutLink: text('hangout_link'), // Google Meet link
+  conferenceData: text('conference_data'), // JSON string of conference data
+  recurringEventId: text('recurring_event_id'), // For recurring event instances
+  originalStartTime: text('original_start_time'), // For recurring event exceptions
+  
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (t) => [
+  index('idx_mail0_calendar_event_user_id').on(t.userId),
+  index('idx_mail0_calendar_event_start').on(t.start),
+  index('idx_mail0_calendar_event_end').on(t.end),
+  index('idx_mail0_calendar_event_sync_status').on(t.syncStatus),
+]);
 
 export const emailTemplate = createTable(
   'email_template',

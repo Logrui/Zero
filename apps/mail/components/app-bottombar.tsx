@@ -61,7 +61,10 @@ export function AppBottombar() {
               <Link to="/mail">Mail</Link>
             </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
-              <Link to="/calendar">Calendar</Link>
+              <Link to="/organizations">Organizations</Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/people">People</Link>
             </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/agents">Agents</Link>
@@ -172,14 +175,24 @@ export function AppBottombar() {
               <Link to="/calendar">Calendar</Link>
             </Button>
             <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/events">Events</Link>
+            </Button>
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/tasks">Tasks</Link>
+            </Button>
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/organizations">Organizations</Link>
+            </Button>
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/people">People</Link>
+            </Button>
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/agents">Agents</Link>
             </Button>
             <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/scheduling">Scheduling</Link>
             </Button>
-            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
-              <Link to="/tasks">Tasks</Link>
-            </Button>
+
             <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/workspaces">Workspaces</Link>
             </Button>

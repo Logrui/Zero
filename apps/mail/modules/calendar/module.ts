@@ -6,5 +6,5 @@ export const CalendarModule: IFeatureModule = {
     { path: '/calendar', component: () => import('./pages/calendar-page.tsx') },
   ],
   getNavigation: () => null, // We are using static navigation for now.
-  getAITools: () => [],
+  getAITools: () => [], // Calendar AI tools will be implemented later
 };

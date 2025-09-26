@@ -17,4 +17,11 @@ export enum Tools {
   AskZeroThread = 'askZeroThread',
   WebSearch = 'webSearch',
   InboxRag = 'inboxRag',
+  // Calendar tools
+  CreateEvent = 'createEvent',
+  UpdateEvent = 'updateEvent',
+  DeleteEvent = 'deleteEvent',
+  GetEvents = 'getEvents',
+  GetCalendars = 'getCalendars',
+  AskZeroCalendar = 'askZeroCalendar',
 }

@@ -12,9 +12,10 @@ type Props = {
 const AIToggleButton = ({ open, onOpenChange }: Props) => {
   const location = useLocation();
   
-  // Only show AI toggle button on mail pages, not on calendar or other pages
+  // Only show AI toggle button on mail and calendar pages, not on other pages
   const isMailPage = location.pathname.startsWith('/mail');
-  if (!isMailPage) return null;
+  const isCalendarPage = location.pathname.startsWith('/calendar');
+  if (!isMailPage && !isCalendarPage) return null;
   
   // Fallback to global AI sidebar state if props are not provided
   const { open: hookOpen, setOpen: setHookOpen } = useAISidebar();
@@ -24,7 +25,7 @@ const AIToggleButton = ({ open, onOpenChange }: Props) => {
   if (isOpen) return null;
 //AI Toggle Button Positioning
   return (
-    <div className="fixed bottom-8 right-8 z-[60]"> 
+    <div className="fixed bottom-16 right-8 z-[60]"> 
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

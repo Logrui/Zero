@@ -17,7 +17,7 @@ import { useLabels } from '@/hooks/use-labels';
 import { useAgentChat } from 'agents/ai-react';
 import { X, Expand, Plus } from 'lucide-react';
 import { IncomingMessageType } from '../party';
-import { useParams } from 'react-router';
+import { useParams, useLocation } from 'react-router';
 import { useAgent } from 'agents/react';
 import { useQueryState } from 'nuqs';
 import { cn } from '@/lib/utils';
@@ -319,6 +319,10 @@ function AISidebar({ className, asPanelContent = false }: AISidebarProps) {
   const { data: activeConnection } = useActiveConnection();
   const [, setDoState] = useDoState();
   const { labels } = useSearchLabels();
+  const location = useLocation();
+
+  // Check if we're on a calendar page
+  const isCalendarPage = location.pathname.startsWith('/calendar');
 
   const onMessage = useCallback(
     (message: any) => {
@@ -369,17 +373,19 @@ function AISidebar({ className, asPanelContent = false }: AISidebarProps) {
     agent,
     maxSteps: 10,
     body: {
-      threadId: threadId ?? undefined,
-      currentFolder: folder ?? undefined,
+      threadId: isCalendarPage ? undefined : (threadId ?? undefined),
+      currentFolder: isCalendarPage ? 'calendar' : (folder ?? undefined),
       currentFilter: searchValue.value ?? undefined,
+      context: isCalendarPage ? 'calendar' : 'mail',
     },
     onError(error) {
       console.error('[AISidebar] useAgentChat onError', { message: error.message });
       posthog.capture('AI Chat Error', {
         error: error.message,
-        threadId: threadId ?? undefined,
-        currentFolder: folder ?? undefined,
+        threadId: isCalendarPage ? undefined : (threadId ?? undefined),
+        currentFolder: isCalendarPage ? 'calendar' : (folder ?? undefined),
         currentFilter: searchValue.value ?? undefined,
+        context: isCalendarPage ? 'calendar' : 'mail',
         messages: chatState.messages,
       });
       toast.error('Error, please try again later');
@@ -387,9 +393,10 @@ function AISidebar({ className, asPanelContent = false }: AISidebarProps) {
     onResponse: (response) => {
       posthog.capture('AI Chat Response', {
         response,
-        threadId: threadId ?? undefined,
-        currentFolder: folder ?? undefined,
+        threadId: isCalendarPage ? undefined : (threadId ?? undefined),
+        currentFolder: isCalendarPage ? 'calendar' : (folder ?? undefined),
         currentFilter: searchValue.value ?? undefined,
+        context: isCalendarPage ? 'calendar' : 'mail',
         messages: chatState.messages,
       });
       if (!response.ok) {
@@ -399,9 +406,10 @@ function AISidebar({ className, asPanelContent = false }: AISidebarProps) {
     async onToolCall({ toolCall }) {
       posthog.capture('AI Chat Tool Call', {
         toolCall,
-        threadId: threadId ?? undefined,
-        currentFolder: folder ?? undefined,
+        threadId: isCalendarPage ? undefined : (threadId ?? undefined),
+        currentFolder: isCalendarPage ? 'calendar' : (folder ?? undefined),
         currentFilter: searchValue.value ?? undefined,
+        context: isCalendarPage ? 'calendar' : 'mail',
         messages: chatState.messages,
       });
       switch (toolCall.toolName) {

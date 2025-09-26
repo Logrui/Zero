@@ -59,11 +59,20 @@ export class GoogleMailManager implements MailManager {
     this.gmail = gmail({ version: 'v1', auth: this.auth });
   }
   public getScope(): string {
+    // Return the actual scopes that were granted during OAuth
+    // If we have stored scopes from the connection, use those
+    if (this.config.auth?.scope) {
+      return this.config.auth.scope;
+    }
+
+    // Fallback to the original hardcoded scopes for backward compatibility
     return [
       'https://mail.google.com/',
       'https://www.googleapis.com/auth/gmail.modify',
       'https://www.googleapis.com/auth/userinfo.profile',
       'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/calendar',
+      'https://www.googleapis.com/auth/calendar.events',
     ].join(' ');
   }
   public async listHistory<T>(historyId: string): Promise<{ history: T[]; historyId: string }> {

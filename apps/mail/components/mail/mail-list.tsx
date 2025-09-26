@@ -496,7 +496,7 @@ const Thread = memo(
                     </div> */}
                     {threadLabels && (
                       <div className="mr-0 flex w-fit items-center justify-end gap-1">
-                        {!isFolderSent ? <RenderLabels labels={threadLabels} /> : null}
+                        {!isFolderSent ? <RenderLabels labels={threadLabels} count={5} /> : null}
                         {/* {getThreadData.labels ? <MailLabels labels={getThreadData.labels} /> : null} */}
                       </div>
                     )}

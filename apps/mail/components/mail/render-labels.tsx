@@ -4,7 +4,7 @@ import type { Label } from '@/types';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
 
-export const RenderLabels = ({ count = 1, labels }: { count?: number; labels: Label[] }) => {
+export const RenderLabels = ({ count = 5, labels }: { count?: number; labels: Label[] }) => {
   const [searchValue, setSearchValue] = useSearchValue();
   const handleFilterByLabel = (label: Label) => (event: any) => {
     event.stopPropagation();

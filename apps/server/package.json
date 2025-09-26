@@ -63,6 +63,7 @@
     "elevenlabs": "1.59.0",
     "email-addresses": "^5.0.0",
     "google-auth-library": "9.15.1",
+    "googleapis": "160.0.0",
     "he": "^1.2.0",
     "hono": "^4.7.8",
     "hono-agents": "0.0.83",

@@ -2,6 +2,7 @@ import { HotkeyProviderWrapper } from '@/components/providers/hotkey-provider-wr
 import { CommandPaletteProvider } from '@/components/context/command-palette-context';
 import { AppBottombar } from '@/components/app-bottombar';
 import AISidebar, { useAISidebar } from '@/components/ui/ai-sidebar';
+import AIToggleButton from '@/components/ai-toggle-button';
 import { useLocation } from 'react-router';
 
 import { Outlet } from 'react-router';
@@ -13,6 +14,7 @@ export default function Layout() {
   
   // Only render AI sidebar on mail pages to prevent duplicate panels on calendar
   const isMailPage = location.pathname.startsWith('/mail');
+  const isCalendarPage = location.pathname.startsWith('/calendar');
   
   return (
     <CommandPaletteProvider>
@@ -24,8 +26,11 @@ export default function Layout() {
           </div>
           <AppBottombar />
           
-          {/* Global AI sidebar - only render on mail pages */}
-          {isMailPage && open && <AISidebar />}
+          {/* Global AI sidebar - render on mail and calendar pages when appropriate */}
+          {(isMailPage || isCalendarPage) && open && <AISidebar />}
+          
+          {/* Global AI toggle button - show on mail and calendar pages */}
+          <AIToggleButton />
         </div>
       </HotkeyProviderWrapper>
     </CommandPaletteProvider>

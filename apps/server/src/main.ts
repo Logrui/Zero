@@ -52,6 +52,8 @@ import { aiRouter } from './routes/ai';
 import { appRouter } from './trpc';
 import { cors } from 'hono/cors';
 import { Hono } from 'hono';
+import { diagnoseGoogleConnection, revokeAndReauthorizeConnection } from './lib/diagnostics';
+import { WorkflowRunner } from './lib/workflow-runner';
 
 const SENTRY_HOST = 'o4509328786915328.ingest.us.sentry.io';
 const SENTRY_PROJECT_IDS = new Set(['4509328795303936']);
@@ -650,6 +652,8 @@ const api = new Hono<HonoContext>()
   })
   .route('/ai', aiRouter)
   .route('/public', publicRouter)
+  .get('/diagnose/google-connection', diagnoseGoogleConnection)
+  .post('/diagnose/revoke-reauth-connection', revokeAndReauthorizeConnection)
   .on(['GET', 'POST', 'OPTIONS'], '/auth/*', (c) => {
     return c.var.auth.handler(c.req.raw);
   })

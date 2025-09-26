@@ -47,9 +47,22 @@ export type CalendarEvent = {
   isRecurringInstance?: boolean
   originalEventId?: string
   exceptionDate?: string
+  // Google Calendar specific fields
+  googleEventId?: string
+  googleCalendarId?: string
+  syncStatus?: "synced" | "pending" | "failed"
+  lastSynced?: string
+  createdAt?: string
+  updatedAt?: string
+  recurringEventId?: string
+  originalStartTime?: string
+  status?: string
+  htmlLink?: string
+  hangoutLink?: string
+  conferenceData?: any
 }
 
-export type UnsavedCalendarEvent = Omit<CalendarEvent, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+export type UnsavedCalendarEvent = Omit<CalendarEvent, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'googleEventId' | 'googleCalendarId' | 'syncStatus' | 'lastSynced' | 'recurringEventId' | 'originalStartTime' | 'status' | 'htmlLink' | 'hangoutLink' | 'conferenceData'>;
 
 export type CalendarCategory = {
   id: string

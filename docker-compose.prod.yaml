@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: docker/app/Dockerfile
     environment:
-      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://cf-worker.example}
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://localhost}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-zerodotemail}
       REDIS_URL: ${REDIS_URL}
       REDIS_TOKEN: ${REDIS_TOKEN:-upstash-local-token}
@@ -21,6 +21,7 @@ services:
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
       NEXT_PUBLIC_IMAGE_API_URL: ${NEXT_PUBLIC_IMAGE_API_URL}
+      NODE_ENV: production
     depends_on:
       db:
         condition: service_healthy
@@ -30,14 +31,21 @@ services:
         condition: service_healthy
       upstash-proxy:
         condition: service_healthy
+    restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'wget', '--spider', '--quiet', 'http://127.0.0.1:3000']
-      interval: 90s
-      timeout: 5s
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000']
+      interval: 30s
+      timeout: 10s
       retries: 3
-      start_period: 10s
-    ports:
-      - 3000:3000
+      start_period: 40s
+    networks:
+      - zero-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.zero.rule=Host(`yourdomain.com`)"
+      - "traefik.http.routers.zero.entrypoints=websecure"
+      - "traefik.http.routers.zero.tls.certresolver=letsencrypt"
+      - "traefik.http.services.zero.loadbalancer.server.port=3000"
 
   migrations:
     build:
@@ -50,6 +58,8 @@ services:
         condition: service_healthy
     command: ['pnpm', 'run', 'db:migrate']
     restart: 'no'
+    networks:
+      - zero-network
 
   db:
     image: postgres:17-alpine
@@ -66,9 +76,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - zero-network
 
   valkey:
     image: docker.io/bitnami/valkey:8.0
+    restart: unless-stopped
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - VALKEY_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
@@ -78,25 +91,8 @@ services:
       test: ['CMD', 'redis-cli', '-h', 'localhost', '-p', '6379', 'ping']
       interval: 10s
       timeout: 5s
-      retries: 5
-
   upstash-proxy:
     image: hiett/serverless-redis-http:latest
-    environment:
-      SRH_MODE: env
-      SRH_TOKEN: ${REDIS_TOKEN:-upstash-local-token}
-      SRH_CONNECTION_STRING: 'redis://valkey:6379'
-    healthcheck:
-      test: ['CMD', 'wget', '--spider', '--quiet', 'http://127.0.0.1:80']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  worker:
-    build:
-      context: .
-      dockerfile: apps/server/Dockerfile
-    container_name: zerodotemail-worker
     depends_on:
       db:
         condition: service_healthy
@@ -109,11 +105,32 @@ services:
       - '8787:8787'
     environment:
       NODE_ENV: production
-    # Supply production vars if needed (do not commit real secrets)
-    # Create this file locally with the proper values
     env_file:
       - ./apps/server/.prod.vars
+    networks:
+      - zero-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:8787']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
-volumes:
-  valkey-data:
-  postgres-data:
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - zero
+    networks:
+      - zero-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:80']
+      interval: 30s
+      timeout: 10s
+      retries: 3
