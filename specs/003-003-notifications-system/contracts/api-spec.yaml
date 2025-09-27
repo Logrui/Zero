@@ -1,0 +1,507 @@
+openapi: 3.0.3
+info:
+  title: Zero OS Notifications API
+  description: In-app notification system for Zero OS with external webhook support
+  version: 1.0.0
+  contact:
+    name: Zero OS Team
+
+servers:
+  - url: https://api.zero.dev
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+security:
+  - ApiKeyAuth: []
+  - SessionAuth: []
+
+paths:
+  /api/notifications:
+    post:
+      summary: Create new notification
+      description: Creates a new notification via external webhook (requires API key)
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNotificationRequest'
+            examples:
+              n8n_workflow:
+                summary: N8N automation notification
+                value:
+                  subject: "New potential event added to Events database"
+                  body: "A new potential event has been sourced from john@example.com email"
+                  tags: ["N8N", "External Integration", "Automation"]
+      responses:
+        '201':
+          description: Notification created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded (100 requests per minute)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    get:
+      summary: List user notifications
+      description: Retrieves notifications for the authenticated user with pagination and filtering
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Number of notifications to return (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: cursor
+          in: query
+          description: Cursor for pagination (created_at timestamp)
+          schema:
+            type: string
+            format: date-time
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          schema:
+            type: string
+          example: "N8N,System"
+        - name: unread_only
+          in: query
+          description: Only return unread notifications
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/notifications/{id}:
+    get:
+      summary: Get specific notification
+      description: Retrieves a single notification by UUID and marks it as read
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Notification UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Notification details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    patch:
+      summary: Update notification status
+      description: Updates notification read status or other properties
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Notification UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationRequest'
+      responses:
+        '200':
+          description: Notification updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    delete:
+      summary: Delete notification
+      description: Permanently deletes a notification (manual deletion)
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Notification UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Notification deleted successfully
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/notifications/keys:
+    post:
+      summary: Generate new API key
+      description: Creates a new API key for external integrations
+      security:
+        - SessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApiKeyRequest'
+      responses:
+        '201':
+          description: API key created (key returned once only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    get:
+      summary: List user API keys
+      description: Retrieves all API keys for the authenticated user (keys masked)
+      security:
+        - SessionAuth: []
+      responses:
+        '200':
+          description: List of API keys
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyListResponse'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/notifications/keys/{id}:
+    delete:
+      summary: Delete API key
+      description: Revokes an API key and prevents further use
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: API key UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: API key deleted successfully
+        '404':
+          description: API key not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: "zn_xxxxxxxx..."
+      description: API key for external webhooks
+    SessionAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: User session token
+
+  schemas:
+    CreateNotificationRequest:
+      type: object
+      required:
+        - subject
+        - body
+        - tags
+      properties:
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Notification title
+          example: "New potential event added to Events database"
+        body:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Detailed notification content
+          example: "A new potential event has been sourced from john@example.com email from sender"
+        tags:
+          type: array
+          items:
+            type: string
+            pattern: '^[A-Za-z0-9 ]+$'
+            maxLength: 30
+          minItems: 1
+          maxItems: 10
+          description: Categorization tags
+          example: ["N8N", "External Integration", "Automation"]
+
+    UpdateNotificationRequest:
+      type: object
+      properties:
+        read_status:
+          type: boolean
+          description: Mark notification as read/unread
+          example: true
+
+    CreateApiKeyRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Human-readable key name
+          example: "N8N Integration"
+        expires_at:
+          type: string
+          format: date-time
+          description: Optional expiration date
+          example: "2025-12-31T23:59:59Z"
+
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Notification UUID
+          example: "d3d4b6c7-31a8-44e2-8b6b-3a5e8f2c1d9b"
+        subject:
+          type: string
+          description: Notification title
+          example: "New potential event added to Events database"
+        body:
+          type: string
+          description: Detailed content
+          example: "A new potential event has been sourced from john@example.com email"
+        tags:
+          type: array
+          items:
+            type: string
+          description: Categorization tags
+          example: ["N8N", "External Integration", "Automation"]
+        source:
+          type: string
+          enum: [internal, api]
+          description: Notification origin
+          example: "api"
+        read_status:
+          type: boolean
+          description: Whether user has read notification
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: When notification was created
+          example: "2025-09-26T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last modification time
+          example: "2025-09-26T10:30:00Z"
+
+    NotificationListResponse:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationResponse'
+        pagination:
+          type: object
+          properties:
+            next_cursor:
+              type: string
+              format: date-time
+              description: Cursor for next page
+              example: "2025-09-26T09:00:00Z"
+            has_more:
+              type: boolean
+              description: Whether more notifications exist
+              example: true
+            total_unread:
+              type: integer
+              description: Count of unread notifications
+              example: 5
+
+    ApiKeyResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: API key UUID
+          example: "f7e8c9d0-42b1-45c3-9d7e-4f5a6b7c8d9e"
+        name:
+          type: string
+          description: Key name
+          example: "N8N Integration"
+        key:
+          type: string
+          description: Full API key (only returned on creation)
+          example: "zn_12345678abcdef..."
+        key_prefix:
+          type: string
+          description: First 8 characters for identification
+          example: "zn_12345678"
+        created_at:
+          type: string
+          format: date-time
+          description: When key was created
+          example: "2025-09-26T10:30:00Z"
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Expiration date if set
+          example: "2025-12-31T23:59:59Z"
+
+    ApiKeyListResponse:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: string
+              key_prefix:
+                type: string
+                description: Masked key for identification
+              last_used_at:
+                type: string
+                format: date-time
+                nullable: true
+              created_at:
+                type: string
+                format: date-time
+              expires_at:
+                type: string
+                format: date-time
+                nullable: true
+              is_active:
+                type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Subject field is required"
+        details:
+          type: object
+          description: Additional error context
+          example:
+            field: "subject"
+            constraint: "required"

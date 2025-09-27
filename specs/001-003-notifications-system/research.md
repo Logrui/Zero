@@ -1,5 +1,21 @@
 # Research: In-App Notifications System
 
+*Constitutional Compliance: Zero OS Constitution v1.1.0*
+
+## Constitutional Alignment Analysis
+
+### Fork Stewardship Assessment
+- **Upstream Compatibility**: Notifications system uses existing Zero mail infrastructure
+- **Documented Divergence**: New AI agent hooks and productivity features clearly separated
+- **Minimal Drift**: Leverages existing authentication, UI patterns, and database structure
+- **Merge Compatibility**: Changes isolated to new modules, existing files minimally modified
+
+### AI-First Integration Points
+- **Agent Context**: Notification content available to Zero AI agent for contextual responses  
+- **Workflow Triggers**: Internal notifications can trigger AI workflow automations
+- **Smart Categorization**: AI can auto-tag and prioritize notifications based on content
+- **Extension Ready**: Clear hooks for future AI features (summarization, smart responses)
+
 ## Technology Decisions
 
 ### API Authentication Strategy
@@ -71,25 +87,20 @@
 - **Internal Events**: Hook into existing system events (calendar sync, email processing, etc.)
 - **API Documentation**: Provide OpenAPI spec for external integrators
 
-## Security Considerations
+## Constitutional Security Implementation
 
-### API Key Management
-- Generate cryptographically secure random keys
-- Store only hashed versions in database
-- Provide key regeneration capability
-- Log all API key usage for monitoring
+### Security First Principle Compliance
+- **Secure by Default**: API keys required, no public endpoints, least-privilege access
+- **Lifecycle Security**: Hash generation, secure storage, audit logging, revocation capability  
+- **Input Validation**: XSS prevention, schema validation, rate limiting, payload sanitization
+- **Zero Trust Access**: User-scoped data, authenticated sessions, no admin backdoors
+- **Fork Security**: No upstream security regressions, documented security boundaries
 
-### Input Validation
-- Sanitize all notification content to prevent XSS
-- Validate tag names against allowed character sets
-- Rate limit per API key to prevent abuse
-- Validate JSON payload structure for external requests
-
-### Access Control
-- Notifications are strictly per-user (no cross-user access)
-- API keys are tied to specific user accounts
-- Dashboard requires authenticated session
-- Admin users cannot access other users' notifications without explicit permission
+### User-Centric Security Design  
+- **Intuitive Key Management**: Clear UI for API key creation/revocation
+- **Transparent Security**: Users understand what keys can access
+- **Privacy by Design**: Notifications remain user-private, no cross-user leakage
+- **Accessible Security**: Security features don't compromise usability
 
 ## Performance Considerations
 

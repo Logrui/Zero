@@ -22,6 +22,7 @@ import {
   LogOut as LogOutIcon,
   Settings as SettingsIcon,
 } from "lucide-react";
+import { NotificationIcon } from "@/components/notifications/notification-badge";
 
 export function AppBottombar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -78,6 +79,9 @@ export function AppBottombar() {
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/workspaces">Workspaces</Link>
             </Button>
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/notifications">Notifications</Link>
+            </Button>
           </nav>
         </div>
 
@@ -103,9 +107,19 @@ export function AppBottombar() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="relative rounded-lg h-9 w-9 outline-none focus:outline-none">
-            <BellIcon className="h-4 w-4" />
-            <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-foreground rounded-full"></span>
+          <Button 
+            asChild 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-lg h-9 w-9 outline-none focus:outline-none"
+          >
+            <Link to="/notifications">
+              <NotificationIcon 
+                count={3} // Mock count - in real app, this would come from context/state
+                size="md"
+                onClick={() => {}}
+              />
+            </Link>
           </Button>
 
           {/* User dropdown menu temporarily disabled */}

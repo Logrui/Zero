@@ -1,0 +1,35 @@
+{
+  "name": "@zero/server-migrations",
+  "version": "1.0.0",
+  "description": "Database migrations for Zero OS Notifications System",
+  "type": "module",
+  "scripts": {
+    "migrate": "node migrate.js migrate",
+    "migrate:up": "node migrate.js up",
+    "migrate:down": "node migrate.js down",
+    "migrate:rollback": "node migrate.js rollback",
+    "migrate:status": "node migrate.js status",
+    "db:setup": "npm run migrate",
+    "db:reset": "npm run migrate:rollback && npm run migrate:up",
+    "db:status": "npm run migrate:status"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.9",
+    "typescript": "^5.4.2"
+  },
+  "keywords": [
+    "database",
+    "migration",
+    "postgresql",
+    "zero-os",
+    "notifications"
+  ],
+  "author": "Zero OS Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

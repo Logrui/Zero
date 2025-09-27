@@ -49,6 +49,7 @@ import type { HonoContext } from './ctx';
 import { createDb, type DB } from './db';
 import { createAuth } from './lib/auth';
 import { aiRouter } from './routes/ai';
+import { notificationsDatabaseRouter } from './routes/notifications-production';
 import { appRouter } from './trpc';
 import { cors } from 'hono/cors';
 import { Hono } from 'hono';
@@ -651,6 +652,7 @@ const api = new Hono<HonoContext>()
     c.set('auth', undefined as any);
   })
   .route('/ai', aiRouter)
+  .route('/api', notificationsDatabaseRouter)
   .route('/public', publicRouter)
   .get('/diagnose/google-connection', diagnoseGoogleConnection)
   .post('/diagnose/revoke-reauth-connection', revokeAndReauthorizeConnection)

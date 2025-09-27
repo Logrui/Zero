@@ -7,8 +7,11 @@ import {
   jsonb,
   primaryKey,
   unique,
+  uniqueIndex,
   index,
+  uuid,
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 import { defaultUserSettings } from '../lib/schemas';
 
 export const createTable = pgTableCreator((name) => `mail0_${name}`);
@@ -394,3 +397,72 @@ export const emailTemplate = createTable(
     unique('mail0_email_template_user_id_name_unique').on(t.userId, t.name),
   ],
 );
+
+// Notifications System Tables
+export const notifications = createTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull(),
+  subject: text('subject').notNull(),
+  body: text('body').notNull(), 
+  tags: text('tags').array().notNull(),
+  source: text('source').notNull(), // 'internal' | 'api'
+  apiKeyId: uuid('api_key_id'),
+  readStatus: boolean('read_status').default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_notifications_user_id').on(t.userId),
+  index('idx_mail0_notifications_api_key_id').on(t.apiKeyId),
+  index('idx_mail0_notifications_source').on(t.source),
+  index('idx_mail0_notifications_created_at').on(t.createdAt),
+]);
+
+export const apiKeys = createTable('api_keys', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull(),
+  name: text('name').notNull(),
+  keyHash: text('key_hash').notNull().unique(),
+  prefix: text('prefix').notNull(),
+  permissions: text('permissions').array().notNull(),
+  isActive: boolean('is_active').default(true),
+  lastUsedAt: timestamp('last_used_at'),
+  expiresAt: timestamp('expires_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_api_keys_user_id').on(t.userId),
+  index('idx_mail0_api_keys_prefix').on(t.prefix),
+  uniqueIndex('idx_mail0_api_keys_user_id_name').on(t.userId, t.name),
+]);
+
+export const tags = createTable('tags', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  color: text('color'),
+  userId: text('user_id').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_tags_user_id').on(t.userId),
+  uniqueIndex('idx_mail0_tags_user_id_name').on(t.userId, t.name),
+]);
+
+// Add foreign key references after table definitions
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  apiKey: one(apiKeys, {
+    fields: [notifications.apiKeyId],
+    references: [apiKeys.id],
+  }),
+}));
+
+export const apiKeysRelations = relations(apiKeys, ({ many }) => ({
+  notifications: many(notifications),
+}));
+
+// TypeScript types for notifications system
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = typeof apiKeys.$inferInsert;
+export type Tag = typeof tags.$inferSelect;
+export type InsertTag = typeof tags.$inferInsert;

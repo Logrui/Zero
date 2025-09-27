@@ -1,5 +1,13 @@
 # Data Model: Notifications System
 
+*Constitutional Compliance: Radical Modularity + Fork Stewardship*
+
+## Modular Design Principles
+- **Independent Schema**: Notifications tables isolated from core Zero mail schema
+- **Loose Coupling**: Foreign keys to existing users table, but notifications module self-contained
+- **Upstream Compatible**: Schema additions don't modify existing Zero tables
+- **Testable Isolation**: Each entity can be tested independently of Zero core functionality
+
 ## Entity Definitions
 
 ### Notification
