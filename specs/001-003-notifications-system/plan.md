@@ -1,10 +1,20 @@
 
-# Implementation Plan: [FEATURE]
+# Implementation Plan: In-App Notifications System
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `001-003-notifications-system` | **Date**: 2025-09-26 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/001-003-notifications-syste**Phase Status**:
+- [x] Phase 0: Research complete (/plan command) - Updated with overlay requirements
+- [x] Phase 1: Design complete (/plan command) - Enhanced with UUID routing and UI overlay patterns
+- [x] Phase 2: Task planning complete (/plan command - describe approach only)
+- [ ] Phase 3: Tasks generated (/tasks command)
+- [ ] Phase 4: Implementation complete
+- [ ] Phase 5: Validation passed
 
-## Execution Flow (/plan command scope)
+**Gate Status**:
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS - Enhanced with UI overlay requirements
+- [x] All NEEDS CLARIFICATION resolved - Including overlay interface and navigation
+- [ ] Complexity deviations documented# Execution Flow (/plan command scope)
 ```
 1. Load feature spec from Input path
    → If not found: ERROR "No feature spec at {path}"
@@ -31,23 +41,27 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-[Extract from feature spec: primary requirement + technical approach from research]
+Primary requirement: Build a comprehensive in-app notifications system that includes: (1) secure API endpoints for external integrations, (2) internal notification generation, (3) full-page notifications dashboard at /notifications, (4) bottom bar notifications icon with preview overlay showing recent notifications, and (5) individual notification pages with UUID-based navigation. Technical approach: Web application with React/Next.js frontend, PostgreSQL backend, async queue processing, and responsive overlay UI components.
 
 ## Technical Context
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: TypeScript/JavaScript (Next.js, React)
+**Primary Dependencies**: Next.js, React, TailwindCSS, Drizzle ORM, PostgreSQL
+**Storage**: PostgreSQL database for notifications, API keys, user data, and UUID tracking
+**Testing**: Jest for unit tests, Playwright for integration tests
+**Target Platform**: Web application (desktop and mobile browsers)
+**Project Type**: Web application (frontend + backend)
+**Performance Goals**: Handle notification overlays with <200ms load time, smooth scrolling, responsive UI
+**Constraints**: Must integrate with existing Zero OS architecture, maintain security-first approach, support overlay UI patterns
+**Scale/Scope**: Support thousands of notifications per user, real-time preview updates, UUID-based routing
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **AI-First Development**: ✅ PASS - Notification system integrates with AI agent for context-aware prompts and smart categorization
+- **Radical Modularity**: ✅ PASS - Notifications module is independent with clear API boundaries and can be developed/deployed separately
+- **Convention over Configuration**: ✅ PASS - Using standard REST API patterns, established UI overlay patterns, UUID-based routing conventions
+- **User-Centric Design**: ✅ PASS - Preview overlay provides immediate access, individual notification pages offer detailed view, intuitive navigation
+- **Security First**: ✅ PASS - API key authentication, input validation, secure UUID generation, and user-scoped data access
 
 ## Project Structure
 
@@ -63,37 +77,55 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 ```
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
+# Web application structure (Zero OS monorepo integration)
+apps/mail/                    # Main Zero OS application
+├── app/
+│   ├── (routes)/
+│   │   └── notifications/
+│   │       ├── page.tsx     # Main notifications dashboard
+│   │       └── [id]/
+│   │           └── page.tsx # Individual notification page
 │   └── api/
-└── tests/
+│       └── v1/
+│           ├── notifications/
+│           │   ├── route.ts # GET/POST notifications
+│           │   └── [id]/
+│           │       └── route.ts # PATCH/DELETE individual notifications
+│           └── api-keys/
+│               ├── route.ts # GET/POST API keys
+│               └── [id]/
+│                   └── route.ts # DELETE API key
+├── components/
+│   ├── notifications/
+│   │   ├── notification-overlay.tsx    # Bottom bar preview overlay
+│   │   ├── notification-item.tsx       # Individual notification display
+│   │   ├── notification-dashboard.tsx  # Full page dashboard
+│   │   └── api-key-manager.tsx        # API key management UI
+│   └── app-bottombar.tsx               # Enhanced with notifications icon
+└── lib/
+    ├── notifications/
+    │   ├── types.ts          # TypeScript interfaces
+    │   ├── api.ts           # Client-side API functions
+    │   └── utils.ts         # Helper functions
+    └── db/
+        └── schema/
+            └── notifications.ts # Drizzle ORM schema
 
-frontend/
+apps/server/                  # Backend API (if separate)
 ├── src/
-│   ├── components/
-│   ├── pages/
+│   ├── routes/
+│   │   └── notifications/   # API route handlers
+│   ├── models/
+│   │   └── notification.ts  # Data models
+│   ├── services/
+│   │   ├── notification-service.ts
+│   │   ├── api-key-service.ts
+│   │   └── queue-service.ts # Async processing
+│   └── middleware/
+│       ├── auth.ts          # API key validation
+│       └── rate-limit.ts    # Rate limiting
+└── tests/
 │   └── services/
 └── tests/
 
