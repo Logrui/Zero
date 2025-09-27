@@ -1,6 +1,6 @@
-# Contributing to 0.email
+# Contributing to Zero OS
 
-Thank you for your interest in contributing to 0.email! We're excited to have you join our mission to create an open-source email solution that prioritizes privacy, transparency, and user empowerment.
+Thank you for your interest in contributing to Zero OS! We're excited to have you join our mission to create an open-source email solution that prioritizes privacy, transparency, and user empowerment.
 
 ## Table of Contents
 
