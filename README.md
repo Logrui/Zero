@@ -5,13 +5,13 @@
   </picture>
 </p>
 
-# Zero
+# Zero OS
 
-An Open-Source Gmail Alternative for the Future of Email
+An Open-Source Full Productivity Suite - CRM/Gmail/Motion/Google Drive Alternative for the Future of Productivity
 
 ## What is Zero?
 
-Zero is an open-source AI email solution that gives users the power to **self-host** their own email app while also integrating external services like Gmail and other email providers. Our goal is to modernize and improve emails through AI agents to truly modernize emails.
+Zero OS is a fork of the open-source AI email solution, Zero. It gives users the power to **self-host** their own email app while also integrating external services like Gmail and other email providers. This fork is focused on implementing advanced features for Zero, such as AI Workflows, advanced AI chat, and a context-aware Zero Agent system across most new features. Our goal is to modernize and improve emails through AI agents to truly modernize emails.
 
 ## Why Zero?
 
@@ -71,7 +71,7 @@ You can set up Zero in two ways:
 
    ```bash
    # Clone the repository
-   git clone https://github.com/Mail-0/Zero.git
+   git clone https://github.com/Logrui/Zero.git
    cd Zero
 
    # Install dependencies
@@ -80,6 +80,8 @@ You can set up Zero in two ways:
    # Start database locally
    pnpm docker:db:up
    ```
+
+  
 
 2. **Set Up Environment**
 
@@ -108,7 +110,7 @@ You can set up Zero in two ways:
 
    ```bash
    # Clone the repository
-   git clone https://github.com/Mail-0/Zero.git
+   git clone https://github.com/Logrui/Zero.git
    cd Zero
    ```
 
