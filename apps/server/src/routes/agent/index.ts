@@ -322,7 +322,7 @@ export class ShardRegistry extends DurableObject<ZeroEnv> {
 })
 @Queryable()
 export class ZeroDriver extends DurableObject<ZeroEnv> {
-  transfer = new Transfer(this);
+  transfer: Transfer;
   sql: SqlStorage;
   private db: DB;
   private syncThreadsInProgress: Map<string, boolean> = new Map();
@@ -382,6 +382,7 @@ export class ZeroDriver extends DurableObject<ZeroEnv> {
 
   constructor(ctx: DurableObjectState, env: ZeroEnv) {
     super(ctx, env);
+    this.transfer = new Transfer(this);
     this.sql = ctx.storage.sql;
     this.db = drizzle(ctx.storage, { schema });
 

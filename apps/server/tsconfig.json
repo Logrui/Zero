@@ -10,6 +10,8 @@
   ],
   "compilerOptions": {
     "moduleResolution": "bundler",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "plugins": [
       {
         "name": "@effect/language-service"
