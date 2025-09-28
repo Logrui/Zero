@@ -156,11 +156,14 @@ export default function NotificationsPage() {
           </TabsList>
           
           <TabsContent value="notifications" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               <div className="lg:col-span-1">
-                <Card className="bg-[#111111]/50 border-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-base text-white">Filters</CardTitle>
+                <Card className="bg-gradient-to-br from-[#111111]/80 to-[#0A0A0A]/80 border-white/20 backdrop-blur-lg shadow-2xl rounded-xl">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg text-white flex items-center gap-2 font-semibold">
+                      <span>🔧</span>
+                      Filters & Options
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
                     <NotificationFilters
@@ -175,18 +178,31 @@ export default function NotificationsPage() {
               </div>
               
               <div className="lg:col-span-3">
-                <Card className="bg-[#111111]/50 border-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center justify-between text-white">
-                      <div className="flex items-center gap-2">
-                        <Bell className="h-5 w-5" />
+                <Card className="bg-gradient-to-br from-[#111111]/80 to-[#0A0A0A]/80 border-white/20 backdrop-blur-lg shadow-2xl rounded-xl">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg flex items-center justify-between text-white font-semibold">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🔔</span>
                         Your Notifications
+                        <Badge variant="secondary" className="bg-blue-500/80 text-white border-blue-400/50 px-3 py-1">
+                          {mockNotifications.length}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
+                      <div className="flex items-center gap-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="border-white/30 text-white hover:bg-white/15 rounded-lg backdrop-blur-sm"
+                        >
+                          <span className="mr-2">✓</span>
                           Mark All Read
                         </Button>
-                        <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="border-white/30 text-white hover:bg-white/15 rounded-lg backdrop-blur-sm"
+                        >
+                          <span className="mr-2">🗑️</span>
                           Clear All
                         </Button>
                       </div>

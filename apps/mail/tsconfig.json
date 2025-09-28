@@ -1,13 +1,55 @@
 {
   "extends": "@zero/tsconfig/base",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["node", "vite/client"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES6",
+      "ESNext"
+    ],
+    "types": [
+      "node",
+      "vite/client"
+    ],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
+    "noImplicitAny": false,
+    "strict": false,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "maxNodeModuleJsDepth": 1,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
-    "rootDirs": [".", "./.react-router/types"]
+    "rootDirs": [
+      ".",
+      "./.react-router/types"
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx", "worker-configuration.d.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.ts", 
+    "components/**/*.tsx",
+    "hooks/**/*.ts",
+    "hooks/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "types/**/*.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".react-router",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "build/**/*"
+  ]
 }

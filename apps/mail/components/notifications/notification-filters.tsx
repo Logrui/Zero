@@ -34,6 +34,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { 
+  Search,
+  Filter,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  X
+} from 'lucide-react';
 
 // Types
 export interface FilterState {
@@ -449,51 +457,132 @@ export const NotificationFilters = React.forwardRef<
     return (
       <div
         ref={ref}
-        className={cn('space-y-3', className)}
+        className={cn('space-y-4 p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10', className)}
         {...props}
       >
-        {renderSearchSection()}
-        {renderQuickFilters()}
-        
-        {availableTags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {availableTags.slice(0, 8).map((tag) => (
-              <Button
-                key={tag.name}
-                variant={filters.tags.includes(tag.name) ? "default" : "outline"}
-                size="sm"
-                onClick={() => toggleTag(tag.name)}
-                className="h-6 text-xs"
-                data-testid={`tag-filter-${tag.name}`}
-              >
-                {tag.name}
-                <Badge variant="secondary" className="ml-1 text-[10px] px-1">
-                  {tag.count}
-                </Badge>
-              </Button>
-            ))}
+        {/* Search Section with improved styling */}
+        {showSearch && (
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 text-sm">🔍</span>
+            <Input
+              placeholder="Search notifications..."
+              value={filters.searchQuery}
+              onChange={(e) => updateFilters({ searchQuery: e.target.value })}
+              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 rounded-lg h-10 backdrop-blur-sm"
+            />
           </div>
         )}
         
-        {/* Active filter summary */}
+        {/* Quick Actions Row */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-white flex items-center gap-2">
+            <span>🔧</span>
+            Quick Filters
+          </span>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAllFilters}
+              className="h-7 px-3 text-xs text-white/60 hover:text-white hover:bg-white/10 rounded-lg"
+            >
+              Clear All
+            </Button>
+          )}
+        </div>
+        
+        {/* Unread Only Toggle - Enhanced */}
+        <Button
+          variant={filters.showUnreadOnly ? "default" : "outline"}
+          size="sm"
+          onClick={() => updateFilters({ showUnreadOnly: !filters.showUnreadOnly })}
+          className={cn(
+            "w-full h-9 text-sm rounded-lg transition-all justify-start",
+            filters.showUnreadOnly 
+              ? "bg-blue-500/80 hover:bg-blue-500 text-white border-blue-400 shadow-lg"
+              : "bg-white/5 hover:bg-white/15 text-white/80 border-white/20 backdrop-blur-sm"
+          )}
+        >
+          <span className="mr-2">👁️</span>
+          Show Unread Only
+        </Button>
+        
+        {/* Tag Filters - Enhanced Grid Layout */}
+        {availableTags.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-sm font-medium text-white">Filter by Tags</span>
+            <div className="grid grid-cols-2 gap-2">
+              {availableTags.slice(0, 6).map((tag) => (
+                <Button
+                  key={tag.name}
+                  variant={filters.tags.includes(tag.name) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleTag(tag.name)}
+                  className={cn(
+                    "h-8 text-xs rounded-lg transition-all flex items-center justify-between",
+                    filters.tags.includes(tag.name)
+                      ? "bg-green-500/80 hover:bg-green-500 text-white border-green-400 shadow-lg"
+                      : "bg-white/5 hover:bg-white/15 text-white/80 border-white/20 backdrop-blur-sm"
+                  )}
+                  data-testid={`tag-filter-${tag.name}`}
+                >
+                  <span className="truncate">{tag.name}</span>
+                  <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 px-1.5 py-0.5">
+                    {tag.count}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
+            
+            {availableTags.length > 6 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full h-7 text-xs text-white/60 hover:text-white hover:bg-white/10 rounded-lg"
+              >
+                Show {availableTags.length - 6} more tags...
+              </Button>
+            )}
+          </div>
+        )}
+        
+        {/* Active Filters Summary - Enhanced */}
         {hasActiveFilters && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>Active filters:</span>
-            {filters.tags.length > 0 && (
-              <Badge variant="outline" className="text-[10px]">
-                {filters.tags.length} tags
-              </Badge>
-            )}
-            {filters.showUnreadOnly && (
-              <Badge variant="outline" className="text-[10px]">
-                Unread only
-              </Badge>
-            )}
-            {filters.priority.length > 0 && (
-              <Badge variant="outline" className="text-[10px]">
-                {filters.priority.length} priorities
-              </Badge>
-            )}
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-white/80">Active Filters:</span>
+            <div className="flex flex-wrap gap-1">
+              {filters.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="default"
+                  className="text-xs cursor-pointer hover:bg-red-500/80 bg-green-500/60 border-green-400/40"
+                  onClick={() => toggleTag(tag)}
+                >
+                  {tag} ×
+                </Badge>
+              ))}
+              
+              {filters.showUnreadOnly && (
+                <Badge
+                  variant="default"
+                  className="text-xs cursor-pointer hover:bg-red-500/80 bg-blue-500/60 border-blue-400/40"
+                  onClick={() => updateFilters({ showUnreadOnly: false })}
+                >
+                  Unread only ×
+                </Badge>
+              )}
+              
+              {filters.priority.map((priority) => (
+                <Badge
+                  key={priority}
+                  variant="default"
+                  className="text-xs cursor-pointer hover:bg-red-500/80 bg-orange-500/60 border-orange-400/40"
+                  onClick={() => togglePriority(priority)}
+                >
+                  {priority} priority ×
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -600,4 +689,5 @@ export const NotificationFilters = React.forwardRef<
   );
 });
 
+// @ts-ignore - displayName is a standard React property
 NotificationFilters.displayName = 'NotificationFilters';

@@ -14,6 +14,37 @@
  * Reuse or distribution of this file requires a license from Zero Email Inc.
  */
 
+import { google } from '@ai-sdk/google';
+import { type Connection } from 'agents';
+import { AIChatAgent } from 'agents/ai-chat-agent';
+import { DurableObjectOAuthClientProvider } from 'agents/mcp/do-oauth-client-provider';
+import {
+  appendResponseMessages,
+  createDataStreamResponse,
+  generateText,
+  streamText,
+  type StreamTextOnFinishCallback,
+} from 'ai';
+import { DurableObject } from 'cloudflare:workers';
+import { Migratable, Queryable, Transfer } from 'dormroom';
+import { desc, eq, isNotNull } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/durable-sqlite';
+import type { WSMessage } from 'partyserver';
+import { connection } from '../../db/schema';
+import { type ZeroEnv } from '../../env';
+import { generateWhatUserCaresAbout, type UserTopic } from '../../lib/analyze/interests';
+import type { IGetThreadResponse, IGetThreadsResponse, MailManager } from '../../lib/driver/types';
+import { AiChatPrompt, GmailSearchAssistantSystemPrompt } from '../../lib/prompts';
+import type { CreateDraftData } from '../../lib/schemas';
+import { connectionToDriver, getZeroSocketAgent, reSyncThread } from '../../lib/server-utils';
+import { getPromptName } from '../../pipelines';
+import { getPrompt } from '../../pipelines.effect';
+import {
+  EPrompts,
+  type IOutgoingMessage,
+  type ISnoozeBatch,
+  type ParsedMessage,
+} from '../../types';
 import {
   countThreads,
   countThreadsByLabels,
@@ -23,54 +54,25 @@ import {
   modifyThreadLabels,
   type DB,
 } from './db';
-import {
-  appendResponseMessages,
-  createDataStreamResponse,
-  generateText,
-  streamText,
-  type StreamTextOnFinishCallback,
-} from 'ai';
+import migrations from './db/drizzle/migrations';
+import { ToolOrchestrator } from './orchestrator';
+import { tools as authTools } from './tools';
 import {
   IncomingMessageType,
   OutgoingMessageType,
   type IncomingMessage,
   type OutgoingMessage,
 } from './types';
-import {
-  EPrompts,
-  type IOutgoingMessage,
-  type ISnoozeBatch,
-  type ParsedMessage,
-} from '../../types';
-import type { IGetThreadResponse, IGetThreadsResponse, MailManager } from '../../lib/driver/types';
-import { connectionToDriver, getZeroSocketAgent, reSyncThread } from '../../lib/server-utils';
-import { generateWhatUserCaresAbout, type UserTopic } from '../../lib/analyze/interests';
-import { DurableObjectOAuthClientProvider } from 'agents/mcp/do-oauth-client-provider';
-import { AiChatPrompt, GmailSearchAssistantSystemPrompt } from '../../lib/prompts';
-import { Migratable, Queryable, Transfer } from 'dormroom';
-import type { CreateDraftData } from '../../lib/schemas';
-import { drizzle } from 'drizzle-orm/durable-sqlite';
-import { getPrompt } from '../../pipelines.effect';
-import { AIChatAgent } from 'agents/ai-chat-agent';
-import { DurableObject } from 'cloudflare:workers';
-import { ToolOrchestrator } from './orchestrator';
-import { eq, desc, isNotNull } from 'drizzle-orm';
-import migrations from './db/drizzle/migrations';
-import { getPromptName } from '../../pipelines';
-import { google } from '@ai-sdk/google';
-import { connection } from '../../db/schema';
-import type { WSMessage } from 'partyserver';
-import { tools as authTools } from './tools';
 import { processToolCalls } from './utils';
-import { type ZeroEnv } from '../../env';
-import { type Connection } from 'agents';
 // removed OpenAI import in favor of Google Gemini
+import { Effect, pipe } from 'effect';
 import * as schema from './db/schema';
 import { threads } from './db/schema';
-import { Effect, pipe } from 'effect';
+// Durable Object branding symbol
+const __DURABLE_OBJECT_BRAND = Symbol('DURABLE_OBJECT_BRAND');
 // removed Groq import in favor of Google Gemini
-import { createDb } from '../../db';
 import type { Message } from 'ai';
+import { createDb } from '../../db';
 import { create } from './db';
 
 const decoder = new TextDecoder();
@@ -382,7 +384,7 @@ export class ZeroDriver extends DurableObject<ZeroEnv> {
     super(ctx, env);
     this.sql = ctx.storage.sql;
     this.db = drizzle(ctx.storage, { schema });
-    
+
     // Ensure tables exist on initialization
     this.createTables();
   }
@@ -1701,6 +1703,7 @@ export class ZeroDriver extends DurableObject<ZeroEnv> {
 }
 
 export class ZeroAgent extends AIChatAgent<ZeroEnv> {
+  readonly [__DURABLE_OBJECT_BRAND] = true as const;
   private chatMessageAbortControllers: Map<string, AbortController> = new Map();
 
   async registerZeroMCP() {
@@ -1931,7 +1934,7 @@ export class ZeroAgent extends AIChatAgent<ZeroEnv> {
         }
         case IncomingMessageType.ChatClear: {
           this.destroyAbortControllers();
-          void this.sql`delete from cf_ai_chat_agent_messages`;
+          this.sql.exec('DELETE FROM cf_ai_chat_agent_messages');
           this.messages = [];
           this.broadcastChatMessage(
             {

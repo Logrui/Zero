@@ -300,10 +300,11 @@ export const NotificationOverlay = React.forwardRef<
       <DialogContent 
         showOverlay={true} // Enable backdrop blur effect
         className={cn(
-          // Right-center positioned overlay with half screen dimensions and padding
-          'fixed right-4 top-1/2 -translate-y-1/2 w-[50vw] h-[50vh] flex flex-col p-0 gap-0 m-0',
-          'sm:w-[90vw] sm:h-[70vh] sm:right-2', // Mobile responsive - larger on mobile
-          'border border-white/10 rounded-lg shadow-2xl bg-[#111111]/95 backdrop-blur-sm',
+          // Right-center positioned overlay with enhanced dimensions and styling
+          'fixed right-6 top-1/2 -translate-y-1/2 w-[55vw] h-[60vh] flex flex-col p-0 gap-0 m-0',
+          'sm:w-[95vw] sm:h-[85vh] sm:right-2', // Mobile responsive - larger on mobile
+          'border border-white/20 rounded-xl shadow-2xl bg-gradient-to-br from-[#111111]/95 to-[#0A0A0A]/95 backdrop-blur-lg',
+          'ring-1 ring-white/10 overflow-hidden',
           className
         )}
         ref={ref}
@@ -311,14 +312,14 @@ export const NotificationOverlay = React.forwardRef<
         aria-label="Notifications overlay"
         data-testid="notification-overlay"
       >
-        {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-white/10 bg-[#1E1E1E]/50">
+        {/* Header - Enhanced */}
+        <DialogHeader className="px-6 py-5 border-b border-white/20 bg-gradient-to-r from-[#1E1E1E]/80 to-[#2A2A2A]/80 backdrop-blur-md">
           <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2 text-white font-bold">
-              <Bell className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-3 text-white font-bold text-lg">
+              <span className="text-xl">🔔</span>
               Notifications
               {filteredNotifications.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ml-2 bg-blue-500/80 text-white border-blue-400/50 px-2 py-1">
                   {filteredNotifications.length}
                 </Badge>
               )}
@@ -368,41 +369,66 @@ export const NotificationOverlay = React.forwardRef<
             </div>
           </div>
           
-          {/* Search and Filters */}
-          <div className="flex flex-col gap-4 pt-4">
+          {/* Search and Filters - Enhanced */}
+          <div className="flex flex-col gap-4 pt-4 px-6">
             {/* Search bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50">🔍</span>
               <Input
                 placeholder="Search notifications..."
                 value={filters.searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-white/10 border-white/30 text-white placeholder:text-white/50 rounded-lg h-11 backdrop-blur-sm focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
                 data-testid="notification-search"
               />
             </div>
             
-            {/* Tag filters */}
+            {/* Tag filters - Enhanced */}
             {availableTags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                <span className="text-sm font-medium">Filters:</span>
-                {availableTags.slice(0, 8).map((tag) => (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-white flex items-center gap-2">
+                    <span>🏷️</span> Quick Filters
+                  </span>
                   <Button
-                    key={tag}
-                    variant={filters.tags.includes(tag) ? "default" : "outline"}
+                    variant="ghost"
                     size="sm"
-                    onClick={() => toggleTagFilter(tag)}
-                    className="h-6 text-xs"
-                    data-testid={`tag-filter-${tag}`}
+                    onClick={() => setFilters({ 
+                      tags: [], 
+                      searchQuery: '', 
+                      showUnreadOnly: false, 
+                      priority: [] 
+                    })}
+                    className="h-7 px-2 text-xs text-white/60 hover:text-white hover:bg-white/10 rounded-lg"
                   >
-                    {tag}
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      {notifications.filter(n => n.tags.includes(tag)).length}
-                    </Badge>
+                    Clear All
                   </Button>
-                ))}
+                </div>
                 
-                {/* Show unread only toggle */}
+                <div className="grid grid-cols-2 gap-2">
+                  {availableTags.slice(0, 6).map((tag) => (
+                    <Button
+                      key={tag}
+                      variant={filters.tags.includes(tag) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => toggleTagFilter(tag)}
+                      className={cn(
+                        "h-8 text-xs rounded-lg transition-all flex items-center justify-between",
+                        filters.tags.includes(tag)
+                          ? "bg-green-500/80 hover:bg-green-500 text-white border-green-400/50 shadow-lg"
+                          : "bg-white/5 hover:bg-white/15 text-white/80 border-white/20 backdrop-blur-sm"
+                      )}
+                      data-testid={`tag-filter-${tag}`}
+                    >
+                      <span className="truncate">{tag}</span>
+                      <Badge variant="secondary" className="ml-1 text-[10px] bg-white/20 px-1.5 py-0.5">
+                        {notifications.filter(n => n.tags.includes(tag)).length}
+                      </Badge>
+                    </Button>
+                  ))}
+                </div>
+                
+                {/* Show unread only toggle - Enhanced */}
                 <Button
                   variant={filters.showUnreadOnly ? "default" : "outline"}
                   size="sm"
@@ -410,9 +436,15 @@ export const NotificationOverlay = React.forwardRef<
                     ...prev, 
                     showUnreadOnly: !prev.showUnreadOnly 
                   }))}
-                  className="h-6 text-xs"
+                  className={cn(
+                    "w-full h-8 text-xs rounded-lg transition-all justify-start",
+                    filters.showUnreadOnly
+                      ? "bg-blue-500/80 hover:bg-blue-500 text-white border-blue-400/50 shadow-lg"
+                      : "bg-white/5 hover:bg-white/15 text-white/80 border-white/20 backdrop-blur-sm"
+                  )}
                 >
-                  Unread Only
+                  <span className="mr-2">👁️</span>
+                  Show Unread Only
                 </Button>
               </div>
             )}
@@ -500,14 +532,15 @@ export const NotificationOverlay = React.forwardRef<
             </div>
           ) : (
             <ScrollArea className="h-full" ref={scrollAreaRef}>
-              <div className="p-4 space-y-2 bg-[#0F0F0F]/30">
+              <div className="p-6 space-y-3 bg-gradient-to-b from-[#0F0F0F]/20 to-[#0A0A0A]/40">
                 {filteredNotifications.map((notification, index) => (
                   <Card
                     key={notification.id}
                     ref={(el) => { notificationRefs.current[index] = el; }}
                     className={cn(
-                      'cursor-pointer transition-all duration-200 hover:bg-white/5 border-white/10',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20',
+                      'cursor-pointer transition-all duration-300 hover:bg-white/10 border-white/20 backdrop-blur-sm',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50',
+                      'shadow-lg hover:shadow-xl hover:border-white/30 rounded-xl',
                       focusedIndex === index && 'ring-2 ring-white/20',
                       !notification.isRead && 'border-l-4 border-l-blue-500 bg-blue-500/5',
                       selectedNotifications.includes(notification.id) && 'bg-blue-500/10 border-blue-500/30',
@@ -523,7 +556,7 @@ export const NotificationOverlay = React.forwardRef<
                     tabIndex={0}
                     data-testid="notification-item"
                   >
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-3 pt-4 px-5">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1 min-w-0">
                           {/* Bulk mode checkbox */}
@@ -531,37 +564,65 @@ export const NotificationOverlay = React.forwardRef<
                             <Checkbox
                               checked={selectedNotifications.includes(notification.id)}
                               onChange={() => toggleNotificationSelection(notification.id)}
-                              className="mt-1"
+                              className="mt-1.5"
                               data-testid="notification-checkbox"
                             />
                           )}
                           
-                          {/* Notification content */}
+                          {/* Status indicators */}
+                          <div className="flex flex-col items-center gap-1 mt-1">
+                            {!notification.isRead && (
+                              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-lg" />
+                            )}
+                            {notification.priority === 'high' && (
+                              <div className="w-2 h-2 bg-red-500 rounded-full shadow-sm" />
+                            )}
+                            {notification.priority === 'medium' && (
+                              <div className="w-2 h-2 bg-yellow-500 rounded-full shadow-sm" />
+                            )}
+                            {notification.priority === 'low' && (
+                              <div className="w-2 h-2 bg-green-500 rounded-full shadow-sm" />
+                            )}
+                          </div>
+                          
+                          {/* Notification content - Enhanced */}
                           <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base font-medium mb-1 truncate text-white" data-testid="notification-subject">
+                            <CardTitle className="text-base font-semibold mb-2 text-white leading-relaxed" data-testid="notification-subject">
                               {notification.subject}
                             </CardTitle>
                             
-                            <p className="text-sm text-white/70 line-clamp-2 mb-2">
+                            <p className="text-sm text-white/80 line-clamp-2 mb-3 leading-relaxed">
                               {notification.body}
                             </p>
                             
-                            {/* Tags and metadata */}
+                            {/* Tags and metadata - Enhanced */}
                             <div className="flex items-center gap-2 flex-wrap">
                               {notification.tags.slice(0, 3).map((tag) => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
+                                <Badge 
+                                  key={tag} 
+                                  variant="outline" 
+                                  className="text-[11px] py-1 px-2 bg-white/10 border-white/30 text-white/90 rounded-lg"
+                                >
                                   {tag}
                                 </Badge>
                               ))}
                               
                               {notification.tags.length > 3 && (
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge 
+                                  variant="outline" 
+                                  className="text-[11px] py-1 px-2 bg-white/5 border-white/20 text-white/70 rounded-lg"
+                                >
                                   +{notification.tags.length - 3} more
                                 </Badge>
                               )}
                               
-                              <span className="text-xs text-white/50 ml-auto">
-                                {new Date(notification.createdAt).toLocaleDateString()}
+                              <span className="text-xs text-white/60 ml-auto font-medium">
+                                {new Date(notification.createdAt).toLocaleString([], {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
                               </span>
                             </div>
                           </div>

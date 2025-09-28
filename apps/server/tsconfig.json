@@ -9,10 +9,15 @@
     "evals/**/*.ts"
   ],
   "compilerOptions": {
+    "moduleResolution": "bundler",
     "plugins": [
       {
         "name": "@effect/language-service"
       }
+    ],
+    "types": [
+      "node",
+      "@types/node"
     ]
   }
 }
