@@ -1,12 +1,10 @@
-"use client"
-
 import { useState, useEffect, useCallback } from "react"
-import { useSession } from "next-auth/react"
+import { useSession } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, ZapIcon, SearchIcon, FilterIcon } from "lucide-react"
-import { type CalendarEvent, getEvents } from "@/lib/calendar"
+import { type CalendarEvent, getEvents } from "../lib/calendar"
 import { EventDialog } from "./event-dialog"
 import { ChatPanel } from "./chat-panel"
 import { Input } from "@/components/ui/input"
@@ -14,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useKeyboardShortcuts, type ShortcutAction } from "@/hooks/use-keyboard-shortcuts"
 import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog"
-import { useRouter } from "next/navigation"
+import { useNavigate } from "react-router"
 import { NaturalLanguageEventDialog } from "./natural-language-event-dialog"
 
 interface CalendarViewProps {
@@ -22,7 +20,7 @@ interface CalendarViewProps {
 }
 
 export function CalendarView({ initialEvents }: CalendarViewProps) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { data: session } = useSession()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
@@ -41,7 +39,7 @@ export function CalendarView({ initialEvents }: CalendarViewProps) {
       const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
       const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
 
-      getEvents(session.user.id, startDate, endDate).then((fetchedEvents) => {
+      getEvents(startDate, endDate).then((fetchedEvents: CalendarEvent[]) => {
         setEvents(fetchedEvents)
       })
     }
@@ -132,7 +130,7 @@ export function CalendarView({ initialEvents }: CalendarViewProps) {
       const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
       const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
 
-      const refreshedEvents = await getEvents(session.user.id, startDate, endDate)
+      const refreshedEvents = await getEvents(startDate, endDate)
       setEvents(refreshedEvents)
     }
   }
@@ -164,8 +162,8 @@ export function CalendarView({ initialEvents }: CalendarViewProps) {
   }, [])
 
   const navigateToSettings = useCallback(() => {
-    router.push("/settings")
-  }, [router])
+    navigate("/settings")
+  }, [navigate])
 
   const toggleFilterMenu = useCallback(() => {
     setShowFilterMenu((prev) => !prev)

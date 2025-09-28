@@ -34,6 +34,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { Key } from 'lucide-react';
 
 // Types
 export interface ApiKey {
@@ -414,11 +415,11 @@ export const ApiKeyManager = React.forwardRef<
           ))}
         </div>
       ) : apiKeys.length === 0 ? (
-        <Card className="p-12 text-center">
+        <Card className="p-12 text-center bg-[#111111]/50 border-white/10">
           <div className="space-y-3">
-            <div className="text-4xl">🔑</div>
-            <h3 className="text-lg font-medium">No API Keys</h3>
-            <p className="text-muted-foreground">
+            <Key className="h-12 w-12 text-white/40 mx-auto" />
+            <h3 className="text-lg font-medium text-white">No API Keys</h3>
+            <p className="text-white/70">
               Create your first API key to start using the notifications API
             </p>
             

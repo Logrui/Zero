@@ -1,8 +1,6 @@
-"use client"
-
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { signOut, useSession } from "next-auth/react"
+import { useNavigate } from "react-router"
+import { signOut, useSession } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,11 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { CalendarIcon, SettingsIcon, LogOutIcon, BellIcon, SearchIcon, PlusIcon, MenuIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/components/theme/theme-toggle"
 
 export function CalendarHeader() {
   const { data: session } = useSession()
-  const router = useRouter()
+  const navigate = useNavigate()
   const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   return (
@@ -98,7 +96,7 @@ export function CalendarHeader() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-mono-200 dark:bg-mono-700" />
               <DropdownMenuItem
-                onClick={() => router.push("/settings")}
+                onClick={() => navigate("/settings")}
                 className="py-2 px-3 text-sm rounded-md cursor-pointer hover:bg-mono-100 dark:hover:bg-mono-800"
               >
                 <SettingsIcon className="mr-2 h-4 w-4" />
@@ -106,7 +104,7 @@ export function CalendarHeader() {
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-mono-200 dark:bg-mono-700" />
               <DropdownMenuItem
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => signOut()}
                 className="py-2 px-3 text-sm rounded-md cursor-pointer hover:bg-mono-100 dark:hover:bg-mono-800"
               >
                 <LogOutIcon className="mr-2 h-4 w-4" />

@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 // Note: useRouter and useParams imports removed due to missing Next.js types
 import { Button } from '@/components/ui/button';

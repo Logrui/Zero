@@ -28,7 +28,7 @@ Most email services today are either **closed-source**, **data-hungry**, or **to
 
 ## Tech Stack
 
-Zero is built with modern and reliable technologies:
+Zero OS is built with modern and reliable technologies:
 
 - **Frontend**: Next.js, React, TypeScript, TailwindCSS, Shadcn UI
 - **Backend**: Node.js, Drizzle ORM

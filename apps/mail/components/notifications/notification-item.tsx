@@ -203,7 +203,7 @@ export const NotificationItem = React.forwardRef<
     isFocused && 'ring-2 ring-ring ring-offset-2',
     
     // Read/unread state
-    !notification.isRead && 'border-l-4 border-l-primary bg-background',
+    !notification.isRead && 'border-l-4 border-l-blue-500 bg-blue-500/5',
     notification.isRead && 'opacity-75 hover:opacity-100',
     
     // Priority styling

@@ -17,6 +17,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -297,9 +298,12 @@ export const NotificationOverlay = React.forwardRef<
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
+        showOverlay={true} // Enable backdrop blur effect
         className={cn(
-          'max-w-4xl h-[80vh] flex flex-col p-0 gap-0',
-          'sm:max-w-[95vw] sm:h-[90vh]', // Mobile responsive
+          // Right-center positioned overlay with half screen dimensions and padding
+          'fixed right-4 top-1/2 -translate-y-1/2 w-[50vw] h-[50vh] flex flex-col p-0 gap-0 m-0',
+          'sm:w-[90vw] sm:h-[70vh] sm:right-2', // Mobile responsive - larger on mobile
+          'border border-white/10 rounded-lg shadow-2xl bg-[#111111]/95 backdrop-blur-sm',
           className
         )}
         ref={ref}
@@ -308,10 +312,10 @@ export const NotificationOverlay = React.forwardRef<
         data-testid="notification-overlay"
       >
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="px-6 py-4 border-b border-white/10 bg-[#1E1E1E]/50">
           <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
-              🔔
+            <DialogTitle className="flex items-center gap-2 text-white font-bold">
+              <Bell className="h-5 w-5" />
               Notifications
               {filteredNotifications.length > 0 && (
                 <Badge variant="secondary" className="ml-2">
@@ -333,20 +337,33 @@ export const NotificationOverlay = React.forwardRef<
               >
                 {isBulkMode ? (
                   <>
-                    ✕
+                    <X className="h-4 w-4" />
                     Exit Bulk
                   </>
                 ) : (
                   <>
-                    ☑️
+                    <CheckSquare className="h-4 w-4" />
                     Bulk Select
                   </>
                 )}
               </Button>
               
               {/* Settings */}
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4" />
+              <Button asChild variant="outline" size="sm">
+                <Link to="/notifications/settings">
+                  <Settings className="h-4 w-4" />
+                </Link>
+              </Button>
+              
+              {/* Close button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onClose}
+                aria-label="Close notifications"
+                data-testid="close-notifications"
+              >
+                <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -355,7 +372,7 @@ export const NotificationOverlay = React.forwardRef<
           <div className="flex flex-col gap-4 pt-4">
             {/* Search bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
               <Input
                 placeholder="Search notifications..."
                 value={filters.searchQuery}
@@ -465,15 +482,15 @@ export const NotificationOverlay = React.forwardRef<
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <p className="text-destructive mb-2">Failed to load notifications</p>
-                <p className="text-sm text-muted-foreground">{error}</p>
+                <p className="text-sm text-white/70">{error}</p>
               </div>
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">No notifications found</p>
-                <p className="text-sm text-muted-foreground">
+                <Bell className="h-12 w-12 text-white/40 mx-auto mb-4" />
+                <p className="text-lg font-medium mb-2 text-white">No notifications found</p>
+                <p className="text-sm text-white/60">
                   {filters.searchQuery || filters.tags.length > 0 
                     ? 'Try adjusting your filters'
                     : 'You\'re all caught up!'
@@ -483,17 +500,18 @@ export const NotificationOverlay = React.forwardRef<
             </div>
           ) : (
             <ScrollArea className="h-full" ref={scrollAreaRef}>
-              <div className="p-4 space-y-2">
+              <div className="p-4 space-y-2 bg-[#0F0F0F]/30">
                 {filteredNotifications.map((notification, index) => (
                   <Card
                     key={notification.id}
                     ref={(el) => { notificationRefs.current[index] = el; }}
                     className={cn(
-                      'cursor-pointer transition-colors hover:bg-muted/50',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      focusedIndex === index && 'ring-2 ring-ring',
-                      !notification.isRead && 'border-l-4 border-l-primary',
-                      selectedNotifications.includes(notification.id) && 'bg-primary/10 border-primary'
+                      'cursor-pointer transition-all duration-200 hover:bg-white/5 border-white/10',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20',
+                      focusedIndex === index && 'ring-2 ring-white/20',
+                      !notification.isRead && 'border-l-4 border-l-blue-500 bg-blue-500/5',
+                      selectedNotifications.includes(notification.id) && 'bg-blue-500/10 border-blue-500/30',
+                      'bg-[#1A1A1A]/50 backdrop-blur-sm'
                     )}
                     onClick={() => {
                       if (isBulkMode) {
@@ -520,11 +538,11 @@ export const NotificationOverlay = React.forwardRef<
                           
                           {/* Notification content */}
                           <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base font-medium mb-1 truncate" data-testid="notification-subject">
+                            <CardTitle className="text-base font-medium mb-1 truncate text-white" data-testid="notification-subject">
                               {notification.subject}
                             </CardTitle>
                             
-                            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                            <p className="text-sm text-white/70 line-clamp-2 mb-2">
                               {notification.body}
                             </p>
                             
@@ -542,7 +560,7 @@ export const NotificationOverlay = React.forwardRef<
                                 </Badge>
                               )}
                               
-                              <span className="text-xs text-muted-foreground ml-auto">
+                              <span className="text-xs text-white/50 ml-auto">
                                 {new Date(notification.createdAt).toLocaleDateString()}
                               </span>
                             </div>
@@ -585,7 +603,7 @@ export const NotificationOverlay = React.forwardRef<
         
         {/* Footer with statistics */}
         <div className="px-6 py-3 border-t bg-muted/30">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center justify-between text-sm text-white/60">
             <span data-testid="total-notification-count">
               {filteredNotifications.length} of {notifications.length} notifications
             </span>

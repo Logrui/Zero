@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -21,7 +19,7 @@ import {
   UsersIcon,
   FilterIcon,
 } from "lucide-react"
-import { type CalendarEvent, getEvents, getUserCategories, getSharedEvents } from "../lib/calendar"
+import { type CalendarEvent, getEvents, getSharedEvents } from "../lib/calendar"
 import { EventDialog } from "./event-dialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"

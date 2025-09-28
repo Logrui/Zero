@@ -324,7 +324,9 @@ export const createAuth = () => {
 
 const createAuthConfig = () => {
   const cache = redis();
-  const { db } = createDb(env.HYPERDRIVE.connectionString);
+  // Use HYPERDRIVE connection in production, fallback to DATABASE_URL in local development
+  const connectionString = env.HYPERDRIVE?.connectionString || env.DATABASE_URL;
+  const { db } = createDb(connectionString);
   return {
     database: drizzleAdapter(db, { provider: 'pg' }),
     secondaryStorage: {

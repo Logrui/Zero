@@ -1,5 +1,3 @@
-"use client"
-
 import { FormDescription } from "@/components/ui/form"
 
 import { useState, useEffect } from "react"

@@ -164,5 +164,58 @@ pnpm test
 3. Write tests for new features
 4. Submit a pull request
 
-## License
-[Specify License]
+## Tech Stack
+
+### Frontend
+- **Next.js** - React-based web framework for the email client
+- **React 19** - UI library for building user interfaces
+- **TypeScript** - Type-safe JavaScript for better development experience
+- **TailwindCSS** - Utility-first CSS framework for styling
+- **Shadcn UI** - Modern component library built on top of Radix UI
+
+### Backend
+- **Node.js** - JavaScript runtime for server-side development
+- **tRPC** - End-to-end typesafe APIs
+- **Drizzle ORM** - Type-safe SQL ORM for database operations
+- **Hono** - Fast web framework for Cloudflare Workers
+
+### Database
+- **PostgreSQL** - Relational database for data storage
+- **Hyperdrive** - Cloudflare's database connection pooling service
+
+### Authentication & Security
+- **Better Auth** - Modern authentication library
+- **Google OAuth** - For Gmail integration and user authentication
+- **Autumn** - Encryption service for secure data handling
+
+### Infrastructure & Deployment
+- **Cloudflare Workers** - Serverless platform for backend deployment
+- **Durable Objects** - Cloudflare's stateful serverless compute
+- **R2 Bucket** - Object storage for email data
+- **Docker** - Containerization for development and deployment
+- **Vercel** - Frontend hosting and deployment
+
+### Development Tools
+- **pnpm (v10+)** - Fast, disk space efficient package manager
+- **Turbo** - High-performance build system for monorepos
+- **ESLint & Oxlint** - Code linting and quality checks
+- **Prettier** - Code formatting
+- **Husky** - Git hooks for code quality
+
+### Additional Services
+- **Twilio** - SMS integration for notifications
+- **Resend** - Email sending service
+- **Redis** - Caching and session storage
+- **Sentry** - Error tracking and monitoring
+- **Dub Analytics** - Analytics tracking
+
+## Detailed Project Architecture
+
+Zero is structured as a pnpm workspace monorepo with the following key applications:
+
+- **`apps/mail/`** - Next.js frontend email client
+- **`apps/server/`** - Backend server (Cloudflare Workers)
+- **`apps/ios-app/`** - iOS mobile application
+- **`packages/cli/`** - CLI tools (nizzy command)
+- **`packages/db/`** - Database schemas and utilities
+- Various shared configuration packages

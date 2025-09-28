@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +18,7 @@ import { Loader2, Sparkles } from "lucide-react";
 interface NaturalLanguageEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEventCreated?: () => void;
+  onEventCreated?: (event: CalendarEvent) => void;
 }
 
 export function NaturalLanguageEventDialog({
@@ -157,7 +155,7 @@ export function NaturalLanguageEventDialog({
         source: "local",
       };
 
-      await createEvent(eventData);
+      const createdEvent = await createEvent(eventData);
 
       toast({
         title: "Event created",
@@ -166,7 +164,7 @@ export function NaturalLanguageEventDialog({
 
       setInput("");
       onOpenChange(false);
-      onEventCreated?.();
+      onEventCreated?.(createdEvent || eventData);
     } catch (error) {
       console.error("Failed to create event:", error);
       toast({

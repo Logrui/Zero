@@ -10,14 +10,15 @@
  */
 
 import * as React from 'react';
+import { Link } from 'react-router';
 
-import { NotificationOverlay } from '@/components/notifications/notification-overlay';
 import { NotificationFilters } from '@/components/notifications/notification-filters';
 import { ApiKeyManager } from '@/components/notifications/api-key-manager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Settings, Key, Bell, Trash2 } from 'lucide-react';
 
 // Note: Metadata export removed due to missing Next.js types
 
@@ -100,29 +101,35 @@ export default function NotificationsPage() {
   }, []);
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0F0F0F]">
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Notifications</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-4xl font-bold tracking-tight text-white">Notifications</h1>
+            <p className="text-white/70 text-lg">
               Manage your notifications and API integrations
             </p>
           </div>
           
           <div className="flex items-center gap-4">
+            <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10">
+              <Link to="/notifications/settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+            </Button>
             <div className="text-center">
-              <div className="text-2xl font-bold">{stats.totalNotifications}</div>
-              <div className="text-xs text-muted-foreground">Total</div>
+              <div className="text-2xl font-bold text-white">{stats.totalNotifications}</div>
+              <div className="text-xs text-white/60">Total</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{stats.unreadCount}</div>
-              <div className="text-xs text-muted-foreground">Unread</div>
+              <div className="text-2xl font-bold text-blue-400">{stats.unreadCount}</div>
+              <div className="text-xs text-white/60">Unread</div>
             </div>
             {stats.highPriorityCount > 0 && (
               <div className="text-center">
-                <div className="text-2xl font-bold text-destructive">{stats.highPriorityCount}</div>
-                <div className="text-xs text-muted-foreground">High Priority</div>
+                <div className="text-2xl font-bold text-red-400">{stats.highPriorityCount}</div>
+                <div className="text-xs text-white/60">High Priority</div>
               </div>
             )}
           </div>
@@ -130,16 +137,18 @@ export default function NotificationsPage() {
         
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
-              📬 Notifications
+            <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white">
+              <Bell className="h-4 w-4" />
+              Notifications
               {stats.unreadCount > 0 && (
                 <Badge variant="destructive" className="text-xs">
                   {stats.unreadCount}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="api-keys" className="flex items-center gap-2">
-              🔑 API Keys
+            <TabsTrigger value="api-keys" className="flex items-center gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white">
+              <Key className="h-4 w-4" />
+              API Keys
               <Badge variant="secondary" className="text-xs">
                 {stats.activeApiKeys}
               </Badge>
@@ -149,9 +158,9 @@ export default function NotificationsPage() {
           <TabsContent value="notifications" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-1">
-                <Card>
+                <Card className="bg-[#111111]/50 border-white/10">
                   <CardHeader>
-                    <CardTitle className="text-base">Filters</CardTitle>
+                    <CardTitle className="text-base text-white">Filters</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
                     <NotificationFilters
@@ -166,18 +175,75 @@ export default function NotificationsPage() {
               </div>
               
               <div className="lg:col-span-3">
-                <Card>
-                  <CardContent className="p-0">
-                    <div className="min-h-[600px] relative">
-                      <NotificationOverlay
-                        isOpen={true}
-                        onClose={() => {}}
-                        notifications={mockNotifications}
-                        onNotificationClick={(notification) => handleNotificationClick(notification as any)}
-                        onNotificationDelete={handleNotificationDelete}
-                        onMarkAsRead={handleMarkAsRead}
-                        className="border-0 shadow-none relative max-w-none h-auto"
-                      />
+                <Card className="bg-[#111111]/50 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center justify-between text-white">
+                      <div className="flex items-center gap-2">
+                        <Bell className="h-5 w-5" />
+                        Your Notifications
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
+                          Mark All Read
+                        </Button>
+                        <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
+                          Clear All
+                        </Button>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {mockNotifications.length === 0 ? (
+                        <div className="text-center py-12">
+                          <Bell className="h-12 w-12 text-white/40 mx-auto mb-4" />
+                          <p className="text-white/60">No notifications found</p>
+                        </div>
+                      ) : (
+                        mockNotifications.map((notification) => (
+                          <Card 
+                            key={notification.id}
+                            className={`cursor-pointer transition-all duration-200 hover:bg-white/5 border-white/10 bg-[#1A1A1A]/30 ${
+                              !notification.isRead ? 'border-l-4 border-l-blue-500 bg-blue-500/5' : ''
+                            }`}
+                            onClick={() => handleNotificationClick(notification)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h3 className="font-medium text-sm mb-1 text-white">
+                                    {notification.subject}
+                                  </h3>
+                                  <p className="text-sm text-white/70 mb-2">
+                                    {notification.body}
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    {notification.tags.map((tag) => (
+                                      <Badge key={tag} variant="secondary" className="text-xs">
+                                        {tag}
+                                      </Badge>
+                                    ))}
+                                    <span className="text-xs text-white/50 ml-auto">
+                                      {new Date(notification.createdAt).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNotificationDelete([notification.id]);
+                                  }}
+                                  className="ml-2 hover:bg-red-500/20 hover:text-red-400"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
                     </div>
                   </CardContent>
                 </Card>

@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { useController, type Control } from 'react-hook-form';
 import { useTRPC } from '@/providers/query-provider';

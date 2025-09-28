@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
@@ -23,10 +21,50 @@ import {
   Settings as SettingsIcon,
 } from "lucide-react";
 import { NotificationIcon } from "@/components/notifications/notification-badge";
+import { NotificationOverlay } from "@/components/notifications/notification-overlay";
 
 export function AppBottombar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
+  
+  // Notification state management
+  const [notifications, setNotifications] = useState([
+    // Mock notifications for testing
+    {
+      id: "1",
+      subject: "New message received",
+      body: "You have a new message from John Doe about the project update.",
+      tags: ["message", "urgent"],
+      createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      updatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      isRead: false,
+      priority: "high" as const,
+      source: "email"
+    },
+    {
+      id: "2",
+      subject: "Task completed",
+      body: "Your scheduled task has been completed successfully.",
+      tags: ["task", "success"],
+      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      updatedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      isRead: true,
+      priority: "medium" as const,
+      source: "system"
+    },
+    {
+      id: "3",
+      subject: "System update available",
+      body: "A new system update is available for download. Click to learn more.",
+      tags: ["system", "update"],
+      createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      isRead: false,
+      priority: "low" as const,
+      source: "system"
+    }
+  ]);
 
   // Keep a CSS variable in sync with the actual header height so other fixed
   // elements (like the sidebar) can offset correctly above the bottombar.
@@ -107,22 +145,18 @@ export function AppBottombar() {
             </Button>
           )}
 
-          <Button 
-            asChild 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="rounded-lg h-9 w-9 outline-none focus:outline-none"
+            onClick={() => setIsNotificationOpen(true)}
           >
-            <Link to="/notifications">
-              <NotificationIcon 
-                count={3} // Mock count - in real app, this would come from context/state
-                size="md"
-                onClick={() => {}}
-              />
-            </Link>
-          </Button>
-
-          {/* User dropdown menu temporarily disabled */}
+            <NotificationIcon
+              count={3} // Mock count - in real app, this would come from context/state
+              size="md"
+              onClick={() => {}}
+            />
+          </Button>          {/* User dropdown menu temporarily disabled */}
           {false && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -220,6 +254,26 @@ export function AppBottombar() {
           </div>
         </div>
       )}
+
+      {/* Notification Overlay */}
+      <NotificationOverlay
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        notifications={notifications}
+        onNotificationClick={(notification) => {
+          console.log("Clicked notification:", notification);
+        }}
+        onNotificationDelete={async (notificationIds) => {
+          // Remove notifications from state
+          setNotifications(prev => prev.filter(n => !notificationIds.includes(n.id)));
+        }}
+        onMarkAsRead={async (notificationIds) => {
+          // Mark notifications as read in state
+          setNotifications(prev => prev.map(n => 
+            notificationIds.includes(n.id) ? { ...n, isRead: true } : n
+          ));
+        }}
+      />
     </header>
   );
 }

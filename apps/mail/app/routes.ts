@@ -25,6 +25,9 @@ export default [
     route('/dashboard', '(routes)/dashboard/page.tsx'),
     route('/calendar', '(routes)/calendar/page.tsx'),
     route('/developer', '(routes)/developer/page.tsx'),
+    route('/notifications', '(routes)/notifications/page.tsx'),
+    route('/notifications/:uuid', '(routes)/notifications/[uuid]/page.tsx'),
+    route('/notifications/settings', '(routes)/notifications/settings/page.tsx'),
     layout(
       '(routes)/mail/layout.tsx',
       prefix('/mail', [

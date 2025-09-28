@@ -1,5 +1,3 @@
-'use client';
-
 import CalendarPage from '@/modules/calendar/pages/calendar-page';
 
 export default function CalendarRoute() {

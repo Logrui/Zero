@@ -180,7 +180,9 @@
         "GEMINI_FLASH_MODEL": "gemini-2.5-flash",
         "GOOGLE_GENERATIVE_AI_API_KEY": "",
         "EMAIL_SYNC_DEBUG": "true",
-        "FRESH_ACCOUNT_BATCH_SIZE": "10"
+        "FRESH_ACCOUNT_BATCH_SIZE": "10",
+        "REDIS_URL": "http://localhost:8079",
+        "REDIS_TOKEN": "upstash-local-token"
       },
       "kv_namespaces": [
         {

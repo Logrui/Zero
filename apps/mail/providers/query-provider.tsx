@@ -45,7 +45,10 @@ export const makeQueryClient = (connectionId: string | null) =>
               },
             },
           });
-        } else console.error(err.message || 'Something went wrong');
+        } else {
+          console.error('Query error:', err);
+          console.error('Error message:', err.message || 'Something went wrong');
+        }
       },
     }),
     defaultOptions: {
@@ -56,7 +59,16 @@ export const makeQueryClient = (connectionId: string | null) =>
         gcTime: 1000 * 60 * 60 * 24, // 24 hours,
       },
       mutations: {
-        onError: (err) => console.error(err.message),
+        onError: (err) => {
+          // More robust error logging to help debug JSON parsing issues
+          console.error('Query error:', err);
+          if (err.message) {
+            console.error('Error message:', err.message);
+          }
+          if (err.cause) {
+            console.error('Error cause:', err.cause);
+          }
+        },
       },
     },
   });
@@ -93,8 +105,24 @@ export const trpcClient = createTRPCClient<AppRouter>({
       url: getUrl(),
       methodOverride: 'POST',
       maxItems: 1,
-      fetch: (url, options) =>
-        fetch(url, { ...options, credentials: 'include' }).then((res) => {
+      fetch: (url, options) => {
+        // Handle Uint8Array body conversion for fetch compatibility
+        let finalOptions: RequestInit = { 
+          ...(options || {}), 
+          credentials: 'include' 
+        } as RequestInit;
+        
+        // Convert Uint8Array to Blob if present
+        if (options && 'body' in options && options.body instanceof Uint8Array) {
+          // Convert to proper ArrayBuffer for Blob creation
+          const arrayBuffer = options.body.buffer.slice(
+            options.body.byteOffset, 
+            options.body.byteOffset + options.body.byteLength
+          ) as ArrayBuffer;
+          finalOptions.body = new Blob([arrayBuffer]);
+        }
+        
+        return fetch(url, finalOptions).then((res) => {
           const currentPath = new URL(window.location.href).pathname;
           const redirectPath = res.headers.get('X-Zero-Redirect');
           if (!!redirectPath && redirectPath !== currentPath) {
@@ -102,7 +130,8 @@ export const trpcClient = createTRPCClient<AppRouter>({
             res.headers.delete('X-Zero-Redirect');
           }
           return res;
-        }),
+        });
+      },
     }),
   ],
 });

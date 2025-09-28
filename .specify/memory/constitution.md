@@ -102,3 +102,11 @@ This constitution follows semantic versioning for governance changes:
   tests and migration notes.
 - **Rationale:** Responsible stewardship ensures the fork benefits from upstream improvements while enabling
   divergent innovation. This reduces long-term maintenance burden and eases contributions between repositories.
+
+
+### Principle 7: Local Hosting Focus and Prioritization
+
+- **Name:** Local Hosting Focus and Prioritization
+- **Description:** Zero OS is intended to be a self hosted application utilizing docker containers
+- **Rationale:** Ensure that development is focused on Zero OS in self hosted application context and refrain from 
+building for the original application and its server based infr

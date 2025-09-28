@@ -7,7 +7,28 @@ export const resend = () =>
     ? new Resend(env.RESEND_API_KEY)
     : { emails: { send: async (...args: unknown[]) => console.log(args) } };
 
-export const redis = () => new Redis({ url: env.REDIS_URL, token: env.REDIS_TOKEN });
+export const redis = () => {
+  try {
+    return new Redis({ url: env.REDIS_URL, token: env.REDIS_TOKEN });
+  } catch (error) {
+    console.warn('Failed to initialize Redis client:', error);
+    // Fallback mock for development if Redis connection fails
+    return {
+      get: async (key: string) => {
+        console.log(`[REDIS:FALLBACK] GET ${key}`);
+        return null;
+      },
+      set: async (key: string, value: string, options?: { ex?: number }) => {
+        console.log(`[REDIS:FALLBACK] SET ${key} = ${value}`, options);
+        return 'OK';
+      },
+      del: async (key: string) => {
+        console.log(`[REDIS:FALLBACK] DEL ${key}`);
+        return 1;
+      },
+    } as any;
+  }
+};
 
 export const twilio = () => {
   //   if (env.NODE_ENV === 'development' && !forceUseRealService) {

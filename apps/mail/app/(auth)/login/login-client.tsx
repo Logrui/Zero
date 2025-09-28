@@ -29,7 +29,7 @@ interface Provider {
 }
 
 interface LoginClientProps {
-  providers: Provider[];
+  providers?: Provider[];
   isProd: boolean;
 }
 
@@ -72,18 +72,21 @@ function LoginClientContent({ providers, isProd }: LoginClientProps) {
   const [expandedProviders, setExpandedProviders] = useState<Record<string, boolean>>({});
   const [error, _] = useQueryState('error');
 
+  // Add null/undefined check for providers
+  const safeProviders = providers || [];
+
   useEffect(() => {
-    const missing = providers.find((p) => p.required && !p.enabled);
+    const missing = safeProviders.find((p) => p.required && !p.enabled);
     if (missing?.id) {
       setExpandedProviders({ [missing.id]: true });
     }
-  }, [providers]);
+  }, [safeProviders]);
 
-  const missingRequiredProviders = providers
+  const missingRequiredProviders = safeProviders
     .filter((p) => p.required && !p.enabled)
     .map((p) => p.name);
 
-  const missingProviders = providers
+  const missingProviders = safeProviders
     .filter((p) => p.required && !p.enabled && p.envVarInfo)
     .map((p) => ({
       id: p.id,
@@ -99,7 +102,7 @@ function LoginClientContent({ providers, isProd }: LoginClientProps) {
     }));
   };
 
-  const displayProviders = isProd ? providers.filter((p) => p.enabled || p.isCustom) : providers;
+  const displayProviders = isProd ? safeProviders.filter((p) => p.enabled || p.isCustom) : safeProviders;
 
   const hasMissingRequiredProviders = missingRequiredProviders.length > 0;
 
@@ -131,6 +134,15 @@ function LoginClientContent({ providers, isProd }: LoginClientProps) {
     if (!a.required && b.required) return 1;
     return 0;
   });
+
+  // Show loading state when providers are not yet loaded
+  if (!providers) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[#111111]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-between bg-[#111111]">
