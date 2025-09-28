@@ -382,6 +382,9 @@ export class ZeroDriver extends DurableObject<ZeroEnv> {
     super(ctx, env);
     this.sql = ctx.storage.sql;
     this.db = drizzle(ctx.storage, { schema });
+    
+    // Ensure tables exist on initialization
+    this.createTables();
   }
 
   async setName(name: string) {
