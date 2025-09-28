@@ -54,7 +54,7 @@ declare module '@/components/ui/badge' {
         variant?: 'default' | 'secondary' | 'destructive' | 'outline';
         children?: React.ReactNode;
     }
-    
+
     export const Badge: React.FC<BadgeProps>;
 }
 

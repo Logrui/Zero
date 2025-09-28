@@ -14,19 +14,19 @@
  * Used by: NotificationOverlay, Dashboard pages
  */
 
-import * as React from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Collapsible, 
-  CollapsibleContent, 
-  CollapsibleTrigger 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
 } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import * as React from 'react';
 // Note: Command components not available in Zero's UI kit
 // Will use alternative approach for tag search
 import {
@@ -34,14 +34,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { 
-  Search,
-  Filter,
-  Eye,
-  ChevronDown,
-  ChevronUp,
-  X
-} from 'lucide-react';
 
 // Types
 export interface FilterState {
@@ -66,21 +58,21 @@ export interface NotificationFiltersProps {
   // Current filter state
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
-  
+
   // Available options
   availableTags: NotificationTag[];
   availableSources?: string[];
-  
+
   // Display options
   variant?: 'default' | 'compact' | 'sidebar';
   showSearch?: boolean;
   showPriority?: boolean;
   showDateRange?: boolean;
   showAdvanced?: boolean;
-  
+
   // State
   isLoading?: boolean;
-  
+
   className?: string;
 }
 
@@ -93,7 +85,7 @@ const PRIORITY_OPTIONS = [
 export const NotificationFilters = React.forwardRef<
   HTMLDivElement,
   NotificationFiltersProps
->(({ 
+>(({
   filters,
   onFiltersChange,
   availableTags = [],
@@ -105,7 +97,7 @@ export const NotificationFilters = React.forwardRef<
   showAdvanced = false,
   isLoading = false,
   className,
-  ...props 
+  ...props
 }, ref) => {
   // State for UI interactions
   const [expandedSections, setExpandedSections] = React.useState({
@@ -113,31 +105,31 @@ export const NotificationFilters = React.forwardRef<
     priority: false,
     advanced: false
   });
-  
+
   const [tagSearchOpen, setTagSearchOpen] = React.useState(false);
   const [tagSearchValue, setTagSearchValue] = React.useState('');
-  
+
   // Helper functions
   const updateFilters = React.useCallback((updates: Partial<FilterState>) => {
     onFiltersChange({ ...filters, ...updates });
   }, [filters, onFiltersChange]);
-  
+
   const toggleTag = React.useCallback((tagName: string) => {
     const newTags = filters.tags.includes(tagName)
       ? filters.tags.filter(t => t !== tagName)
       : [...filters.tags, tagName];
-    
+
     updateFilters({ tags: newTags });
   }, [filters.tags, updateFilters]);
-  
+
   const togglePriority = React.useCallback((priority: 'low' | 'medium' | 'high') => {
     const newPriorities = filters.priority.includes(priority)
       ? filters.priority.filter(p => p !== priority)
       : [...filters.priority, priority];
-    
+
     updateFilters({ priority: newPriorities });
   }, [filters.priority, updateFilters]);
-  
+
   const clearAllFilters = React.useCallback(() => {
     onFiltersChange({
       tags: [],
@@ -148,28 +140,28 @@ export const NotificationFilters = React.forwardRef<
       source: []
     });
   }, [onFiltersChange]);
-  
+
   const hasActiveFilters = React.useMemo(() => {
-    return filters.tags.length > 0 || 
-           filters.searchQuery.length > 0 || 
-           filters.showUnreadOnly || 
-           filters.priority.length > 0 ||
-           (filters.source && filters.source.length > 0);
+    return filters.tags.length > 0 ||
+      filters.searchQuery.length > 0 ||
+      filters.showUnreadOnly ||
+      filters.priority.length > 0 ||
+      (filters.source && filters.source.length > 0);
   }, [filters]);
-  
+
   // Filter tags based on search
   const filteredTags = React.useMemo(() => {
     if (!tagSearchValue) return availableTags;
-    
+
     return availableTags.filter(tag =>
       tag.name.toLowerCase().includes(tagSearchValue.toLowerCase())
     );
   }, [availableTags, tagSearchValue]);
-  
+
   // Render sections based on variant
   const renderSearchSection = () => {
     if (!showSearch) return null;
-    
+
     return (
       <div className="space-y-2">
         <Input
@@ -184,7 +176,7 @@ export const NotificationFilters = React.forwardRef<
       </div>
     );
   };
-  
+
   const renderQuickFilters = () => (
     <div className="flex flex-wrap gap-2">
       <Button
@@ -198,7 +190,7 @@ export const NotificationFilters = React.forwardRef<
       >
         Unread Only
       </Button>
-      
+
       {hasActiveFilters && (
         <Button
           variant="ghost"
@@ -214,17 +206,17 @@ export const NotificationFilters = React.forwardRef<
       )}
     </div>
   );
-  
+
   const renderTagFilters = () => {
     if (availableTags.length === 0) return null;
-    
-    const displayTags = variant === 'compact' 
-      ? availableTags.slice(0, 6) 
+
+    const displayTags = variant === 'compact'
+      ? availableTags.slice(0, 6)
       : availableTags;
-    
+
     return (
-      <Collapsible 
-        open={expandedSections.tags} 
+      <Collapsible
+        open={expandedSections.tags}
         onOpenChange={(open) => setExpandedSections(prev => ({ ...prev, tags: open }))}
       >
         <CollapsibleTrigger asChild>
@@ -235,7 +227,7 @@ export const NotificationFilters = React.forwardRef<
             {/* ChevronDown icon would go here */}
           </Button>
         </CollapsibleTrigger>
-        
+
         <CollapsibleContent className="space-y-2 pt-2">
           {/* Tag search for large tag lists */}
           {availableTags.length > 10 && (
@@ -257,7 +249,7 @@ export const NotificationFilters = React.forwardRef<
                     onChange={(e) => setTagSearchValue(e.target.value)}
                     className="h-8 text-sm"
                   />
-                  
+
                   <div className="max-h-64 overflow-y-auto space-y-1">
                     {filteredTags.length === 0 ? (
                       <p className="text-sm text-muted-foreground p-2">No tags found.</p>
@@ -283,7 +275,7 @@ export const NotificationFilters = React.forwardRef<
               </PopoverContent>
             </Popover>
           )}
-          
+
           {/* Tag grid */}
           <div className="grid grid-cols-1 gap-1">
             {displayTags.map((tag) => (
@@ -303,7 +295,7 @@ export const NotificationFilters = React.forwardRef<
                     onChange={() => toggleTag(tag.name)}
                     className="pointer-events-none"
                   />
-                  <span 
+                  <span
                     className={cn(
                       "text-sm",
                       variant === 'compact' && 'text-xs'
@@ -312,9 +304,9 @@ export const NotificationFilters = React.forwardRef<
                     {tag.name}
                   </span>
                 </div>
-                
-                <Badge 
-                  variant="secondary" 
+
+                <Badge
+                  variant="secondary"
                   className={cn(
                     'text-xs',
                     variant === 'compact' && 'text-[10px] px-1'
@@ -326,7 +318,7 @@ export const NotificationFilters = React.forwardRef<
               </div>
             ))}
           </div>
-          
+
           {variant === 'compact' && availableTags.length > 6 && (
             <Button
               variant="outline"
@@ -340,10 +332,10 @@ export const NotificationFilters = React.forwardRef<
       </Collapsible>
     );
   };
-  
+
   const renderPriorityFilters = () => {
     if (!showPriority) return null;
-    
+
     return (
       <Collapsible
         open={expandedSections.priority}
@@ -357,7 +349,7 @@ export const NotificationFilters = React.forwardRef<
             {/* ChevronDown icon would go here */}
           </Button>
         </CollapsibleTrigger>
-        
+
         <CollapsibleContent className="space-y-1 pt-2">
           {PRIORITY_OPTIONS.map((option) => (
             <div
@@ -386,10 +378,10 @@ export const NotificationFilters = React.forwardRef<
       </Collapsible>
     );
   };
-  
+
   const renderAdvancedFilters = () => {
     if (!showAdvanced) return null;
-    
+
     return (
       <Collapsible
         open={expandedSections.advanced}
@@ -401,7 +393,7 @@ export const NotificationFilters = React.forwardRef<
             {/* ChevronDown icon would go here */}
           </Button>
         </CollapsibleTrigger>
-        
+
         <CollapsibleContent className="space-y-3 pt-2">
           {/* Date range filters */}
           {showDateRange && (
@@ -412,18 +404,18 @@ export const NotificationFilters = React.forwardRef<
                   type="date"
                   placeholder="From"
                   className="text-sm"
-                  // Add date range handling here
+                // Add date range handling here
                 />
                 <Input
                   type="date"
                   placeholder="To"
                   className="text-sm"
-                  // Add date range handling here
+                // Add date range handling here
                 />
               </div>
             </div>
           )}
-          
+
           {/* Source filters */}
           {availableSources.length > 0 && (
             <div className="space-y-2">
@@ -451,7 +443,7 @@ export const NotificationFilters = React.forwardRef<
       </Collapsible>
     );
   };
-  
+
   // Render variants
   if (variant === 'compact') {
     return (
@@ -472,7 +464,7 @@ export const NotificationFilters = React.forwardRef<
             />
           </div>
         )}
-        
+
         {/* Quick Actions Row */}
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-white flex items-center gap-2">
@@ -490,7 +482,7 @@ export const NotificationFilters = React.forwardRef<
             </Button>
           )}
         </div>
-        
+
         {/* Unread Only Toggle - Enhanced */}
         <Button
           variant={filters.showUnreadOnly ? "default" : "outline"}
@@ -498,7 +490,7 @@ export const NotificationFilters = React.forwardRef<
           onClick={() => updateFilters({ showUnreadOnly: !filters.showUnreadOnly })}
           className={cn(
             "w-full h-9 text-sm rounded-lg transition-all justify-start",
-            filters.showUnreadOnly 
+            filters.showUnreadOnly
               ? "bg-blue-500/80 hover:bg-blue-500 text-white border-blue-400 shadow-lg"
               : "bg-white/5 hover:bg-white/15 text-white/80 border-white/20 backdrop-blur-sm"
           )}
@@ -506,7 +498,7 @@ export const NotificationFilters = React.forwardRef<
           <span className="mr-2">👁️</span>
           Show Unread Only
         </Button>
-        
+
         {/* Tag Filters - Enhanced Grid Layout */}
         {availableTags.length > 0 && (
           <div className="space-y-2">
@@ -533,7 +525,7 @@ export const NotificationFilters = React.forwardRef<
                 </Button>
               ))}
             </div>
-            
+
             {availableTags.length > 6 && (
               <Button
                 variant="ghost"
@@ -545,7 +537,7 @@ export const NotificationFilters = React.forwardRef<
             )}
           </div>
         )}
-        
+
         {/* Active Filters Summary - Enhanced */}
         {hasActiveFilters && (
           <div className="space-y-2">
@@ -561,7 +553,7 @@ export const NotificationFilters = React.forwardRef<
                   {tag} ×
                 </Badge>
               ))}
-              
+
               {filters.showUnreadOnly && (
                 <Badge
                   variant="default"
@@ -571,7 +563,7 @@ export const NotificationFilters = React.forwardRef<
                   Unread only ×
                 </Badge>
               )}
-              
+
               {filters.priority.map((priority) => (
                 <Badge
                   key={priority}
@@ -588,7 +580,7 @@ export const NotificationFilters = React.forwardRef<
       </div>
     );
   }
-  
+
   // Default and sidebar variants
   return (
     <Card
@@ -605,7 +597,7 @@ export const NotificationFilters = React.forwardRef<
       )}>
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-base">Filters</h3>
-          
+
           {hasActiveFilters && (
             <Badge variant="secondary" className="text-xs">
               {filters.tags.length + filters.priority.length + (filters.showUnreadOnly ? 1 : 0)} active
@@ -613,27 +605,27 @@ export const NotificationFilters = React.forwardRef<
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent className={cn(
         'space-y-6',
         variant === 'sidebar' && 'px-0'
       )}>
         {/* Search */}
         {renderSearchSection()}
-        
+
         {/* Quick filters */}
         {renderQuickFilters()}
-        
+
         <Separator />
-        
+
         {/* Tag filters */}
         {renderTagFilters()}
-        
+
         <Separator />
-        
+
         {/* Priority filters */}
         {renderPriorityFilters()}
-        
+
         {/* Advanced filters */}
         {showAdvanced && (
           <>
@@ -641,13 +633,13 @@ export const NotificationFilters = React.forwardRef<
             {renderAdvancedFilters()}
           </>
         )}
-        
+
         {/* Filter summary */}
         {hasActiveFilters && (
           <div className="pt-4 border-t">
             <div className="space-y-2">
               <div className="text-sm font-medium">Active Filters:</div>
-              
+
               <div className="flex flex-wrap gap-1">
                 {filters.tags.map((tag) => (
                   <Badge
@@ -659,7 +651,7 @@ export const NotificationFilters = React.forwardRef<
                     {tag} ×
                   </Badge>
                 ))}
-                
+
                 {filters.priority.map((priority) => (
                   <Badge
                     key={priority}
@@ -670,7 +662,7 @@ export const NotificationFilters = React.forwardRef<
                     {priority} priority ×
                   </Badge>
                 ))}
-                
+
                 {filters.showUnreadOnly && (
                   <Badge
                     variant="default"

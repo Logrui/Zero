@@ -35,7 +35,7 @@
   "include": [
     "app/**/*.ts",
     "app/**/*.tsx",
-    "components/**/*.ts", 
+    "components/**/*.ts",
     "components/**/*.tsx",
     "hooks/**/*.ts",
     "hooks/**/*.tsx",

@@ -1,12 +1,13 @@
-import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { cloudflare } from '@cloudflare/vite-plugin';
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { reactRouter } from '@react-router/dev/vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
-import oxlintPlugin from 'vite-plugin-oxlint';
-import babel from 'vite-plugin-babel';
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from 'vite';
 import dedent from 'dedent';
+import { resolve } from 'path';
+import { defineConfig } from 'vite';
+import babel from 'vite-plugin-babel';
+import oxlintPlugin from 'vite-plugin-oxlint';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 const ReactCompilerConfig = {
   /* ... */
@@ -14,6 +15,7 @@ const ReactCompilerConfig = {
 
 export default defineConfig({
   plugins: [
+    tsconfigPaths(),
     // Only enable oxlint when explicitly requested (e.g., CI): set OXLINT=1
     process.env.OXLINT === '1' && oxlintPlugin(),
     reactRouter(),
@@ -25,7 +27,6 @@ export default defineConfig({
         plugins: [['babel-plugin-react-compiler', ReactCompilerConfig]],
       },
     }),
-    tsconfigPaths(),
     tailwindcss(),
     {
       name: 'add-headers',
@@ -83,6 +84,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@': resolve(__dirname, '.'),
       tslib: 'tslib/tslib.es6.js',
     },
   },
