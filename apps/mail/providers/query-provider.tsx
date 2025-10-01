@@ -1,17 +1,17 @@
+import { signOut } from '@/lib/auth-client';
+import { CACHE_BURST_KEY } from '@/lib/constants';
+import { QueryCache, QueryClient, hashKey, type InfiniteData } from '@tanstack/react-query';
 import {
   PersistQueryClientProvider,
   type PersistedClient,
   type Persister,
 } from '@tanstack/react-query-persist-client';
-import { QueryCache, QueryClient, hashKey, type InfiniteData } from '@tanstack/react-query';
-import { createTRPCContext } from '@trpc/tanstack-react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import { createTRPCContext } from '@trpc/tanstack-react-query';
+import { del, get, set } from 'idb-keyval';
 import { useMemo, type PropsWithChildren } from 'react';
-import type { AppRouter } from '../../server/src/trpc';
-import { CACHE_BURST_KEY } from '@/lib/constants';
-import { signOut } from '@/lib/auth-client';
-import { get, set, del } from 'idb-keyval';
 import superjson from 'superjson';
+import type { AppRouter } from '../../server/src/trpc';
 
 function createIDBPersister(idbValidKey: IDBValidKey = 'zero-query-cache') {
   return {
@@ -107,21 +107,21 @@ export const trpcClient = createTRPCClient<AppRouter>({
       maxItems: 1,
       fetch: (url, options) => {
         // Handle Uint8Array body conversion for fetch compatibility
-        let finalOptions: RequestInit = { 
-          ...(options || {}), 
-          credentials: 'include' 
+        let finalOptions: RequestInit = {
+          ...(options || {}),
+          credentials: 'include'
         } as RequestInit;
-        
+
         // Convert Uint8Array to Blob if present
         if (options && 'body' in options && options.body instanceof Uint8Array) {
           // Convert to proper ArrayBuffer for Blob creation
           const arrayBuffer = options.body.buffer.slice(
-            options.body.byteOffset, 
+            options.body.byteOffset,
             options.body.byteOffset + options.body.byteLength
           ) as ArrayBuffer;
           finalOptions.body = new Blob([arrayBuffer]);
         }
-        
+
         return fetch(url, finalOptions).then((res) => {
           const currentPath = new URL(window.location.href).pathname;
           const redirectPath = res.headers.get('X-Zero-Redirect');
@@ -130,6 +130,19 @@ export const trpcClient = createTRPCClient<AppRouter>({
             res.headers.delete('X-Zero-Redirect');
           }
           return res;
+        }).catch((error) => {
+          console.error('TRPC fetch error:', error);
+
+          // Handle network errors gracefully
+          if (error instanceof TypeError && error.message.includes('fetch')) {
+            throw new Error('Network connection failed');
+          }
+
+          if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error('Request timeout - please check your connection');
+          }
+
+          throw error;
         });
       },
     }),

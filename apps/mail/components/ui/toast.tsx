@@ -4,13 +4,13 @@ import {
   ExclamationTriangle,
   InfoCircle,
 } from '@/components/icons/icons';
-import { Toaster as SonnerToaster } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { Toaster as SonnerToaster } from 'sonner';
 
 const Toaster = () => {
   return (
     <SonnerToaster
-      position="bottom-center"
+      position="bottom-right"
       icons={{
         success: <CircleCheck className="h-4.5 w-4.5 border-none fill-[#36B981]" />,
         error: <ExclamationCircle2 className="h-4.5 w-4.5 fill-[#FF0000]" />,

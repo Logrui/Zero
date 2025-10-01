@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "react-router dev --port 3500",
+    "dev": "vite --port 3500 --host 0.0.0.0",
+    "dev:debug": "vite --port 3500 --host 0.0.0.0 --logLevel debug",
     "build": "react-router build",
     "start": "wrangler dev --port 3500 --show-interactive-dev-session=false",
     "types": "wrangler types",
@@ -101,7 +102,7 @@
     "react-hotkeys-hook": "^5.0.1",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "2.1.7",
-    "react-router": "^7.6.1",
+    "react-router": "^7.6.3",
     "react-use": "^17.6.0",
     "react-wrap-balancer": "^1.1.1",
     "recharts": "^2.15.1",

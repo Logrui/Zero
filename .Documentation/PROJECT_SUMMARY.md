@@ -27,7 +27,7 @@ Development flow (non-Docker):
 3) Start Postgres (Docker compose): `pnpm docker:db:up`
 4) Push schema: `pnpm db:push`
 5) Run dev servers: `pnpm dev`
-   - Frontend: http://localhost:3000
+   - Frontend: http://localhost:3500
    - Backend (Workers dev): http://localhost:8787
 
 Docker in dev:

@@ -323,7 +323,7 @@ Promise<{ success: boolean }> // for delete
 
 ```typescript
 // Enable with environment variable
-const USE_MOCK = process.env?.NEXT_PUBLIC_CALENDAR_MOCK === 'true';
+const USE_MOCK = process.env?.VITE_PUBLIC_CALENDAR_MOCK === 'true';
 
 // Returns sample data instead of database queries
 if (USE_MOCK) return mockEvents('mock-user', start, end);

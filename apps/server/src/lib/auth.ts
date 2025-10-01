@@ -1,3 +1,17 @@
+import { dubAnalytics } from '@dub/better-auth';
+import { type Account, betterAuth, type BetterAuthOptions } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { APIError } from 'better-auth/api';
+import { bearer, createAuthMiddleware, jwt, mcp, phoneNumber } from 'better-auth/plugins';
+import { Dub } from 'dub';
+import { Effect } from 'effect';
+import { createDb } from '../db';
+import { env } from '../env';
+import { type EProviders } from '../types';
+import { getSocialProviders } from './auth-providers';
+import { disableBrainFunction } from './brain';
+import { logDebug } from './debug-logger';
+import { createDriver } from './driver';
 import {
   AIWritingAssistantEmail,
   AutoLabelingEmail,
@@ -7,24 +21,10 @@ import {
   SuperSearchEmail,
   WelcomeEmail,
 } from './react-emails/email-sequences';
-import { createAuthMiddleware, phoneNumber, jwt, bearer, mcp } from 'better-auth/plugins';
-import { type Account, betterAuth, type BetterAuthOptions } from 'better-auth';
-import { getBrowserTimezone, isValidTimezone } from './timezones';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { getZeroDB, resetConnection } from './server-utils';
-import { getSocialProviders } from './auth-providers';
-import { redis, resend, twilio } from './services';
-import { dubAnalytics } from '@dub/better-auth';
 import { defaultUserSettings } from './schemas';
-import { disableBrainFunction } from './brain';
-import { APIError } from 'better-auth/api';
-import { type EProviders } from '../types';
-import { createDriver } from './driver';
-import { logDebug } from './debug-logger';
-import { createDb } from '../db';
-import { Effect } from 'effect';
-import { env } from '../env';
-import { Dub } from 'dub';
+import { getZeroDB, resetConnection } from './server-utils';
+import { redis, resend, twilio } from './services';
+import { getBrowserTimezone, isValidTimezone } from './timezones';
 
 const scheduleCampaign = (userInfo: { address: string; name: string }) =>
   Effect.gen(function* () {
@@ -331,15 +331,30 @@ const createAuthConfig = () => {
     database: drizzleAdapter(db, { provider: 'pg' }),
     secondaryStorage: {
       get: async (key: string) => {
-        const value = await cache.get(key);
-        return typeof value === 'string' ? value : value ? JSON.stringify(value) : null;
+        try {
+          const value = await cache.get(key);
+          return typeof value === 'string' ? value : value ? JSON.stringify(value) : null;
+        } catch (error) {
+          console.warn(`[AUTH] Redis GET failed for key ${key}:`, error);
+          return null;
+        }
       },
       set: async (key: string, value: string, ttl?: number) => {
-        if (ttl) await cache.set(key, value, { ex: ttl });
-        else await cache.set(key, value);
+        try {
+          if (ttl) await cache.set(key, value, { ex: ttl });
+          else await cache.set(key, value);
+        } catch (error) {
+          console.warn(`[AUTH] Redis SET failed for key ${key}:`, error);
+          // Don't throw - let auth continue without caching
+        }
       },
       delete: async (key: string) => {
-        await cache.del(key);
+        try {
+          await cache.del(key);
+        } catch (error) {
+          console.warn(`[AUTH] Redis DEL failed for key ${key}:`, error);
+          // Don't throw - deletion failure shouldn't break auth
+        }
       },
     },
     advanced: {

@@ -11,14 +11,20 @@ const authClient = createAuthClient({
 export const authProxy = {
   api: {
     getSession: async ({ headers }: { headers: Headers }) => {
-      const session = await authClient.getSession({
-        fetchOptions: { headers, credentials: 'include' },
-      });
-      if (session.error) {
-        console.error(`Failed to get session: ${session.error}`, session);
+      try {
+        const session = await authClient.getSession({
+          fetchOptions: { headers, credentials: 'include' },
+        });
+        if (session.error) {
+          console.error(`Failed to get session: ${session.error}`, session);
+          return null;
+        }
+        return session.data;
+      } catch (error) {
+        // Log and swallow all errors to prevent upstream failures
+        console.error('Auth proxy getSession failed:', error);
         return null;
       }
-      return session.data;
     },
   },
 };

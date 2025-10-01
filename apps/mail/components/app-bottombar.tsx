@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { Bell, Calendar, Plus } from "@/components/icons/icons";
+import { NotificationIcon } from "@/components/notifications/notification-badge";
+import { NotificationOverlay } from "@/components/notifications/notification-overlay";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,24 +12,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
-import {
-  Bell as BellIcon,
-  Calendar as CalendarIcon,
-  Menu as MenuIcon,
-  Plus as PlusIcon,
-  Search as SearchIcon,
-  LogOut as LogOutIcon,
-  Settings as SettingsIcon,
-} from "lucide-react";
-import { NotificationIcon } from "@/components/notifications/notification-badge";
-import { NotificationOverlay } from "@/components/notifications/notification-overlay";
+import { Search, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
 
 export function AppBottombar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const headerRef = useRef<HTMLElement | null>(null);
-  
+
   // Notification state management
   const [notifications, setNotifications] = useState([
     // Mock notifications for testing
@@ -70,7 +62,7 @@ export function AppBottombar() {
   // elements (like the sidebar) can offset correctly above the bottombar.
   useEffect(() => {
     const updateVar = () => {
-      const h = headerRef.current?.offsetHeight ?? 48; // default 3rem (h-12)
+      const h = 48; // default 3rem (h-12)
       document.documentElement.style.setProperty("--app-bottombar-height", `${h}px`);
     };
     updateVar();
@@ -79,14 +71,14 @@ export function AppBottombar() {
   }, []);
 
   return (
-    <header ref={headerRef} className="fixed inset-x-0 bottom-0 z-50 w-full bg-background outline-none m-0 mt-0 p-0 pt-0">
+    <header className="fixed inset-x-0 bottom-0 z-50 w-full bg-background outline-none m-0 mt-0 p-0 pt-0">
       <div className="flex h-12 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
             {/* Brand icon temporarily disabled */}
             {false && (
               <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-muted text-foreground">
-                <CalendarIcon className="h-5 w-5" />
+                <Calendar className="h-5 w-5" />
               </div>
             )}
             <span className="text-xl font-bold tracking-tight">ZeroOS</span>
@@ -98,6 +90,9 @@ export function AppBottombar() {
             </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/mail">Mail</Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/calendar">Calendar</Link>
             </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/organizations">Organizations</Link>
@@ -127,7 +122,7 @@ export function AppBottombar() {
           {/* Desktop search temporarily disabled */}
           {false && (
             <div className="relative hidden md:block">
-              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search..."
                 className="w-64 pl-9 rounded-full bg-muted border-none focus-visible:ring-1 h-9 text-sm"
@@ -140,7 +135,7 @@ export function AppBottombar() {
           {/* Desktop create button temporarily disabled */}
           {false && (
             <Button variant="outline" size="sm" className="hidden md:flex gap-1 h-9 items-center rounded-lg">
-              <PlusIcon className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
               <span>Create</span>
             </Button>
           )}
@@ -154,9 +149,12 @@ export function AppBottombar() {
             <NotificationIcon
               count={3} // Mock count - in real app, this would come from context/state
               size="md"
-              onClick={() => {}}
+              onClick={() => { }}
+              icon={<Bell className="h-5 w-5" />}
             />
-          </Button>          {/* User dropdown menu temporarily disabled */}
+          </Button>
+
+          {/* User dropdown menu temporarily disabled */}
           {false && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -176,12 +174,12 @@ export function AppBottombar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="py-2 px-3 text-sm rounded-md cursor-pointer">
-                  <SettingsIcon className="mr-2 h-4 w-4" />
+                  <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="py-2 px-3 text-sm rounded-md cursor-pointer">
-                  <LogOutIcon className="mr-2 h-4 w-4" />
+                  <span className="mr-2">🚪</span>
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -195,7 +193,7 @@ export function AppBottombar() {
             onClick={() => setShowMobileMenu((v) => !v)}
             aria-label="Toggle menu"
           >
-            <MenuIcon className="h-5 w-5" />
+            <span className="text-lg">☰</span>
           </Button>
         </div>
       </div>
@@ -206,7 +204,7 @@ export function AppBottombar() {
             {/* Mobile search temporarily disabled */}
             {false && (
               <div className="relative mb-3">
-                <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search..."
                   className="w-full pl-9 rounded-lg bg-muted border-none focus-visible:ring-1"
@@ -247,7 +245,7 @@ export function AppBottombar() {
             {/* Mobile create button temporarily disabled */}
             {false && (
               <Button variant="outline" className="w-full gap-1 mt-2 rounded-lg">
-                <PlusIcon className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 <span>Create</span>
               </Button>
             )}
@@ -269,7 +267,7 @@ export function AppBottombar() {
         }}
         onMarkAsRead={async (notificationIds) => {
           // Mark notifications as read in state
-          setNotifications(prev => prev.map(n => 
+          setNotifications(prev => prev.map(n =>
             notificationIds.includes(n.id) ? { ...n, isRead: true } : n
           ));
         }}

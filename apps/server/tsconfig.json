@@ -1,5 +1,5 @@
 {
-  "extends": "@zero/tsconfig/base",
+  "extends": "../../packages/tsconfig/base.json",
   "include": [
     "src/**/*.ts",
     "src/overrides.d.ts",

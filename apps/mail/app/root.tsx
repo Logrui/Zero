@@ -1,3 +1,18 @@
+import { AuthWrapper } from '@/components/auth-wrapper';
+import { ErrorBoundary as AppErrorBoundary, NetworkStatusProvider } from '@/components/error-boundaries';
+import { Button } from '@/components/ui/button';
+import { signOut } from '@/lib/auth-client';
+import { siteConfig } from '@/lib/site-config';
+import { m } from '@/paraglide/messages';
+import { getLocale } from '@/paraglide/runtime';
+import { ClientProviders } from '@/providers/client-providers';
+import { ServerProviders } from '@/providers/server-providers';
+import { Analytics as DubAnalytics } from '@dub/analytics/react';
+import * as Sentry from '@sentry/react';
+import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import type { AppRouter } from '@zero/server/trpc';
+import { AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { useEffect, type PropsWithChildren } from 'react';
 import {
   isRouteErrorResponse,
   Links,
@@ -8,21 +23,8 @@ import {
   useNavigate,
   type MetaFunction,
 } from 'react-router';
-import { Analytics as DubAnalytics } from '@dub/analytics/react';
-import { ServerProviders } from '@/providers/server-providers';
-import { ClientProviders } from '@/providers/client-providers';
-import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import { useEffect, type PropsWithChildren } from 'react';
-import type { AppRouter } from '@zero/server/trpc';
-import { Button } from '@/components/ui/button';
-import { getLocale } from '@/paraglide/runtime';
-import { siteConfig } from '@/lib/site-config';
-import { signOut } from '@/lib/auth-client';
-import type { Route } from './+types/root';
-import { AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
-import { m } from '@/paraglide/messages';
-import * as Sentry from '@sentry/react';
 import superjson from 'superjson';
+import type { Route } from './+types/root';
 import './globals.css';
 
 const getUrl = () => import.meta.env.VITE_PUBLIC_BACKEND_URL + '/api/trpc';
@@ -92,13 +94,22 @@ export function HydrateFallback() {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <NetworkStatusProvider>
+      <AppErrorBoundary>
+        <AuthWrapper requireAuth={false}>
+          <Outlet />
+        </AuthWrapper>
+      </AppErrorBoundary>
+    </NetworkStatusProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = 'Oops!';
   let details = 'An unexpected error occurred.';
   let stack: string | undefined;
+  let isNetworkError = false;
 
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? '404' : 'Error';
@@ -107,9 +118,17 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     if (error.status === 404) {
       return <NotFound />;
     }
+    // Check if it's a network/backend error
+    isNetworkError = error.status >= 500 ||
+      error.statusText?.toLowerCase().includes('connection') ||
+      error.statusText?.toLowerCase().includes('network');
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;
+    // Check if it's a network error
+    isNetworkError = error.message?.toLowerCase().includes('connection') ||
+      error.message?.toLowerCase().includes('fetch failed') ||
+      error.message?.toLowerCase().includes('network');
   }
 
   useEffect(() => {
@@ -145,6 +164,37 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       });
     }
   }, [error, message, details, stack]);
+
+  // For network/backend errors, show a friendly fallback instead of the error screen
+  if (isNetworkError) {
+    return (
+      <div className="dark:bg-background flex w-full items-center justify-center bg-white text-center">
+        <div className="flex-col items-center justify-center md:flex dark:text-gray-100">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold tracking-tight">Connection Issue</h2>
+            <p className="text-muted-foreground max-w-md">
+              We're experiencing some connection issues. You can still browse our site and learn about Zero OS.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => window.location.href = '/'}
+                className="gap-2"
+              >
+                Go to Home
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+                className="gap-2"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dark:bg-background flex w-full items-center justify-center bg-white text-center">

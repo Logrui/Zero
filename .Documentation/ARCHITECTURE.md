@@ -18,7 +18,7 @@ Zero is a modern full-stack application built with a monorepo architecture using
 
 #### A. Mail App (Frontend)
 - **Location**: `/apps/mail`
-- **Framework**: Next.js (App Router)
+- **Framework**: React Router v7 + Vite
 - **Key Technologies**:
   - TypeScript
   - React 18+
@@ -26,7 +26,7 @@ Zero is a modern full-stack application built with a monorepo architecture using
   - tRPC for type-safe API calls
   - React Query for data fetching
   - Internationalization (i18n)
-  - React Router
+  - React Router v7
 
 #### B. Server (Backend)
 - **Location**: `/apps/server`
@@ -54,7 +54,7 @@ Zero is a modern full-stack application built with a monorepo architecture using
 .
 ├── apps/
 │   ├── mail/          # Frontend application
-│   │   ├── app/       # Next.js app directory
+│   │   ├── app/       # React Router app directory
 │   │   ├── components/# React components
 │   │   ├── lib/       # Shared utilities
 │   │   └── public/    # Static assets
@@ -156,7 +156,7 @@ pnpm test
 2. Install dependencies: `pnpm install`
 3. Set up environment variables (copy `.env.example` to `.env`)
 4. Start the development environment: `pnpm dev`
-5. Access the application at `http://localhost:3000`
+5. Access the application at `http://localhost:3500`
 
 ## Contributing
 1. Create a new branch for your feature
@@ -167,7 +167,8 @@ pnpm test
 ## Tech Stack
 
 ### Frontend
-- **Next.js** - React-based web framework for the email client
+- **React Router v7** - React-based web framework for the email client
+- **Vite** - Fast build tool and development server
 - **React 19** - UI library for building user interfaces
 - **TypeScript** - Type-safe JavaScript for better development experience
 - **TailwindCSS** - Utility-first CSS framework for styling
@@ -213,9 +214,8 @@ pnpm test
 
 Zero is structured as a pnpm workspace monorepo with the following key applications:
 
-- **`apps/mail/`** - Next.js frontend email client
+- **`apps/mail/`** - React Router v7 frontend email client
 - **`apps/server/`** - Backend server (Cloudflare Workers)
-- **`apps/ios-app/`** - iOS mobile application
 - **`packages/cli/`** - CLI tools (nizzy command)
 - **`packages/db/`** - Database schemas and utilities
 - Various shared configuration packages

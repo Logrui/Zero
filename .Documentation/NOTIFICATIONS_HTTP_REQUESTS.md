@@ -15,7 +15,7 @@ This document provides comprehensive guidance for integrating external systems (
 |--------|-------|
 | **Endpoint** | `POST /api/notifications` |
 | **Authentication** | API Key (Header: `X-API-Key` or `Authorization: Bearer`) |
-| **Rate Limit** | 100 requests/minute per API key |
+| **Rate Limit** | 1,000 requests/hour per API key, 100 requests/hour per IP |
 | **Content-Type** | `application/json` |
 | **API Key Format** | `zro_` prefix + alphanumeric characters |
 
@@ -245,9 +245,11 @@ zro_[alphanumeric_string]
 ## Rate Limiting
 
 ### Limits
-- **Rate**: 100 requests per minute per API key
-- **Window**: Rolling 60-second window
-- **Scope**: Per API key (not per IP)
+- **API Key Rate**: 1,000 requests per hour per API key
+- **IP Rate**: 100 requests per hour per IP address
+- **Window**: Rolling 60-minute window
+- **Scope**: Per API key and per IP (whichever is more restrictive)
+- **Note**: Development implementation uses in-memory rate limiting
 
 ### Handling Rate Limits
 ```javascript
@@ -352,6 +354,13 @@ curl -X POST http://localhost:3501/api/notifications \
   "priority": "{{ severity === 'critical' ? 'high' : 'medium' }}"
 }
 ```
+
+## Implementation Notes
+
+### Development vs Production
+- **Development**: Implementation in `apps/mail/api/notifications/route.ts` (Vite/React Router app routes)
+- **Production**: Hono routes in `apps/server/src/routes/notifications-production.ts`
+- **Rate Limiting**: In-memory implementation in `apps/mail/middleware/rate-limit.ts`
 
 ## Related Documentation
 

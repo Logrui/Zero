@@ -1,6 +1,6 @@
-import { env } from '../env';
 import { Redis } from '@upstash/redis';
 import { Resend } from 'resend';
+import { env } from '../env';
 
 export const resend = () =>
   env.RESEND_API_KEY
@@ -9,7 +9,14 @@ export const resend = () =>
 
 export const redis = () => {
   try {
-    return new Redis({ url: env.REDIS_URL, token: env.REDIS_TOKEN });
+    return new Redis({
+      url: env.REDIS_URL,
+      token: env.REDIS_TOKEN,
+      retry: {
+        retries: 3,
+        backoff: (retryCount) => Math.pow(2, retryCount) * 1000,
+      },
+    });
   } catch (error) {
     console.warn('Failed to initialize Redis client:', error);
     // Fallback mock for development if Redis connection fails

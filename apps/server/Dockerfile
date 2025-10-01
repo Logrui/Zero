@@ -6,12 +6,16 @@ RUN npm i -g wrangler@4.38.0 \
 
 WORKDIR /app
 
-# Copy only server workspace to keep image smaller (adjust if needed)
+# Copy workspace configuration and shared packages
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/tsconfig ./packages/tsconfig
+COPY patches ./patches
+
+# Copy server app
 COPY apps/server ./apps/server
-COPY package.json pnpm-lock.yaml ./
 
 # Install workspace deps (adjust if you use workspaces at root)
-RUN npm i -g pnpm && pnpm install --filter @zero/server...
+RUN npm i -g pnpm && SKIP_ROOT_POSTINSTALL=1 pnpm install --filter @zero/server...
 
 WORKDIR /app/apps/server
 

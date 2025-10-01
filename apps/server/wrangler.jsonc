@@ -2,14 +2,19 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "zero-server",
   "compatibility_date": "2025-05-01",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "main": "src/main.ts",
+  "minify": false,
   "env": {
     "local": {
       "rules": [
         {
           "type": "Text",
-          "globs": ["**/*.sql"],
+          "globs": [
+            "**/*.sql"
+          ],
           "fallthrough": true,
         },
       ],
@@ -110,42 +115,60 @@
       "migrations": [
         {
           "tag": "v1",
-          "new_classes": ["DurableMailbox"],
+          "new_classes": [
+            "DurableMailbox"
+          ],
         },
         {
           "tag": "v2",
-          "new_sqlite_classes": ["ZeroAgent", "ZeroMCP"],
+          "new_sqlite_classes": [
+            "ZeroAgent",
+            "ZeroMCP"
+          ],
         },
         {
           "tag": "v3",
-          "new_classes": ["ZeroDB"],
+          "new_classes": [
+            "ZeroDB"
+          ],
         },
         {
           "tag": "v4",
-          "deleted_classes": ["DurableMailbox"],
+          "deleted_classes": [
+            "DurableMailbox"
+          ],
         },
         {
           "tag": "v5",
-          "new_sqlite_classes": ["ZeroDriver"],
+          "new_sqlite_classes": [
+            "ZeroDriver"
+          ],
         },
         {
           "tag": "v6",
-          "new_sqlite_classes": ["ThinkingMCP"],
+          "new_sqlite_classes": [
+            "ThinkingMCP"
+          ],
         },
         {
           "tag": "v7",
-          "new_sqlite_classes": ["WorkflowRunner"],
+          "new_sqlite_classes": [
+            "WorkflowRunner"
+          ],
         },
         {
           "tag": "v8",
-          "new_sqlite_classes": ["ThreadSyncWorker"],
+          "new_sqlite_classes": [
+            "ThreadSyncWorker"
+          ],
         },
         {
           "tag": "v9",
-          "new_sqlite_classes": ["ShardRegistry"],
+          "new_sqlite_classes": [
+            "ShardRegistry"
+          ],
         },
       ],
-
       "observability": {
         "enabled": true,
       },
@@ -153,7 +176,9 @@
         {
           "binding": "HYPERDRIVE",
           "id": "57834ddb6716440496c8836f6d99bc9a",
-          "localConnectionString": "postgresql://postgres:postgres@localhost:5433/zerodotemail",
+          // NOTE: Changed host from localhost:5433 -> db:5432 so this works when running inside docker-compose.edge.yaml
+          // If running wrangler dev directly on the host and exposing Postgres on 5433, adjust this back or override with a separate config.
+          "localConnectionString": "postgresql://postgres:postgres@db:5432/zerodotemail",
         },
       ],
       "vars": {
@@ -165,7 +190,7 @@
         "ELEVENLABS_API_KEY": "1234567890",
         "DISABLE_CALLS": "true",
         "VOICE_SECRET": "1234567890",
-        "GOOGLE_S_ACCOUNT": "{}",
+        "GOOGLE_S_ACCOUNT": "development-mode",
         "DROP_AGENT_TABLES": "false",
         "THREAD_SYNC_MAX_COUNT": "500",
         "THREAD_SYNC_LOOP": "true",
@@ -231,12 +256,17 @@
       "rules": [
         {
           "type": "Text",
-          "globs": ["**/*.sql"],
+          "globs": [
+            "**/*.sql"
+          ],
           "fallthrough": true,
         },
       ],
       "triggers": {
-        "crons": ["0 0 * * *", "0 * * * *"],
+        "crons": [
+          "0 0 * * *",
+          "0 * * * *"
+        ],
       },
       "ai": {
         "binding": "AI",
@@ -338,43 +368,64 @@
       "migrations": [
         {
           "tag": "v1",
-          "new_classes": ["DurableMailbox"],
+          "new_classes": [
+            "DurableMailbox"
+          ],
         },
         {
           "tag": "v2",
-          "new_sqlite_classes": ["ZeroAgent", "ZeroMCP"],
+          "new_sqlite_classes": [
+            "ZeroAgent",
+            "ZeroMCP"
+          ],
         },
         {
           "tag": "v3",
-          "new_classes": ["ZeroDB"],
+          "new_classes": [
+            "ZeroDB"
+          ],
         },
         {
           "tag": "v4",
-          "new_sqlite_classes": ["ZeroAgent"],
+          "new_sqlite_classes": [
+            "ZeroAgent"
+          ],
         },
         {
           "tag": "v5",
-          "deleted_classes": ["DurableMailbox"],
+          "deleted_classes": [
+            "DurableMailbox"
+          ],
         },
         {
           "tag": "v6",
-          "new_sqlite_classes": ["ZeroDriver"],
+          "new_sqlite_classes": [
+            "ZeroDriver"
+          ],
         },
         {
           "tag": "v7",
-          "new_sqlite_classes": ["ThinkingMCP"],
+          "new_sqlite_classes": [
+            "ThinkingMCP"
+          ],
         },
         {
           "tag": "v8",
-          "new_sqlite_classes": ["WorkflowRunner"],
+          "new_sqlite_classes": [
+            "WorkflowRunner"
+          ],
         },
         {
           "tag": "v9",
-          "new_sqlite_classes": ["ThreadSyncWorker"],
+          "new_sqlite_classes": [
+            "ThreadSyncWorker"
+          ],
         },
         {
           "tag": "v10",
-          "new_sqlite_classes": ["ShardRegistry"],
+          "new_sqlite_classes": [
+            "ShardRegistry"
+          ],
         },
       ],
       "observability": {
@@ -449,12 +500,17 @@
       "rules": [
         {
           "type": "Text",
-          "globs": ["**/*.sql"],
+          "globs": [
+            "**/*.sql"
+          ],
           "fallthrough": true,
         },
       ],
       "triggers": {
-        "crons": ["0 0 * * *", "0 * * * *"],
+        "crons": [
+          "0 0 * * *",
+          "0 * * * *"
+        ],
       },
       "r2_buckets": [
         {
@@ -563,43 +619,64 @@
       "migrations": [
         {
           "tag": "v1",
-          "new_classes": ["DurableMailbox"],
+          "new_classes": [
+            "DurableMailbox"
+          ],
         },
         {
           "tag": "v2",
-          "new_sqlite_classes": ["ZeroAgent", "ZeroMCP"],
+          "new_sqlite_classes": [
+            "ZeroAgent",
+            "ZeroMCP"
+          ],
         },
         {
           "tag": "v3",
-          "new_classes": ["ZeroDB"],
+          "new_classes": [
+            "ZeroDB"
+          ],
         },
         {
           "tag": "v4",
-          "new_sqlite_classes": ["ZeroAgent"],
+          "new_sqlite_classes": [
+            "ZeroAgent"
+          ],
         },
         {
           "tag": "v5",
-          "deleted_classes": ["DurableMailbox"],
+          "deleted_classes": [
+            "DurableMailbox"
+          ],
         },
         {
           "tag": "v6",
-          "new_sqlite_classes": ["ZeroDriver"],
+          "new_sqlite_classes": [
+            "ZeroDriver"
+          ],
         },
         {
           "tag": "v7",
-          "new_sqlite_classes": ["ThinkingMCP"],
+          "new_sqlite_classes": [
+            "ThinkingMCP"
+          ],
         },
         {
           "tag": "v8",
-          "new_sqlite_classes": ["WorkflowRunner"],
+          "new_sqlite_classes": [
+            "WorkflowRunner"
+          ],
         },
         {
           "tag": "v9",
-          "new_sqlite_classes": ["ThreadSyncWorker"],
+          "new_sqlite_classes": [
+            "ThreadSyncWorker"
+          ],
         },
         {
           "tag": "v10",
-          "new_sqlite_classes": ["ShardRegistry"],
+          "new_sqlite_classes": [
+            "ShardRegistry"
+          ],
         },
       ],
       "vars": {
@@ -662,4 +739,3 @@
     },
   },
 }
-

@@ -2,14 +2,18 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "zero-server-production",
   "compatibility_date": "2025-05-01",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "main": "src/main.ts",
   "env": {
     "production": {
       "rules": [
         {
           "type": "Text",
-          "globs": ["**/*.sql"],
+          "globs": [
+            "**/*.sql"
+          ],
           "fallthrough": true
         }
       ],
@@ -29,7 +33,23 @@
       "r2_buckets": [
         {
           "binding": "THREADS_BUCKET",
-          "bucket_name": "threads-production"
+          "bucket_name": "threads-production",
+          "preview_bucket_name": "threads-staging"
+        }
+      ],
+      "migrations": [
+        {
+          "tag": "v1",
+          "new_classes": [
+            "ZeroAgent",
+            "ZeroMCP",
+            "ZeroDB",
+            "ZeroDriver",
+            "ThinkingMCP",
+            "WorkflowRunner",
+            "ThreadSyncWorker",
+            "ShardRegistry"
+          ]
         }
       ],
       "durable_objects": {

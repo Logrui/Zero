@@ -3,7 +3,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev --show-interactive-dev-session=false --experimental-vectorize-bind-to-prod --env local",
+    "dev": "wrangler dev --port 8787 --ip 0.0.0.0 --show-interactive-dev-session=false --experimental-vectorize-bind-to-prod --env local",
+    "build": "wrangler deploy --dry-run --env production",
+    "dev:prod": "wrangler dev --port 8787 --ip 0.0.0.0 --show-interactive-dev-session=false --env production --remote",
     "deploy": "wrangler deploy",
     "types": "wrangler types --env local",
     "lint": "eslint .",
@@ -34,6 +36,7 @@
     "@dub/better-auth": "0.0.3",
     "@googleapis/gmail": "12.0.0",
     "@googleapis/people": "3.0.9",
+    "@hono/node-server": "1.19.4",
     "@hono/trpc-server": "^0.3.4",
     "@microlabs/otel-cf-workers": "1.0.0-rc.52",
     "@microsoft/microsoft-graph-client": "^3.0.7",
@@ -84,7 +87,7 @@
     "twilio": "5.7.0",
     "ulid": "3.0.1",
     "uuid": "11.1.0",
-    "wrangler": "catalog:",
+    "wrangler": "4.28.1",
     "zod": "catalog:"
   },
   "devDependencies": {

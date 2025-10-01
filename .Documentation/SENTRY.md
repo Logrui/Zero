@@ -133,7 +133,7 @@ export default {
 ### Organization Structure
 
 **Current Sentry Organization**: `zero-7y`
-- **Frontend Project**: `nextjs` (legacy name, actually React Router)
+- **Frontend Project**: `zero-mail-app` (React Router v7 + Vite)
 - **Backend Project**: `cloudflare-workers`
 
 ### Source Maps Configuration
@@ -142,12 +142,12 @@ Source maps help Sentry provide readable stack traces in production:
 
 ```bash
 # Current configuration (package.json)
-"sentry:sourcemaps": "sentry-cli sourcemaps inject --org zero-7y --project nextjs ./apps/mail/.next && sentry-cli sourcemaps upload --org zero-7y --project nextjs ./apps/mail/.next"
+"sentry:sourcemaps": "sentry-cli sourcemaps inject --org zero-7y --project zero-mail-app ./apps/mail/build && sentry-cli sourcemaps upload --org zero-7y --project zero-mail-app ./apps/mail/build"
 ```
 
-⚠️ **Configuration Issue**: The current source maps configuration references:
-- Project name `nextjs` (should be updated to reflect React Router)
-- Directory `./apps/mail/.next` (doesn't exist, should be `./apps/mail/build`)
+✅ **Configuration Updated**: The source maps configuration now correctly references:
+- Project name `zero-mail-app` (updated to reflect React Router)
+- Directory `./apps/mail/build` (correct Vite build output directory)
 
 ### Environment Variables
 
@@ -157,7 +157,7 @@ Sentry requires these environment variables:
 # Required for Sentry CLI operations
 SENTRY_AUTH_TOKEN=your_sentry_auth_token
 SENTRY_ORG=zero-7y
-SENTRY_PROJECT=nextjs  # Frontend project
+SENTRY_PROJECT=zero-mail-app  # Frontend project
 SENTRY_PROJECT_BACKEND=cloudflare-workers  # Backend project
 
 # DSN for error reporting (runtime)
@@ -432,13 +432,11 @@ Set up alerts for:
 
 ### 🔧 **Configuration Issues in Zero OS**
 
-1. **Incorrect Build Directory**
-   - Current: `./apps/mail/.next`
-   - Correct: `./apps/mail/build`
+1. **Build Directory** ✅
+   - Current: `./apps/mail/build` (correct for Vite)
 
-2. **Wrong Project Name**
-   - Current: `nextjs`
-   - Better: `zero-mail-app` or `react-router-app`
+2. **Project Name** ✅
+   - Current: `zero-mail-app` (updated to reflect React Router)
 
 3. **Missing Environment Variables**
    - Ensure `SENTRY_DSN` is set in production

@@ -1,6 +1,6 @@
-const TITLE = 'Zero';
+const TITLE = 'Zero OS';
 const DESCRIPTION =
-  'Experience email the way you want with 0 - the first open source email app that puts your privacy and safety first.';
+  'Zero OS is an open-source productivity platform with AI-powered modules for email, calendar, tasks, agents, notifications, and more. Self-hosted and privacy-first.';
 
 export const siteConfig = {
   title: TITLE,
@@ -8,7 +8,7 @@ export const siteConfig = {
   icons: {
     icon: '/favicon.ico',
   },
-  applicationName: 'Zero',
+  applicationName: 'Zero OS',
   creator: '@nizzyabi @bruvimtired @ripgrim @needleXO @dakdevs @mrgsub',
   openGraph: {
     title: TITLE,
@@ -22,13 +22,13 @@ export const siteConfig = {
       },
     ],
   },
-  category: 'Email Client',
+  category: 'Email Client & Productivity Platform',
   alternates: {
     canonical: import.meta.env.VITE_PUBLIC_APP_URL,
   },
   keywords: [
-    'Mail',
-    'Email',
+    'Zero OS',
+    'Productivity Platform',
     'Open Source',
     'Email Client',
     'Gmail Alternative',
@@ -36,17 +36,31 @@ export const siteConfig = {
     'Secure Email',
     'Email Management',
     'Email Platform',
+    'Self-Hosted',
+    'AI-Powered',
+    'Email',
+    'Calendar',
+    'Tasks',
+    'Agents',
+    'Notifications',
+    'Scheduling',
+    'Workspaces',
+    'Privacy-First',
     'Communication Tool',
+    'Business Productivity',
+    'Personal Productivity',
     'Productivity',
     'Business Email',
     'Personal Email',
     'Mail Server',
     'Email Software',
     'Collaboration',
+    'Digital Workspace',
+    'Web Application',
+    'API Integration',
     'Message Management',
     'Digital Communication',
     'Email Service',
-    'Web Application',
   ],
   //   metadataBase: new URL(import.meta.env.VITE_PUBLIC_APP_URL!),
 };

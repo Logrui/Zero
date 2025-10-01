@@ -1,7 +1,6 @@
-import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Bell } from 'lucide-react';
+import * as React from 'react';
 
 interface NotificationBadgeProps {
   /** Number of unread notifications */
@@ -11,7 +10,7 @@ interface NotificationBadgeProps {
   /** Additional CSS classes */
   className?: string;
   /** Size variant */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   /** Show badge even when count is 0 */
   showZero?: boolean;
   /** Animation when count changes */
@@ -63,8 +62,9 @@ export function NotificationBadge({
   }
 
   const displayCount = count > maxCount ? `${maxCount}+` : count.toString();
-  
+
   const sizeClasses = {
+    xs: 'text-[10px] px-1 py-0.5 min-w-[14px] h-[14px]',
     sm: 'text-xs px-1.5 py-0.5 min-w-[18px] h-[18px]',
     md: 'text-xs px-2 py-0.5 min-w-[20px] h-[20px]',
     lg: 'text-sm px-2.5 py-1 min-w-[24px] h-[24px]'
@@ -96,23 +96,23 @@ export function NotificationBadge({
  */
 export function useNotificationBadge(initialCount = 0) {
   const [count, setCount] = React.useState(initialCount);
-  
+
   const increment = React.useCallback((amount = 1) => {
     setCount(prev => prev + amount);
   }, []);
-  
+
   const decrement = React.useCallback((amount = 1) => {
     setCount(prev => Math.max(0, prev - amount));
   }, []);
-  
+
   const reset = React.useCallback(() => {
     setCount(0);
   }, []);
-  
+
   const set = React.useCallback((newCount: number) => {
     setCount(Math.max(0, newCount));
   }, []);
-  
+
   return {
     count,
     increment,
@@ -131,13 +131,13 @@ interface NotificationIconProps {
   /** Number of unread notifications */
   count: number;
   /** Size of the icon and badge */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   /** Additional CSS classes */
   className?: string;
   /** Click handler */
   onClick?: () => void;
   /** Custom icon (defaults to bell emoji) */
-  icon?: React.ReactNode;
+  icon?: any;
 }
 
 export function NotificationIcon({
@@ -148,13 +148,14 @@ export function NotificationIcon({
   icon
 }: NotificationIconProps) {
   const iconSizes = {
+    xs: 'text-sm',
     sm: 'text-base',
-    md: 'text-lg', 
+    md: 'text-lg',
     lg: 'text-xl'
   };
 
   return (
-    <div 
+    <div
       className={cn(
         'relative inline-block',
         onClick && 'cursor-pointer',
@@ -174,29 +175,29 @@ export function NotificationIcon({
       {/* Icon */}
       <div className={cn('flex items-center justify-center', iconSizes[size])}>
         {icon || (
-          <svg 
-            className="h-5 w-5" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24" 
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
             />
           </svg>
         )}
       </div>
-      
+
       {/* Badge */}
       {count > 0 && (
-        <div className="absolute -top-1 -right-1">
-          <NotificationBadge 
-            count={count} 
-            size="sm"
+        <div className="absolute -top-0.5 -right-0.5">
+          <NotificationBadge
+            count={count}
+            size="xs"
             animated={true}
           />
         </div>

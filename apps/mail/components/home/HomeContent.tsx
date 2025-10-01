@@ -1,43 +1,36 @@
+import { PixelatedBackground, PixelatedLeft, PixelatedRight } from '@/components/home/pixelated-bg';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
-  ChevronDown,
-  CurvedArrow,
-  GitHub,
-  Plus,
-  Cube,
-  MediumStack,
-  Clock,
-  PanelLeftOpen,
-  Check,
-  Filter,
-  Search,
-  User,
-  Lightning,
-  ExclamationTriangle,
   Bell,
-  Tag,
-  GroupPeople,
-  X,
+  Calendar,
+  Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Calendar,
-  Figma,
+  Clock,
+  Cube,
+  CurvedArrow,
   Docx,
-  ImageFile,
+  ExclamationTriangle,
   Expand,
+  Figma,
+  Filter,
+  GitHub,
+  GroupPeople,
+  ImageFile,
+  Lightning,
+  Mail,
+  MediumStack,
+  PanelLeftOpen,
+  Plus,
+  Search,
+  Tag,
+  User,
+  X,
 } from '../icons/icons';
-import { PixelatedBackground, PixelatedLeft, PixelatedRight } from '@/components/home/pixelated-bg';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { signIn, useSession } from '@/lib/auth-client';
-import { Link, useNavigate } from 'react-router';
-import { Button } from '@/components/ui/button';
-import { Balancer } from 'react-wrap-balancer';
 import { Navigation } from '../navigation';
-import { useTheme } from 'next-themes';
-import { motion } from 'motion/react';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
 import Footer from './footer';
-import React from 'react';
 
 const firstRowQueries: string[] = [
   'Show recent design feedback',
@@ -59,11 +52,26 @@ const tabs = [
 export default function HomeContent() {
   const { setTheme } = useTheme();
   const navigate = useNavigate();
-  const { data: session } = useSession();
+  const { data: session, error: sessionError, isPending } = useSession();
+  const { error: authError } = useAuthErrorHandler();
+  const [isRetrying, setIsRetrying] = useState(false);
 
   useEffect(() => {
     setTheme('dark');
   }, [setTheme]);
+
+  // Handle auth errors gracefully
+  useEffect(() => {
+    if (sessionError && !isPending) {
+      const isNetworkError = sessionError.message?.toLowerCase().includes('connection') ||
+        sessionError.message?.toLowerCase().includes('fetch failed') ||
+        sessionError.message?.toLowerCase().includes('network');
+
+      if (isNetworkError) {
+        console.warn('Network error detected, but continuing with limited functionality');
+      }
+    }
+  }, [sessionError, isPending]);
 
   return (
     <main className="relative flex h-full flex-1 flex-col overflow-x-hidden bg-[#0F0F0F] px-2">
@@ -85,7 +93,7 @@ export default function HomeContent() {
           className="text-center text-4xl font-medium md:text-6xl"
         >
           <Balancer className="mb-3 max-w-[1130px]">
-            AI Powered Email, Built to Save You Time
+            Zero OS: The Open-Source Productivity Platform
           </Balancer>
         </motion.h1>
         <motion.p
@@ -94,58 +102,91 @@ export default function HomeContent() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mx-auto mb-4 max-w-2xl text-center text-base font-medium text-[#B7B7B7] md:text-lg"
         >
-          Zero is an AI-native email client that manages your inbox, so you don't have to.
+          AI-powered modules for email, calendar, tasks, agents, and more. Self-hosted, privacy-first, and fully customizable. Originally forked from Mail-0/Zero
         </motion.p>
-        <p className="mb-4 ml-0.5 text-xs text-[#B7B7B7]/60">No credit card required.</p>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="border-input/50 mb-6 inline-flex items-center gap-4 rounded-full border border-[#2A2A2A] bg-[#1E1E1E] px-4 py-1"
-        >
-          <Link to="https://yc.vc" target="_blank" className="flex items-center gap-2 text-sm">
-            Backed by
-            <span>
-              <img
-                src="/yc-small.svg"
-                alt="Y Combinator"
-                className="rounded-[2px]"
-                width={18}
-                height={18}
-              />
-            </span>
-            Combinator
-          </Link>
-        </motion.div>
 
-        {/* Get Started button only visible for mobile screens */}
+        {/* CTA buttons visible for mobile screens */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="mb-6 lg:hidden"
+          className="mb-6 flex gap-3 lg:hidden"
         >
           <Button
-            onClick={() => {
+            onClick={async () => {
               if (session) {
                 navigate('/mail/inbox');
               } else {
-                toast.promise(
-                  signIn.social({
+                try {
+                  setIsRetrying(true);
+                  await signIn.social({
                     provider: 'google',
                     callbackURL: `${window.location.origin}/mail`,
-                  }),
-                  {
-                    error: 'Login redirect failed',
-                  },
-                );
+                  });
+                } catch (error) {
+                  console.error('Login failed:', error);
+                  toast.error('Login failed. Please try again or check your connection.');
+                } finally {
+                  setIsRetrying(false);
+                }
               }
             }}
+            disabled={isRetrying}
           >
-            Get Started
+            {isRetrying ? 'Connecting...' : 'Get Started'}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            Explore Features
           </Button>
         </motion.div>
       </section>
+
+      {/* Desktop CTA buttons */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+        className="mb-8 hidden items-center justify-center gap-4 lg:flex"
+      >
+        <Button
+          size="lg"
+          onClick={async () => {
+            if (session) {
+              navigate('/mail/inbox');
+            } else {
+              try {
+                setIsRetrying(true);
+                await signIn.social({
+                  provider: 'google',
+                  callbackURL: `${window.location.origin}/mail`,
+                });
+              } catch (error) {
+                console.error('Login failed:', error);
+                toast.error('Login failed. Please try again or check your connection.');
+              } finally {
+                setIsRetrying(false);
+              }
+            }
+          }}
+          disabled={isRetrying}
+        >
+          {isRetrying ? 'Connecting...' : 'Get Started'}
+        </Button>
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={() => {
+            document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          Explore Features
+        </Button>
+      </motion.div>
 
       <section className="relative mt-10 hidden flex-col justify-center md:flex">
         <div className="bg-border absolute left-1/2 top-0 h-px w-full -translate-x-1/2 md:container xl:max-w-7xl" />
@@ -195,6 +236,198 @@ export default function HomeContent() {
       </div>
 
       <div className="relative -top-3.5 hidden h-px w-full bg-[#313135] md:block" />
+
+      {/* Zero OS Features Section */}
+      <section id="features" className="relative mt-32 flex flex-col items-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 text-center"
+        >
+          <h2 className="mb-4 text-3xl font-medium text-white md:text-4xl">
+            Zero OS Features
+          </h2>
+          <p className="mx-auto max-w-2xl text-base text-[#B7B7B7] md:text-lg">
+            A comprehensive productivity platform with AI-powered modules for every aspect of your workflow.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {/* Mail Module */}
+          <div className="group rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-6 transition-all hover:border-[#3A3A3A] hover:bg-[#252525]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2A2A2A]">
+                <Mail className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-white">Mail</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#B7B7B7]">
+              AI-powered email client with smart categorization, auto-replies, and intelligent inbox management.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/mail')}
+              className="text-[#B7B7B7] hover:text-white"
+            >
+              Explore Mail →
+            </Button>
+          </div>
+
+          {/* Calendar Module */}
+          <div className="group rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-6 transition-all hover:border-[#3A3A3A] hover:bg-[#252525]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2A2A2A]">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-white">Calendar</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#B7B7B7]">
+              Smart scheduling with AI-powered meeting coordination and time management.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/calendar')}
+              className="text-[#B7B7B7] hover:text-white"
+            >
+              Explore Calendar →
+            </Button>
+          </div>
+
+          {/* Tasks Module */}
+          <div className="group rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-6 transition-all hover:border-[#3A3A3A] hover:bg-[#252525]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2A2A2A]">
+                <Check className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-white">Tasks</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#B7B7B7]">
+              Intelligent task management with AI-powered prioritization and automation.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/tasks')}
+              className="text-[#B7B7B7] hover:text-white"
+            >
+              Explore Tasks →
+            </Button>
+          </div>
+
+          {/* Agents Module */}
+          <div className="group rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-6 transition-all hover:border-[#3A3A3A] hover:bg-[#252525]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2A2A2A]">
+                <Lightning className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-white">Agents</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#B7B7B7]">
+              AI agents that automate workflows and handle routine tasks intelligently.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/agents')}
+              className="text-[#B7B7B7] hover:text-white"
+            >
+              Explore Agents →
+            </Button>
+          </div>
+
+          {/* Notifications Module */}
+          <div className="group rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-6 transition-all hover:border-[#3A3A3A] hover:bg-[#252525]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2A2A2A]">
+                <Bell className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-white">Notifications</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#B7B7B7]">
+              Smart notification system with intelligent filtering and priority management.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/notifications')}
+              className="text-[#B7B7B7] hover:text-white"
+            >
+              Explore Notifications →
+            </Button>
+          </div>
+
+          {/* Scheduling Module */}
+          <div className="group rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-6 transition-all hover:border-[#3A3A3A] hover:bg-[#252525]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2A2A2A]">
+                <Clock className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-white">Scheduling</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#B7B7B7]">
+              Advanced scheduling tools with AI-powered meeting optimization.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/scheduling')}
+              className="text-[#B7B7B7] hover:text-white"
+            >
+              Explore Scheduling →
+            </Button>
+          </div>
+
+          {/* Workspaces Module */}
+          <div className="group rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-6 transition-all hover:border-[#3A3A3A] hover:bg-[#252525]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2A2A2A]">
+                <GroupPeople className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-white">Workspaces</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#B7B7B7]">
+              Collaborative workspaces with team management and project organization.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/workspaces')}
+              className="text-[#B7B7B7] hover:text-white"
+            >
+              Explore Workspaces →
+            </Button>
+          </div>
+
+          {/* Extensibility */}
+          <div className="group rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-6 transition-all hover:border-[#3A3A3A] hover:bg-[#252525]">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2A2A2A]">
+                <Cube className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-white">Extensibility</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#B7B7B7]">
+              APIs and integrations to connect with your existing tools and workflows.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.open('https://github.com/your-org/zero-os', '_blank')}
+              className="text-[#B7B7B7] hover:text-white"
+            >
+              View Documentation →
+            </Button>
+          </div>
+        </motion.div>
+      </section>
 
       <div className="relative mt-52">
         <motion.div
@@ -1323,6 +1556,39 @@ export default function HomeContent() {
           />
         </div>
       </motion.div> */}
+
+      {/* Open Source & Self-Hosting Band */}
+      <section className="relative mt-20 flex flex-col items-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="w-full max-w-4xl rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-8 text-center"
+        >
+          <h3 className="mb-4 text-2xl font-medium text-white">
+            Open Source & Self-Hosted
+          </h3>
+          <p className="mb-6 text-[#B7B7B7]">
+            Zero OS is completely open source and designed for self-hosting. Take control of your data and customize the platform to your needs.
+          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+            <Button
+              variant="outline"
+              onClick={() => window.open('https://github.com/your-org/zero-os', '_blank')}
+              className="border-[#3A3A3A] text-white hover:bg-[#2A2A2A]"
+            >
+              View on GitHub
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.open('/PRODUCTION-DEPLOYMENT.md', '_blank')}
+              className="border-[#3A3A3A] text-white hover:bg-[#2A2A2A]"
+            >
+              Deployment Guide
+            </Button>
+          </div>
+        </motion.div>
+      </section>
 
       <div className="relative mt-52 flex items-center justify-center">
         <Footer />

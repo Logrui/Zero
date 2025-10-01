@@ -1,0 +1,9 @@
+{
+    "subject": "Test Notification from N8N",
+    "body": "This is a test notification sent from N8N to verify the integration is working correctly.",
+    "tags": [
+        "N8N",
+        "Test",
+        "External Integration"
+    ]
+}

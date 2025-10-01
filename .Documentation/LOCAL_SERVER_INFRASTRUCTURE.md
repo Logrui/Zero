@@ -35,7 +35,7 @@ The solution is to configure a local R2 bucket in `wrangler.jsonc` for the `loca
 
 The `wrangler.jsonc` file already contains an `r2_buckets` array for the `local` environment. The fix is to add the expected bucket binding to this array.
 
-**Example Fix:**
+**Current Configuration:**
 
 ```json
 // In wrangler.jsonc, under env.local
@@ -43,14 +43,11 @@ The `wrangler.jsonc` file already contains an `r2_buckets` array for the `local`
   {
     "binding": "THREADS_BUCKET",
     "bucket_name": "threads-staging"
-  },
-  {
-    // This binding was missing
-    "binding": "ZERO_EMAIL_BUCKET", 
-    "bucket_name": "zero-email-bucket-local"
   }
 ],
 ```
+
+**Note**: The `ZERO_EMAIL_BUCKET` binding mentioned in the original document is not actually used in the current codebase. Only `THREADS_BUCKET` is required for the email sync functionality.
 
 ## Summary of Key Takeaways
 

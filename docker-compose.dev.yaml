@@ -1,0 +1,152 @@
+# Edge + Local Infra Compose
+# Runs: Postgres, Valkey (Redis-compatible), Upstash-style HTTP proxy, and Wrangler dev using full workspace.
+# Assumes you run from repository root so relative volume paths resolve.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: zero-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: zerodotemail
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432" # expose to host if you still want external tooling
+    volumes:
+      - zero-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "zerodotemail"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  valkey:
+    image: docker.io/bitnami/valkey:8.0
+    container_name: zero-valkey-redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - VALKEY_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - "6379:6379"
+    volumes:
+      - zero-valkey-data:/bitnami/valkey/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "-p", "6379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  upstash-proxy:
+    image: hiett/serverless-redis-http:latest
+    container_name: zero-upstash-proxy
+    depends_on:
+      valkey:
+        condition: service_healthy
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: upstash-local-token
+      SRH_CONNECTION_STRING: "redis://valkey:6379"
+    ports:
+      - "8079:80"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: node:22-slim
+    container_name: zero-backend
+    working_dir: /app/apps/server
+    volumes:
+      # Bind mount source code, but mask node_modules with named volumes so Linux installs
+      # are created inside the container rather than reusing Windows pnpm symlink/junctions
+      # which esbuild (wrangler) fails to resolve inside Linux.
+      - ./:/app:cached
+      - zero-backend-root-node-modules:/app/node_modules
+      - zero-backend-server-node-modules:/app/apps/server/node_modules
+      - zero-wrangler-cache:/app/apps/server/.wrangler
+    environment:
+      NODE_ENV: local
+      WRANGLER_LOG: info
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/zerodotemail
+      REDIS_URL: http://upstash-proxy:80
+      REDIS_TOKEN: upstash-local-token
+      # Force PNPM to generate a hoisted node_modules tree (fewer symlinks) for compatibility
+      PNPM_NODE_LINKER: hoisted
+    depends_on:
+      db:
+        condition: service_healthy
+      upstash-proxy:
+        condition: service_healthy
+    ports:
+      - "8787:8787"
+    command: >-
+      bash -lc '
+        set -euo pipefail;
+        apt-get update >/dev/null 2>&1 && apt-get install -y ca-certificates >/dev/null 2>&1 || true;
+        corepack enable >/dev/null 2>&1 && corepack prepare pnpm@10.12.1 --activate;
+        echo "[backend] Installing workspace dependencies (frozen)";
+        if ! pnpm install --frozen-lockfile; then
+          echo "[backend][warn] Frozen install failed; retrying non-frozen";
+          pnpm install --no-frozen-lockfile;
+        fi;
+        test -d node_modules || echo "[backend][info] local node_modules masked by volume";
+        echo "[backend] Starting wrangler dev server";
+        pnpm run dev;
+      '
+
+  frontend:
+    image: node:22-slim
+    container_name: zero-frontend
+    # Run directly inside the mail app directory to avoid path resolution ambiguity
+    working_dir: /app/apps/mail
+    volumes:
+      - ./:/app:cached
+      # Mask root & app node_modules for Linux-native installs
+      - zero-frontend-root-node-modules:/app/node_modules
+      - zero-frontend-mail-node-modules:/app/apps/mail/node_modules
+    environment:
+      NODE_ENV: development
+      VITE_PUBLIC_BACKEND_URL: http://localhost:8787
+      VITE_PUBLIC_APP_URL: http://localhost:3500
+      CI: 'true'                # suppress interactive prompts
+      PNPM_NON_INTERACTIVE: 'true'
+      SKIP_ROOT_POSTINSTALL: '1'
+      PNPM_NODE_LINKER: hoisted
+      # Avoid pnpm asking to rebuild node_modules
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "3500:3500"
+    # Simplified: full install (workspace lock respected) then run dev directly inside app.
+    command: >-
+      bash -lc '
+        set -euo pipefail;
+        corepack enable >/dev/null 2>&1 && corepack prepare pnpm@10.12.1 --activate;
+        echo "[frontend] Installing workspace dependencies (frozen)";
+        if ! pnpm install --frozen-lockfile; then
+          echo "[frontend][warn] Frozen install failed; retrying non-frozen";
+          pnpm install --no-frozen-lockfile;
+        fi;
+        echo "[frontend] Running dev server";
+        # dev script now embeds port and host; run directly
+        if ! pnpm run dev; then
+          code=$?;
+          echo "[frontend][fatal] dev script exited with $code";
+          # Keep container alive briefly for inspection
+          sleep 30;
+          exit $code;
+        fi;
+      '
+
+volumes:
+  zero-postgres-data:
+  zero-valkey-data:
+  zero-wrangler-cache:
+  zero-backend-root-node-modules:
+  zero-backend-server-node-modules:
+  zero-frontend-root-node-modules:
+  zero-frontend-mail-node-modules:

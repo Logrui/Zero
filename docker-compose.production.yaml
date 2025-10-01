@@ -1,0 +1,98 @@
+services:
+  # Frontend - React Router production build
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: zero-frontend-prod
+    environment:
+      VITE_PUBLIC_BACKEND_URL: ${VITE_PUBLIC_BACKEND_URL:-http://localhost:8787}
+      VITE_PUBLIC_APP_URL: ${VITE_PUBLIC_APP_URL:-http://localhost:3000}
+      NODE_ENV: production
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - zero-network
+
+  # Production database
+  db:
+    image: postgres:17-alpine
+    container_name: zero-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-zerodotemail}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data-prod:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres', '-d', 'zerodotemail']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zero-network
+  
+  # Redis for caching and sessions
+  valkey:
+    image: docker.io/bitnami/valkey:8.0
+    container_name: zero-valkey-prod
+    restart: unless-stopped
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - VALKEY_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    volumes:
+      - valkey-data-prod:/bitnami/valkey/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-h', 'localhost', '-p', '6379', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zero-network
+
+  # Upstash-compatible Redis HTTP proxy
+  upstash-proxy:
+    image: hiett/serverless-redis-http:latest
+    container_name: zero-upstash-prod
+    depends_on:
+      valkey:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - '8079:80'
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: ${REDIS_TOKEN:-upstash-local-token}
+      SRH_CONNECTION_STRING: 'redis://valkey:6379'
+      NODE_ENV: production
+    networks:
+      - zero-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:80']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  zero-network:
+    driver: bridge
+
+volumes:
+  postgres-data-prod:
+    driver: local
+  valkey-data-prod:
+    driver: local

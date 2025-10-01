@@ -494,7 +494,7 @@ This document outlines the detailed, stage-by-stage plan for integrating the sta
         - Month grid refined to match zero-calendar (mono palette for Today badge and cell highlight, tighter event pill spacing, min height and borders).
         - Mounted visible AI ChatPanel in `apps/mail/components/chat-panel.tsx` and integrated in `AISidebar`; fixed `DialogContent` positioning to render as a right-side drawer (override default centered modal transforms) and added a11y `DialogTitle`/`DialogDescription`.
         - Fixed JSX/lint issues in `apps/mail/modules/calendar/components/multi-calendar-view.tsx` (cleaned stray fragments, ensured proper tag closure, simplified month event rendering). Build should now parse TSX cleanly.
-        - Added calendar mock mode to avoid TRPC/DB errors locally: `apps/mail/modules/calendar/lib/calendar.ts` now serves synthetic data when `NEXT_PUBLIC_CALENDAR_MOCK=true`.
+        - Added calendar mock mode to avoid TRPC/DB errors locally: `apps/mail/modules/calendar/lib/calendar.ts` now serves synthetic data when `VITE_PUBLIC_CALENDAR_MOCK=true`.
 
 ### Session: 2025-09-24
 
@@ -539,8 +539,8 @@ This document outlines the detailed, stage-by-stage plan for integrating the sta
 
 ### How to enable Mock Mode (Local Only)
 1. Set an environment variable before dev start:
-   - Windows PowerShell: `$env:NEXT_PUBLIC_CALENDAR_MOCK="true"; pnpm dev`
-   - Or add `NEXT_PUBLIC_CALENDAR_MOCK=true` to your local `.env` and restart dev server.
+   - Windows PowerShell: `$env:VITE_PUBLIC_CALENDAR_MOCK="true"; pnpm dev`
+   - Or add `VITE_PUBLIC_CALENDAR_MOCK=true` to your local `.env` and restart dev server.
 2. The UI will render with sample events, shared event(s), and categories; server-side TRPC calls are skipped.
 
 *   **Component Porting Status (Updated):**

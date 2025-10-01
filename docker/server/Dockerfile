@@ -1,13 +1,17 @@
 # ========================================
 # Base Stage: Node.js with pnpm
 # ========================================
-FROM node:22-alpine AS base
+FROM node:22-slim AS base
 
 # ========================================
 # Dependencies Stage: Install Dependencies
 # ========================================
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Install pnpm and turbo globally
@@ -45,8 +49,9 @@ COPY packages/ ./packages/
 ENV NODE_ENV=production \
     CI=true
 
-# Build the server application
-RUN cd apps/server && pnpm run build || echo "No build step defined, using source files"
+# Expose root node_modules inside apps/server via symlink (harmless if already present)
+RUN ln -s /app/node_modules /app/apps/server/node_modules 2>/dev/null || true \
+    && echo "Using root node_modules via symlink for Cloudflare Workers development"
 
 # ========================================
 # Runner Stage: Production Environment
@@ -54,15 +59,17 @@ RUN cd apps/server && pnpm run build || echo "No build step defined, using sourc
 FROM base AS runner
 WORKDIR /app
 
-RUN npm install -g wrangler
+RUN npm install -g wrangler pnpm
 
-RUN addgroup -S -g 1001 pnpm && \
-    adduser -S -u 1001 worker -G pnpm
+RUN groupadd --gid 1001 pnpm && \
+    useradd --uid 1001 --gid pnpm --shell /bin/bash --create-home worker
 
 # Set environment variables
 ENV NODE_ENV=production \
     PORT=8787 \
-    HOSTNAME="0.0.0.0"
+    HOSTNAME="0.0.0.0" \
+    NODE_PATH=/app/node_modules \
+    WRANGLER_LOG=debug
 
 # Copy the server application
 COPY --from=builder --chown=worker:pnpm /app ./
@@ -73,6 +80,8 @@ USER worker
 # Expose server port
 EXPOSE 8787
 
-# Start the Cloudflare Workers server connected to cloud services
+# For production, we need to build and run the worker
+# Use wrangler dev with --remote to connect to real Cloudflare services
 WORKDIR /app/apps/server
-CMD ["wrangler", "dev", "--port", "8787", "--host", "0.0.0.0", "--config", "wrangler.prod.jsonc", "--remote", "--env", "production"]
+# Production environment (default) - using local mode for testing
+CMD ["sh", "-c", "cd /app/apps/server && pnpm exec wrangler dev --local --port 8787 --host 0.0.0.0 --env local"]

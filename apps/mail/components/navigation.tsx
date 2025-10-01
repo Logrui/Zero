@@ -1,23 +1,23 @@
+import { AnimatedNumber } from '@/components/ui/animated-number';
+import { Button } from '@/components/ui/button';
 import {
+  ListItem,
   NavigationMenu,
+  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
-  NavigationMenuContent,
-  ListItem,
 } from '@/components/ui/navigation-menu';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { GitHub, Twitter, Discord, LinkedIn, Star } from './icons/icons';
-import { AnimatedNumber } from '@/components/ui/animated-number';
-import { signIn, useSession } from '@/lib/auth-client';
 import { Separator } from '@/components/ui/separator';
-import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router';
-import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { signIn, useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { Discord, GitHub, LinkedIn, Star, Twitter } from './icons/icons';
 
 const resources = [
   {
@@ -114,7 +114,7 @@ export function Navigation() {
         <nav className="border-input/50 flex w-full max-w-4xl items-center justify-between gap-2 rounded-xl border-t bg-[#1E1E1E] p-3 px-6">
           <div className="flex items-center gap-6">
             <Link to="/" className="relative bottom-1 cursor-pointer">
-              <img src="white-icon.svg" alt="Zero Email" width={22} height={22} />
+              <img src="white-icon.svg" alt="Zero OS" width={22} height={22} />
               <span className="text-muted-foreground absolute -right-[-0.5px] text-[10px]">
                 beta
               </span>
@@ -190,19 +190,47 @@ export function Navigation() {
             </a>
             <Button
               className="h-8 bg-white text-black hover:bg-white hover:text-black cursor-pointer"
-              onClick={() => {
+              onClick={async () => {
+                console.log('🚀 NAVIGATION Get Started button clicked!');
+                console.log('👤 Session status:', session);
+
                 if (session) {
+                  console.log('✅ User has session, navigating to inbox');
                   navigate('/mail/inbox');
                 } else {
-                  toast.promise(
-                    signIn.social({
-                      provider: 'google',
-                      callbackURL: `${window.location.origin}/mail`,
-                    }),
-                    {
-                      error: 'Login redirect failed',
-                    },
-                  );
+                  console.log('🔐 No session, attempting Google sign-in...');
+
+                  try {
+                    // Test backend connection first
+                    console.log('🌐 Testing backend connection...');
+                    const response = await fetch('/api/auth/get-session', {
+                      method: 'GET',
+                      credentials: 'include'
+                    });
+
+                    console.log('📡 Backend response:', response.status, response.statusText);
+
+                    if (response.ok) {
+                      console.log('✅ Backend is available, proceeding with sign-in');
+                      toast.promise(
+                        signIn.social({
+                          provider: 'google',
+                          callbackURL: `${window.location.origin}/mail`,
+                        }),
+                        {
+                          error: 'Login redirect failed',
+                        },
+                      );
+                    } else {
+                      console.log('❌ Backend returned error status:', response.status);
+                      const errorMessage = `Server is currently unavailable (Status: ${response.status}). Please try again later.`;
+                      toast.error(errorMessage);
+                    }
+                  } catch (error) {
+                    console.error('💥 Backend connection failed:', error);
+                    const errorMessage = 'Unable to connect to the server. Please check your connection and try again.';
+                    toast.error(errorMessage);
+                  }
                 }
               }}
             >

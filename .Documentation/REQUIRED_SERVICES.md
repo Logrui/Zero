@@ -468,9 +468,9 @@ With this flow you can iteratively promote from dev to a production-ready self-h
 
 ---
 
-## Choosing `NEXT_PUBLIC_BACKEND_URL`
+## Choosing `VITE_PUBLIC_BACKEND_URL`
 
-`NEXT_PUBLIC_BACKEND_URL` is the URL your web app (service `zero`) uses to talk to the Worker’s HTTP API. Choose one based on where the Worker is running:
+`VITE_PUBLIC_BACKEND_URL` is the URL your web app (service `zero`) uses to talk to the Worker's HTTP API. Choose one based on where the Worker is running:
 
 - Worker runs INSIDE Docker Compose (service name `worker`, port 8787):
   - Use the internal DNS name from within other containers: `http://worker:8787`
@@ -485,10 +485,10 @@ Tip: In `docker-compose.prod.yaml`, set
 services:
   zero:
     environment:
-      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://worker:8787}
+      VITE_PUBLIC_BACKEND_URL: ${VITE_PUBLIC_BACKEND_URL:-http://worker:8787}
 ```
 
-Then override `NEXT_PUBLIC_BACKEND_URL` to `http://localhost:8787` when you’re running the Worker on the host.
+Then override `VITE_PUBLIC_BACKEND_URL` to `http://localhost:8787` when you're running the Worker on the host.
 
 ---
 

@@ -68,8 +68,11 @@ ENV NODE_ENV=production \
 COPY scripts/docker/ /app/scripts
 RUN chmod -R +x /app/scripts/*
 
-# Copy the entire built application
-COPY --from=builder --chown=nextjs:pnpm /app ./
+# Copy the built React Router application
+COPY --from=builder --chown=nextjs:pnpm /app/apps/mail/build ./build
+
+# Install serve to serve static files
+RUN npm install -g serve
 
 # Switch to non-root user
 USER nextjs
@@ -77,5 +80,5 @@ USER nextjs
 # Set server port and host
 EXPOSE 3000
 
-# Start the server
-CMD ["/app/scripts/entrypoint.sh"]
+# Start the static file server for React SPA
+CMD ["serve", "-s", "build/client", "-l", "3000"]

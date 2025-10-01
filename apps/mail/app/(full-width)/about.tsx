@@ -1,9 +1,8 @@
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Github, Mail, ArrowLeft } from 'lucide-react';
+import Footer from '@/components/home/footer';
 import { Navigation } from '@/components/navigation';
 import { Button } from '@/components/ui/button';
-import Footer from '@/components/home/footer';
-import React from 'react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Github, Mail } from 'lucide-react';
 
 export default function AboutPage() {
   return (
@@ -59,10 +58,9 @@ const sections = [
     title: 'Our Mission',
     content: (
       <p>
-        Zero is an AI-powered email client that manages your inbox, so you don't have to. We help
-        busy professionals unclutter their inboxes, prioritize important messages, summarize
-        conversations, complete tasks, and even chat with their inbox — letting them spend less time
-        managing email and more time getting things done.
+        Zero OS is an open-source productivity platform that combines AI-powered modules for email, calendar, tasks, agents, and more. We help
+        busy professionals streamline their workflows, prioritize important work, automate routine tasks, and collaborate effectively — letting them spend less time
+        managing tools and more time getting things done.
       </p>
     ),
   },
@@ -70,11 +68,9 @@ const sections = [
     title: 'Why We Started',
     content: (
       <p>
-        We started Zero because we were frustrated that email — the most-used communication tool in
-        the world — hasn't meaningfully evolved in decades. Despite countless new apps, none
-        actually solve the real problem: helping you finish what you intend to do. We realized the
-        real solution isn't just a new interface — it's AI acting like a true assistant inside your
-        inbox.
+        We started Zero OS because we were frustrated that productivity tools remain fragmented and don't work together seamlessly. Despite countless new apps, none
+        actually solve the real problem: creating a unified, intelligent workspace that adapts to your workflow. We realized the
+        real solution isn't just better individual tools — it's an integrated platform with AI acting like a true assistant across all your work.
       </p>
     ),
   },
@@ -83,18 +79,18 @@ const sections = [
     content: (
       <div className="space-y-4">
         <p>
-          Zero is built on the principles of transparency and community collaboration. Our entire
+          Zero OS is built on the principles of transparency and community collaboration. Our entire
           codebase is open source, allowing anyone to:
         </p>
         <ul className="ml-4 list-disc space-y-2">
           <li>Review our code for security and privacy</li>
           <li>Contribute improvements and new features</li>
-          <li>Self-host their own instance of Zero</li>
+          <li>Self-host their own instance of Zero OS</li>
           <li>Learn from and build upon our work</li>
         </ul>
         <p>
-          We believe that email is too important to be controlled by a single entity. By being open
-          source, we ensure that Zero remains transparent, trustworthy, and accessible to everyone.
+          We believe that productivity tools are too important to be controlled by a single entity. By being open
+          source, we ensure that Zero OS remains transparent, trustworthy, and accessible to everyone.
         </p>
       </div>
     ),
