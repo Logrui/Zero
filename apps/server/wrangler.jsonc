@@ -176,9 +176,10 @@
         {
           "binding": "HYPERDRIVE",
           "id": "57834ddb6716440496c8836f6d99bc9a",
-          // NOTE: Changed host from localhost:5433 -> db:5432 so this works when running inside docker-compose.edge.yaml
-          // If running wrangler dev directly on the host and exposing Postgres on 5433, adjust this back or override with a separate config.
-          "localConnectionString": "postgresql://postgres:postgres@db:5432/zerodotemail",
+          // NOTE: When running wrangler dev directly on host (not in Docker), use localhost:5432
+          // When running inside docker-compose, use db:5432
+          // Using sslmode=disable and trust authentication for local development
+          "localConnectionString": "postgres:postgres//postgres@localhost:5432/zerodotemail?sslmode=disable",
         },
       ],
       "vars": {

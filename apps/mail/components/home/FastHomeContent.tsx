@@ -1,6 +1,5 @@
 import { PixelatedBackground } from '@/components/home/pixelated-bg';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -13,8 +12,7 @@ import {
     GitHub,
     GroupPeople,
     Lightning,
-    Mail,
-    Tag
+    Mail
 } from '../icons/icons';
 import { Navigation } from '../navigation';
 import Footer from './footer';
@@ -30,11 +28,6 @@ const secondRowQueries: string[] = [
     'What did alex say about the design',
 ];
 
-const tabs = [
-    { label: 'Chat With Your Inbox', value: 'smart-categorization' },
-    { label: 'Smart Labels', value: 'ai-features' },
-    { label: 'Write Better Emails', value: 'feature-3' },
-];
 
 export default function FastHomeContent() {
     const [isLoading, setIsLoading] = useState(false);
@@ -101,10 +94,11 @@ export default function FastHomeContent() {
             <section className="z-10 mt-32 flex flex-col items-center px-4">
                 <h1 className="text-center text-4xl font-medium md:text-6xl">
                     <span className="mb-3 max-w-[1130px]">
-                        Zero OS: The Open-Source Productivity Platform
+                        Zero OS: An Open Source, Self Hosted <br />
+                        AI Integrated, Productivity Platform <br />
                     </span>
                 </h1>
-                <p className="mx-auto mb-4 max-w-2xl text-center text-base font-medium text-[#B7B7B7] md:text-lg">
+                <p className="mx-auto pt-4 mb-4 max-w-2xl text-center text-base font-medium text-[#B7B7B7] md:text-lg">
                     AI-powered modules for email, calendar, tasks, agents, and more. Self-hosted, privacy-first, and fully customizable. Originally forked from Mail-0/Zero
                 </p>
 
@@ -149,147 +143,6 @@ export default function FastHomeContent() {
                 </div>
             </section>
 
-            <section className="relative mt-10 hidden flex-col justify-center md:flex">
-                <div className="mx-auto max-w-4xl">
-                    <Tabs defaultValue="smart-categorization" className="w-full">
-                        <div className="mb-8 flex justify-center">
-                            <div className="flex gap-2 rounded-lg bg-[#1E1E1E] p-1">
-                                {tabs.map((tab) => (
-                                    <button
-                                        key={tab.value}
-                                        className="rounded-md px-4 py-2 text-sm font-medium text-[#B7B7B7] transition-colors hover:text-white data-[state=active]:bg-[#2A2A2A] data-[state=active]:text-white"
-                                    >
-                                        {tab.label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <TabsContent value="smart-categorization" className="mt-8">
-                            <div className="relative">
-                                <div className="mx-auto max-w-4xl rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-8">
-                                    <div className="mb-6 text-center">
-                                        <h3 className="mb-2 text-xl font-medium text-white">
-                                            Chat With Your Inbox
-                                        </h3>
-                                        <p className="text-[#B7B7B7]">
-                                            Ask questions about your emails and get instant answers
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex flex-wrap gap-2">
-                                            {firstRowQueries.map((query, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] px-3 py-2 text-sm text-[#B7B7B7]"
-                                                >
-                                                    {query}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {secondRowQueries.map((query, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] px-3 py-2 text-sm text-[#B7B7B7]"
-                                                >
-                                                    {query}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="ai-features" className="mt-8">
-                            <div className="relative">
-                                <div className="mx-auto max-w-4xl rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-8">
-                                    <div className="mb-6 text-center">
-                                        <h3 className="mb-2 text-xl font-medium text-white">
-                                            Smart Labels
-                                        </h3>
-                                        <p className="text-[#B7B7B7]">
-                                            AI automatically categorizes and labels your emails
-                                        </p>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <div className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] p-4">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                                                <span className="text-sm font-medium text-white">Important</span>
-                                            </div>
-                                            <p className="text-xs text-[#B7B7B7]">High priority emails</p>
-                                        </div>
-                                        <div className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] p-4">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                                                <span className="text-sm font-medium text-white">Work</span>
-                                            </div>
-                                            <p className="text-xs text-[#B7B7B7]">Professional communications</p>
-                                        </div>
-                                        <div className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] p-4">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                                                <span className="text-sm font-medium text-white">Social</span>
-                                            </div>
-                                            <p className="text-xs text-[#B7B7B7]">Personal and social emails</p>
-                                        </div>
-                                        <div className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] p-4">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <div className="h-2 w-2 rounded-full bg-purple-500"></div>
-                                                <span className="text-sm font-medium text-white">Updates</span>
-                                            </div>
-                                            <p className="text-xs text-[#B7B7B7]">Newsletters and updates</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="feature-3" className="mt-8">
-                            <div className="relative">
-                                <div className="mx-auto max-w-4xl rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-8">
-                                    <div className="mb-6 text-center">
-                                        <h3 className="mb-2 text-xl font-medium text-white">
-                                            Write Better Emails
-                                        </h3>
-                                        <p className="text-[#B7B7B7]">
-                                            AI-powered writing assistance for professional emails
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] p-4">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <Lightning className="h-4 w-4 text-yellow-500" />
-                                                <span className="text-sm font-medium text-white">Smart Suggestions</span>
-                                            </div>
-                                            <p className="text-xs text-[#B7B7B7]">Get AI-powered writing suggestions</p>
-                                        </div>
-                                        <div className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] p-4">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <Check className="h-4 w-4 text-green-500" />
-                                                <span className="text-sm font-medium text-white">Grammar Check</span>
-                                            </div>
-                                            <p className="text-xs text-[#B7B7B7]">Automatic grammar and tone checking</p>
-                                        </div>
-                                        <div className="rounded-lg border border-[#2A2A2A] bg-[#0F0F0F] p-4">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <Tag className="h-4 w-4 text-blue-500" />
-                                                <span className="text-sm font-medium text-white">Tone Adjustment</span>
-                                            </div>
-                                            <p className="text-xs text-[#B7B7B7]">Adjust tone for different audiences</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                </div>
-            </section>
 
             {/* Zero OS Features Section */}
             <section id="features" className="relative mt-32 flex flex-col items-center px-4">

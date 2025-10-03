@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { signIn, useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { Menu } from 'lucide-react';
+import { Menu as MenuIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -245,41 +245,49 @@ export function Navigation() {
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="fixed left-4 top-6 z-50">
-              <Menu className="h-6 w-6" />
+              <MenuIcon className="h-6 w-6" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[300px] sm:w-[400px] dark:bg-popover">
             <SheetHeader className="flex flex-row items-center justify-between">
               <SheetTitle>
-                <Link to="/" onClick={() => setOpen(false)}>
-                  <img
-                    src="white-icon.svg"
-                    alt="Zero Email"
-                    className="hidden object-contain dark:block"
-                    width={22}
-                    height={22}
-                  />
-                  <img
-                    src="/black-icon.svg"
-                    alt="0.email Logo"
-                    className="object-contain dark:hidden"
-                    width={22}
-                    height={22}
-                  />
-                </Link>
+                <div onClick={() => setOpen(false)}>
+                  <Link to="/">
+                    <img
+                      src="white-icon.svg"
+                      alt="Zero Email"
+                      className="hidden object-contain dark:block"
+                      width={22}
+                      height={22}
+                    />
+                    <img
+                      src="/black-icon.svg"
+                      alt="0.email Logo"
+                      className="object-contain dark:hidden"
+                      width={22}
+                      height={22}
+                    />
+                  </Link>
+                </div>
               </SheetTitle>
             </SheetHeader>
             <div className="mt-8 flex flex-col space-y-3">
               <div className="flex flex-col space-y-3">
-                <Link to="/" className="mt-2" onClick={() => setOpen(false)}>
-                  Home
-                </Link>
-                <Link to="/pricing" className="mt-2" onClick={() => setOpen(false)}>
-                  Pricing
-                </Link>
-                <Link to="/privacy" className="mt-2" onClick={() => setOpen(false)}>
-                  Privacy
-                </Link>
+                <div onClick={() => setOpen(false)}>
+                  <Link to="/" className="mt-2">
+                    Home
+                  </Link>
+                </div>
+                <div onClick={() => setOpen(false)}>
+                  <Link to="/pricing" className="mt-2">
+                    Pricing
+                  </Link>
+                </div>
+                <div onClick={() => setOpen(false)}>
+                  <Link to="/privacy" className="mt-2">
+                    Privacy
+                  </Link>
+                </div>
                 {aboutLinks.map((link) => (
                   <a key={link.title} href={link.href} className="block font-medium">
                     {link.title}

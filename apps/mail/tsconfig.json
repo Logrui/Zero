@@ -19,6 +19,8 @@
     "moduleResolution": "bundler",
     "noImplicitAny": false,
     "strict": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
     "skipLibCheck": true,
     "noEmit": true,
     "maxNodeModuleJsDepth": 1,

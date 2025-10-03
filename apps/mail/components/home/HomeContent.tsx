@@ -43,12 +43,6 @@ const secondRowQueries: string[] = [
   'What did alex say about the design',
 ];
 
-const tabs = [
-  { label: 'Chat With Your Inbox', value: 'smart-categorization' },
-  { label: 'Smart Labels', value: 'ai-features' },
-  { label: 'Write Better Emails', value: 'feature-3' },
-];
-
 export default function HomeContent() {
   const { setTheme } = useTheme();
   const navigate = useNavigate();
@@ -93,7 +87,9 @@ export default function HomeContent() {
           className="text-center text-4xl font-medium md:text-6xl"
         >
           <Balancer className="mb-3 max-w-[1130px]">
-            Zero OS: The Open-Source Productivity Platform
+            Zero OS:
+            The Open-Source AI Integrated
+            Productivity Platform
           </Balancer>
         </motion.h1>
         <motion.p
