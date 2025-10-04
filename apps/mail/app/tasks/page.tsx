@@ -62,6 +62,7 @@ export default function TasksPage() {
         hasRequiredPermissions,
         missingScopes,
         needsReauth,
+        reauthUrl,
         loading: permissionLoading,
         error: permissionError,
         handleReauth
