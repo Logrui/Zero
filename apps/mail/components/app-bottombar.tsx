@@ -42,10 +42,10 @@ export function AppBottombar() {
     }
   };
 
-  // Load notifications on mount and refresh every 5 seconds
+  // Load notifications on mount and refresh every 30 seconds
   useEffect(() => {
     loadNotifications();
-    const interval = setInterval(loadNotifications, 5000); // Refresh every 5 seconds
+    const interval = setInterval(loadNotifications, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -86,6 +86,9 @@ export function AppBottombar() {
               <Link to="/calendar">Calendar</Link>
             </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/calendar/events">Events</Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/organizations">Organizations</Link>
             </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
@@ -96,6 +99,9 @@ export function AppBottombar() {
             </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/scheduling">Scheduling</Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/workflows">Workflows</Link>
             </Button>
             <Button asChild variant="ghost" className="text-sm font-medium rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/tasks">Tasks</Link>
@@ -142,6 +148,7 @@ export function AppBottombar() {
               size="md"
               onClick={() => { }}
               icon={<Bell className="h-5 w-5" />}
+              animated={false}
             />
           </Button>
 
@@ -212,7 +219,7 @@ export function AppBottombar() {
               <Link to="/calendar">Calendar</Link>
             </Button>
             <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
-              <Link to="/events">Events</Link>
+              <Link to="/calendar/events">Events</Link>
             </Button>
             <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/tasks">Tasks</Link>
@@ -229,7 +236,9 @@ export function AppBottombar() {
             <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/scheduling">Scheduling</Link>
             </Button>
-
+            <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
+              <Link to="/workflows">Workflows</Link>
+            </Button>
             <Button asChild variant="ghost" className="w-full justify-start text-sm rounded-lg hover:bg-muted outline-none focus:outline-none">
               <Link to="/workspaces">Workspaces</Link>
             </Button>

@@ -138,6 +138,8 @@ interface NotificationIconProps {
   onClick?: () => void;
   /** Custom icon (defaults to bell emoji) */
   icon?: any;
+  /** Enable animation on count change */
+  animated?: boolean;
 }
 
 export function NotificationIcon({
@@ -145,7 +147,8 @@ export function NotificationIcon({
   size = 'md',
   className,
   onClick,
-  icon
+  icon,
+  animated = true
 }: NotificationIconProps) {
   const iconSizes = {
     xs: 'text-sm',
@@ -197,7 +200,7 @@ export function NotificationIcon({
           <NotificationBadge
             count={count}
             size="xs"
-            animated={true}
+            animated={animated}
           />
         </div>
       )}

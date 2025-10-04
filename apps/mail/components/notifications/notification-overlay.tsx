@@ -38,7 +38,10 @@ import {
   ArrowDown,
   X,
   Settings,
-  Check
+  Check,
+  Tag,
+  ExternalLink,
+  Eye
 } from 'lucide-react';
 
 // Types
@@ -317,7 +320,7 @@ export const NotificationOverlay = React.forwardRef<
         <DialogHeader className="px-6 py-5 border-b border-white/20 bg-gradient-to-r from-[#1E1E1E]/80 to-[#2A2A2A]/80 backdrop-blur-md">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3 text-white font-bold text-lg">
-              <span className="text-xl">🔔</span>
+              <Bell className="h-5 w-5 text-white/70" />
               Notifications
               {filteredNotifications.length > 0 && (
                 <Badge variant="secondary" className="ml-2 bg-blue-500/80 text-white border-blue-400/50 px-2 py-1">
@@ -374,7 +377,7 @@ export const NotificationOverlay = React.forwardRef<
           <div className="flex flex-col gap-4 pt-4 px-6">
             {/* Search bar */}
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50">🔍</span>
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
               <Input
                 placeholder="Search notifications..."
                 value={filters.searchQuery}
@@ -389,7 +392,7 @@ export const NotificationOverlay = React.forwardRef<
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-white flex items-center gap-2">
-                    <span>🏷️</span> Quick Filters
+                    <Tag className="h-4 w-4 text-white/70" /> Quick Filters
                   </span>
                   <Button
                     variant="ghost"
@@ -444,7 +447,7 @@ export const NotificationOverlay = React.forwardRef<
                       : "bg-white/5 hover:bg-white/15 text-white/80 border-white/20 backdrop-blur-sm"
                   )}
                 >
-                  <span className="mr-2">👁️</span>
+                  <Eye className="h-4 w-4 mr-2" />
                   Show Unread Only
                 </Button>
               </div>
@@ -665,14 +668,14 @@ export const NotificationOverlay = React.forwardRef<
           )}
         </div>
         
-        {/* Footer with statistics */}
-        <div className="px-6 py-3 border-t bg-muted/30">
-          <div className="flex items-center justify-between text-sm text-white/60">
-            <span data-testid="total-notification-count">
-              {filteredNotifications.length} of {notifications.length} notifications
-            </span>
-            
-            <div className="flex items-center gap-4">
+        {/* Footer with statistics and View All button */}
+        <div className="px-6 py-3 border-t border-white/20 bg-gradient-to-r from-[#1E1E1E]/80 to-[#2A2A2A]/80 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-white/60">
+              <span data-testid="total-notification-count">
+                {filteredNotifications.length} of {notifications.length} notifications
+              </span>
+              
               <span>
                 Unread: {notifications.filter(n => !n.isRead).length}
               </span>
@@ -683,6 +686,18 @@ export const NotificationOverlay = React.forwardRef<
                 </span>
               )}
             </div>
+            
+            <Button 
+              asChild
+              variant="outline" 
+              size="sm"
+              className="bg-blue-500/20 hover:bg-blue-500/30 border-blue-400/50 text-blue-400 hover:text-blue-300"
+            >
+              <Link to="/notifications" className="flex items-center gap-2">
+                <ExternalLink className="h-4 w-4" />
+                View All
+              </Link>
+            </Button>
           </div>
         </div>
       </DialogContent>
