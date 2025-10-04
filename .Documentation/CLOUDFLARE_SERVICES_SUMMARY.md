@@ -31,7 +31,7 @@ Your Local Machine (Development)
 
 ### What It Does
 - Serverless JavaScript execution environment running on Cloudflare's edge network
-- Your entire backend (`@zero/server`) runs as a Cloudflare Worker
+- The entire backend (`@zero/server`) runs as a Cloudflare Worker
 - Handles all API requests, authentication, email processing
 
 ### Usage in Application

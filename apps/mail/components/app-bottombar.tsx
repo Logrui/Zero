@@ -1,4 +1,4 @@
-import { Bell, Calendar, Plus } from "@/components/icons/icons";
+import { Calendar, Plus } from "@/components/icons/icons";
 import { NotificationIcon } from "@/components/notifications/notification-badge";
 import { NotificationOverlay } from "@/components/notifications/notification-overlay";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Search, Settings } from "lucide-react";
+import { Search, Settings, Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
