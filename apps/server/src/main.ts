@@ -223,7 +223,7 @@ export class DbRpcDO extends RpcTarget {
 }
 
 class ZeroDB extends DurableObject<ZeroEnv> {
-  db: DB = createDb(this.env.HYPERDRIVE.connectionString).db;
+  db: DB = createDb(this.env.HYPERDRIVE?.connectionString || this.env.DATABASE_URL).db;
 
   async setMetaData(userId: string) {
     return new DbRpcDO(this, userId);

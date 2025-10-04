@@ -6,35 +6,31 @@
 
 ```
 ┌─────────────────────────────────────────────┐
-│ Your Infrastructure (Docker)                │
+│ Your Infrastructure                         │
 │                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │ Frontend (React Router/Vite)        │   │
-│  │ nginx:alpine serving static build   │   │
-│  │ Port: 3500                          │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │ PostgreSQL 17                       │   │
-│  │ Port: 5432 (private)                │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │ Redis 7 Alpine                      │   │
-│  │ Port: 6379 (private)                │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │ Upstash Proxy                       │   │
-│  │ Port: 8079 (private)                │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │ Cloudflare Tunnel (cloudflared)     │   │
-│  │ - Exposes frontend publicly         │   │
-│  │ - Tunnels DB to Cloudflare Workers  │   │
-│  │ - Tunnels Redis to Workers          │   │
-│  └─────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────┐   │
+│  │ Cloudflare Tunnel (System Service)   │   │
+│  │ - Exposes frontend publicly          │   │
+│  │ - Tunnels DB to Cloudflare Workers   │   │
+│  │ - Tunnels Redis to Workers           │  │
+│  └──────────────┬───────────────────────┘  │
+│                 │                           │
+│                 ↓ (localhost access)        │
+│  ┌──────────────────────────────────────┐  │
+│  │ Docker Containers                    │  │
+│  │                                      │  │
+│  │  • Frontend (nginx:alpine)           │  │
+│  │    Port: 127.0.0.1:3500              │  │
+│  │                                      │  │
+│  │  • PostgreSQL 17                     │  │
+│  │    Port: 127.0.0.1:5432 (private)    │  │
+│  │                                      │  │
+│  │  • Redis 7 Alpine                    │  │
+│  │    Port: 127.0.0.1:6379 (private)    │  │
+│  │                                      │  │
+│  │  • Upstash Proxy                     │  │
+│  │    Port: 127.0.0.1:8079 (private)    │  │
+│  └──────────────────────────────────────┘  │
 └─────────────────┬───────────────────────────┘
                   │ Encrypted tunnel (outbound only)
                   ↓
@@ -57,7 +53,8 @@
 **Key Points**:
 - ✅ Frontend and databases are self-hosted in Docker
 - ✅ Backend runs on Cloudflare Workers (cannot be self-hosted due to Durable Objects)
-- ✅ Cloudflare Tunnel provides secure connectivity without exposing ports
+- ✅ Cloudflare Tunnel runs as system service (Windows/Linux), not in Docker
+- ✅ Docker services bound to localhost only (127.0.0.1) for security
 - ✅ No inbound firewall rules required
 - ✅ Data stays on your infrastructure (PostgreSQL)
 
@@ -135,24 +132,30 @@ cloudflared tunnel create zero-production
 
 ### Configure Tunnel
 
-Create `cloudflared/config.yml` in your project root:
+**Important**: Cloudflared runs as a system service (not in Docker), so it accesses services via `localhost`.
+
+Create `~/.cloudflared/config.yml` (Linux) or `C:\Users\<USERNAME>\.cloudflared\config.yml` (Windows):
 
 ```yaml
 tunnel: <YOUR-TUNNEL-ID>
-credentials-file: /root/.cloudflared/<YOUR-TUNNEL-ID>.json
+credentials-file: ~/.cloudflared/<YOUR-TUNNEL-ID>.json  # Linux
+# credentials-file: C:\Users\<USERNAME>\.cloudflared\<YOUR-TUNNEL-ID>.json  # Windows
 
 ingress:
   # Public frontend access
-  - hostname: app.yourdomain.com
-    service: http://frontend:3500
+  # Cloudflared on host → Docker exposed on localhost:3500
+  - hostname: zero.envisicapital.com
+    service: http://localhost:3500
   
   # Private PostgreSQL access (only for Cloudflare Workers)
-  - hostname: db-internal.yourdomain.com
-    service: tcp://postgres:5432
+  # Cloudflared on host → Docker exposed on localhost:5432
+  - hostname: db-internal.zero.envisicapital.com
+    service: tcp://localhost:5432
   
   # Private Redis proxy access (only for Cloudflare Workers)
-  - hostname: redis-internal.yourdomain.com
-    service: http://upstash-proxy:80
+  # Cloudflared on host → Docker exposed on localhost:8079
+  - hostname: redis-internal.zero.envisicapital.com
+    service: http://localhost:8079
   
   # Catch-all (required)
   - service: http_status:404
@@ -162,19 +165,38 @@ ingress:
 
 ```bash
 # Create DNS records for tunnel
-cloudflared tunnel route dns zero-production app.yourdomain.com
-cloudflared tunnel route dns zero-production db-internal.yourdomain.com
-cloudflared tunnel route dns zero-production redis-internal.yourdomain.com
+cloudflared tunnel route dns zero-production zero.envisicapital.com
+cloudflared tunnel route dns zero-production db-internal.zero.envisicapital.com
+cloudflared tunnel route dns zero-production redis-internal.zero.envisicapital.com
 ```
 
-### Get Tunnel Token
+### Install Tunnel as System Service
 
+#### On Linux:
 ```bash
-# Generate tunnel token for Docker deployment
-cloudflared tunnel token zero-production
+# Install as systemd service
+sudo cloudflared service install
+
+# Start service
+sudo systemctl start cloudflared
+sudo systemctl enable cloudflared
+
+# Check status
+sudo systemctl status cloudflared
 ```
 
-Copy the token - you'll need it for `.env.prod`.
+#### On Windows:
+```powershell
+# Install as Windows Service
+cloudflared service install
+
+# Start service
+net start cloudflared
+# Or: Start-Service cloudflared
+
+# Check status
+Get-Service cloudflared
+```
 
 ---
 
@@ -227,7 +249,7 @@ BETTER_AUTH_TRUSTED_ORIGINS=https://app.yourdomain.com,https://api.yourdomain.co
 # ===========================================
 POSTGRES_PASSWORD=YOUR_SECURE_PASSWORD
 UPSTASH_TOKEN=YOUR_SECURE_UPSTASH_TOKEN
-TUNNEL_TOKEN=YOUR_CLOUDFLARE_TUNNEL_TOKEN
+# Note: TUNNEL_TOKEN not needed - cloudflared runs as system service
 
 # ===========================================
 # GOOGLE OAUTH
@@ -466,7 +488,27 @@ pnpm db:migrate
 docker-compose -f docker-compose.production.yaml exec postgres psql -U postgres -d zerodotemail
 ```
 
-### 6.3 Deploy Backend to Cloudflare Workers
+### 6.3 Start Cloudflared Service
+
+#### On Linux:
+```bash
+# Start if not already running
+sudo systemctl start cloudflared
+
+# Verify it's running
+sudo systemctl status cloudflared
+```
+
+#### On Windows:
+```powershell
+# Start if not already running
+net start cloudflared
+
+# Verify it's running
+Get-Service cloudflared
+```
+
+### 6.4 Deploy Backend to Cloudflare Workers
 
 ```bash
 # Deploy to production environment
@@ -476,17 +518,30 @@ wrangler deploy --env production
 curl https://api.yourdomain.com/api/health
 ```
 
-### 6.4 Verify Tunnel Connection
+### 6.4 Verify Cloudflared Service
 
+#### On Linux:
 ```bash
-# Check tunnel status
-docker-compose -f docker-compose.production.yaml logs cloudflared
+# Check service status
+sudo systemctl status cloudflared
 
-# Test frontend access
+# View logs
+sudo journalctl -u cloudflared -f
+
+# Test tunnel connectivity
 curl https://app.yourdomain.com/health
+```
 
-# Test that Workers can reach PostgreSQL via tunnel
-# (Check Cloudflare Workers logs in dashboard)
+#### On Windows:
+```powershell
+# Check service status
+Get-Service cloudflared
+
+# View logs
+Get-EventLog -LogName Application -Source cloudflared -Newest 20
+
+# Test tunnel connectivity
+curl https://app.yourdomain.com/health
 ```
 
 ---
@@ -539,8 +594,109 @@ docker-compose -f docker-compose.production.yaml logs -f postgres
 # Redis logs
 docker-compose -f docker-compose.production.yaml logs -f redis
 
-# Tunnel logs
-docker-compose -f docker-compose.production.yaml logs -f cloudflared
+# Cloudflared logs (Linux)
+sudo journalctl -u cloudflared -f
+
+# Cloudflared logs (Windows)
+Get-EventLog -LogName Application -Source cloudflared -Newest 50
+```
+
+---
+
+## Managing Cloudflared System Service
+
+Since cloudflared runs as a system service (not in Docker), here's how to manage it:
+
+### Linux (systemd)
+
+```bash
+# Start service
+sudo systemctl start cloudflared
+
+# Stop service
+sudo systemctl stop cloudflared
+
+# Restart service (after config changes)
+sudo systemctl restart cloudflared
+
+# Enable on boot
+sudo systemctl enable cloudflared
+
+# Disable from boot
+sudo systemctl disable cloudflared
+
+# Check status
+sudo systemctl status cloudflared
+
+# View logs
+sudo journalctl -u cloudflared -f
+
+# View recent logs
+sudo journalctl -u cloudflared -n 50
+```
+
+### Windows Service
+
+```powershell
+# Start service
+net start cloudflared
+# Or: Start-Service cloudflared
+
+# Stop service
+net stop cloudflared
+# Or: Stop-Service cloudflared
+
+# Restart service (after config changes)
+Restart-Service cloudflared
+# Note: If you get permission errors, run PowerShell as Administrator
+
+# Check status
+Get-Service cloudflared
+
+# View logs
+Get-EventLog -LogName Application -Source cloudflared -Newest 50
+
+# Continuous log monitoring
+Get-EventLog -LogName Application -Source cloudflared -Newest 1 -After (Get-Date).AddMinutes(-1)
+```
+
+### Updating Configuration
+
+After editing `~/.cloudflared/config.yml` or `C:\Users\<USERNAME>\.cloudflared\config.yml`:
+
+```bash
+# Linux
+sudo systemctl restart cloudflared
+
+# Windows (as Administrator)
+Restart-Service cloudflared
+```
+
+### Uninstall Service
+
+```bash
+# Linux
+sudo cloudflared service uninstall
+
+# Windows (as Administrator)
+cloudflared service uninstall
+```
+
+---
+
+## PostgreSQL Authentication Configuration
+
+The `docker-compose.db.yaml` and `docker-compose.production.yaml` use `POSTGRES_HOST_AUTH_METHOD=md5` to ensure password authentication works reliably. This is set at container initialization and persists in the volume.
+
+**Authentication Methods:**
+- `md5`: Password authentication (MD5 hash) - **Recommended for development and production**
+- `scram-sha-256`: More secure, but requires explicit password setting
+- `trust`: No password required (less secure, not recommended)
+
+If you need to reset authentication after changing this value, run:
+```bash
+docker-compose -f docker-compose.db.yaml down -v  # Remove volumes
+docker-compose -f docker-compose.db.yaml up -d    # Recreate with new settings
 ```
 
 ---
@@ -609,6 +765,7 @@ In Cloudflare Dashboard > SSL/TLS:
 ### Pre-Deployment
 - [ ] Domain configured in Cloudflare DNS
 - [ ] Cloudflare Tunnel created and configured
+- [ ] Cloudflared installed as system service (not Docker)
 - [ ] `.env.prod` file populated with all secrets
 - [ ] OAuth applications configured (Google, Microsoft)
 - [ ] Hyperdrive created for PostgreSQL
@@ -616,9 +773,10 @@ In Cloudflare Dashboard > SSL/TLS:
 
 ### Deployment
 - [ ] Docker services started (`docker-compose up -d`)
+- [ ] All ports bound to 127.0.0.1 (localhost only)
 - [ ] Database migrations run successfully
+- [ ] Cloudflared service running (system service)
 - [ ] Backend deployed to Cloudflare Workers
-- [ ] Cloudflare Tunnel connected (check logs)
 - [ ] Frontend accessible at `https://app.yourdomain.com`
 - [ ] Backend API accessible at `https://api.yourdomain.com`
 
@@ -657,11 +815,17 @@ wrangler deploy --env production
 ### Restart Services
 
 ```bash
-# Restart all services
+# Restart Docker services
 docker-compose -f docker-compose.production.yaml restart
 
-# Restart specific service
+# Restart specific Docker service
 docker-compose -f docker-compose.production.yaml restart postgres
+
+# Restart Cloudflared (Linux)
+sudo systemctl restart cloudflared
+
+# Restart Cloudflared (Windows - as Administrator)
+Restart-Service cloudflared
 ```
 
 ### View Logs
@@ -691,21 +855,35 @@ docker-compose -f docker-compose.production.yaml exec postgres psql -U postgres 
 # Check frontend container
 docker-compose -f docker-compose.production.yaml logs frontend
 
-# Check tunnel
-docker-compose -f docker-compose.production.yaml logs cloudflared
+# Check cloudflared service (Linux)
+sudo systemctl status cloudflared
+sudo journalctl -u cloudflared -n 50
+
+# Check cloudflared service (Windows)
+Get-Service cloudflared
+Get-EventLog -LogName Application -Source cloudflared -Newest 20
 
 # Verify DNS
 nslookup app.yourdomain.com
+
+# Verify Docker ports are accessible
+curl http://localhost:3500/health
 ```
 
 ### Backend Can't Connect to Database
 
 ```bash
-# Verify tunnel is routing PostgreSQL
-docker-compose -f docker-compose.production.yaml logs cloudflared | grep postgres
-
 # Check PostgreSQL is accepting connections
 docker-compose -f docker-compose.production.yaml exec postgres pg_isready
+
+# Verify cloudflared can reach PostgreSQL
+curl -v http://localhost:5432  # Should connect even if protocol mismatch
+
+# Check cloudflared logs for connection errors (Linux)
+sudo journalctl -u cloudflared -n 50 | grep postgres
+
+# Check cloudflared logs (Windows)
+Get-EventLog -LogName Application -Source cloudflared -Newest 50
 
 # Test connection from Workers
 # Check Cloudflare Workers logs in dashboard
@@ -720,8 +898,10 @@ docker-compose -f docker-compose.production.yaml exec redis redis-cli ping
 # Check Upstash proxy
 curl http://localhost:8079
 
-# Verify tunnel routing
-docker-compose -f docker-compose.production.yaml logs cloudflared | grep redis
+# Verify cloudflared can access it
+# Check logs for connection errors
+sudo journalctl -u cloudflared -n 50 | grep redis  # Linux
+Get-EventLog -LogName Application -Source cloudflared -Newest 50  # Windows
 ```
 
 ### OAuth Not Working
@@ -845,10 +1025,57 @@ If PostgreSQL becomes bottleneck:
 
 ---
 
+## Key Architecture Decisions
+
+### Why Cloudflared as System Service (Not Docker)?
+
+**Advantages:**
+1. **Persistence**: Survives Docker restarts and updates
+2. **System Integration**: Native logging and service management
+3. **Performance**: No Docker networking overhead for tunnels
+4. **Simpler Management**: Independent of Docker stack
+5. **Better Reliability**: OS-level service management
+
+**Configuration:**
+- **Linux**: `/root/.cloudflared/config.yml` + systemd
+- **Windows**: `C:\Users\<USERNAME>\.cloudflared\config.yml` + Windows Service
+- **Access**: Services via `localhost:3500`, `localhost:5432`, `localhost:8079`
+
+### Why Localhost-Only Port Binding?
+
+```yaml
+# docker-compose.production.yaml
+ports:
+  - "127.0.0.1:5432:5432"  # Only accessible from localhost
+  - "127.0.0.1:6379:6379"  # Not exposed to network
+  - "127.0.0.1:8079:80"    # Secure from external access
+```
+
+**Benefits:**
+- ✅ Services not accessible from external network
+- ✅ Cloudflared (on host) can still reach via localhost
+- ✅ Protection against port scanning and attacks
+- ✅ No firewall rules needed
+
+### Connection Flow
+
+```
+Internet
+    ↓
+Cloudflare Edge Network
+    ↓ (encrypted tunnel)
+Cloudflared Service (your server)
+    ↓ (localhost access)
+Docker Containers (127.0.0.1:ports)
+```
+
+---
+
 ## Additional Resources
 
 - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 - [Cloudflare Tunnel Guide](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
+- [Cloudflare Tunnel Service Management](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/deploy-tunnels/deploy-tunnels/)
 - [Docker Compose Reference](https://docs.docker.com/compose/)
 - [PostgreSQL Docker Documentation](https://hub.docker.com/_/postgres)
 - [Wrangler CLI Reference](https://developers.cloudflare.com/workers/wrangler/)
@@ -859,12 +1086,15 @@ If PostgreSQL becomes bottleneck:
 
 For issues with this deployment setup:
 1. Check troubleshooting section above
-2. Review Cloudflare Workers logs
-3. Check Docker container logs
-4. Open issue in repository
+2. Review Cloudflare Workers logs in dashboard
+3. Check cloudflared service logs (systemd/Windows Event Viewer)
+4. Check Docker container logs
+5. Open issue in repository
 
 ---
 
 **Last Updated**: 2025-10-03  
 **Deployment Type**: Hybrid (Self-hosted + Cloudflare Workers)  
+**Cloudflared**: System Service (not Docker)  
+**Port Security**: Localhost-only binding (127.0.0.1)  
 **Status**: Production-ready

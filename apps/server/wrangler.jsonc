@@ -6,7 +6,6 @@
     "nodejs_compat"
   ],
   "main": "src/main.ts",
-  "minify": false,
   "env": {
     "local": {
       "rules": [
@@ -176,10 +175,7 @@
         {
           "binding": "HYPERDRIVE",
           "id": "57834ddb6716440496c8836f6d99bc9a",
-          // NOTE: When running wrangler dev directly on host (not in Docker), use localhost:5432
-          // When running inside docker-compose, use db:5432
-          // Using sslmode=disable and trust authentication for local development
-          "localConnectionString": "postgres:postgres//postgres@localhost:5432/zerodotemail?sslmode=disable",
+          "localConnectionString": "postgresql://postgres:postgres@localhost:5433/zerodotemail",
         },
       ],
       "vars": {
@@ -191,10 +187,10 @@
         "ELEVENLABS_API_KEY": "1234567890",
         "DISABLE_CALLS": "true",
         "VOICE_SECRET": "1234567890",
-        "GOOGLE_S_ACCOUNT": "development-mode",
+        "GOOGLE_S_ACCOUNT": "{}",
         "DROP_AGENT_TABLES": "false",
-        "THREAD_SYNC_MAX_COUNT": "500",
-        "THREAD_SYNC_LOOP": "true",
+        "THREAD_SYNC_MAX_COUNT": "60",
+        "THREAD_SYNC_LOOP": "false",
         "DISABLE_WORKFLOWS": "true",
         "AUTORAG_ID": "",
         "USE_OPENAI": "true",
@@ -203,12 +199,9 @@
         "MEET_AUTH_HEADER": "",
         "OTEL_EXPORTER_OTLP_ENDPOINT": "https://api.axiom.co/v1/traces",
         "OTEL_SERVICE_NAME": "zero-email-server-local",
-        "GEMINI_FLASH_MODEL": "gemini-2.5-flash",
-        "GOOGLE_GENERATIVE_AI_API_KEY": "",
-        "EMAIL_SYNC_DEBUG": "true",
-        "FRESH_ACCOUNT_BATCH_SIZE": "10",
-        "REDIS_URL": "http://localhost:8079",
-        "REDIS_TOKEN": "upstash-local-token"
+        "DD_API_KEY": "",
+        "DD_APP_KEY": "",
+        "DD_SITE": "datadoghq.com",
       },
       "kv_namespaces": [
         {
@@ -436,7 +429,7 @@
         {
           "binding": "HYPERDRIVE",
           "id": "57834ddb6716440496c8836f6d99bc9a",
-          "localConnectionString": "postgresql://postgres:postgres@db:5432/zerodotemail",
+          "localConnectionString": "postgresql://postgres:postgres@localhost:5433/zerodotemail",
         },
       ],
       "vars": {
@@ -451,8 +444,9 @@
         "DISABLE_WORKFLOWS": "false",
         "OTEL_EXPORTER_OTLP_ENDPOINT": "https://api.axiom.co/v1/traces",
         "OTEL_SERVICE_NAME": "zero-email-server-staging",
-        "GEMINI_FLASH_MODEL": "gemini-2.0-flash",
-        "GOOGLE_GENERATIVE_AI_API_KEY": ""
+        "DD_API_KEY": "",
+        "DD_APP_KEY": "",
+        "DD_SITE": "datadoghq.com",
       },
       "kv_namespaces": [
         {
@@ -539,7 +533,7 @@
         {
           "binding": "HYPERDRIVE",
           "id": "b1be316b45fb439a9e54b74ecc20aa21",
-          "localConnectionString": "postgresql://postgres:postgres@db:5432/zerodotemail",
+          "localConnectionString": "postgresql://postgres:postgres@localhost:5433/zerodotemail",
         },
       ],
       "durable_objects": {
@@ -692,8 +686,9 @@
         "DISABLE_WORKFLOWS": "true",
         "OTEL_EXPORTER_OTLP_ENDPOINT": "https://api.axiom.co/v1/traces",
         "OTEL_SERVICE_NAME": "zero-email-server-production",
-        "GEMINI_FLASH_MODEL": "gemini-2.0-flash",
-        "GOOGLE_GENERATIVE_AI_API_KEY": ""
+        "DD_API_KEY": "",
+        "DD_APP_KEY": "",
+        "DD_SITE": "datadoghq.com",
       },
       "kv_namespaces": [
         {

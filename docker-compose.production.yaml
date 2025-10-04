@@ -17,19 +17,28 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: zerodotemail
+      POSTGRES_HOST_AUTH_METHOD: md5
+    command: >
+      -c ssl=on
+      -c ssl_cert_file=/var/lib/postgresql/ssl/server.crt
+      -c ssl_key_file=/var/lib/postgresql/ssl/server.key
     ports:
-      - "5432:5432"  # Only accessible via tunnel
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./postgres-ssl:/var/lib/postgresql/ssl:ro
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
+  valkey:
+    container_name: zerodotemail-redis
+    image: docker.io/bitnamilegacy/valkey:8.0
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - VALKEY_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
-      - redis-data:/data
-    restart: unless-stopped
+      - valkey-data:/bitnami/valkey/data
 
   upstash-proxy:
     image: hiett/serverless-redis-http:latest
@@ -38,24 +47,18 @@ services:
       SRH_TOKEN: ${UPSTASH_TOKEN}
       SRH_CONNECTION_STRING: 'redis://redis:6379'
     ports:
-      - "8079:80"
+      - "127.0.0.1:8079:80"  # Bind to localhost only for security
     depends_on:
-      - redis
+      - valkey
     restart: unless-stopped
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
-    volumes:
-      - ./cloudflared:/etc/cloudflared
-    restart: unless-stopped
-    depends_on:
-      - frontend
-      - postgres
-      - upstash-proxy
+  # NOTE: Cloudflared runs as Windows Service, not in Docker
+  # Configure as Windows Service with config at:
+  # C:\Users\<YOUR-USERNAME>\.cloudflared\config.yml
+  # Install: cloudflared service install
+  # Start: net start cloudflared
 
 volumes:
   postgres-data:
   redis-data:
+  valkey-data:

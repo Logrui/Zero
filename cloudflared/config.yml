@@ -1,0 +1,21 @@
+tunnel: <YOUR-TUNNEL-ID>
+credentials-file: C:\Users\<YOUR-USERNAME>\.cloudflared\<YOUR-TUNNEL-ID>.json
+
+ingress:
+  # Public frontend access
+  # Cloudflared running on Windows host → access Docker via localhost
+  - hostname: zero.envisicapital.com
+    service: http://localhost:3500
+  
+  # Private PostgreSQL access (only for Cloudflare Workers)
+  # Cloudflared on Windows host → Docker exposed on localhost:5432
+  - hostname: db-internal.zero.envisicapital.com
+    service: tcp://localhost:5432
+  
+  # Private Redis proxy access (only for Cloudflare Workers)
+  # Cloudflared on Windows host → Docker exposed on localhost:8079
+  - hostname: redis-internal.zero.envisicapital.com
+    service: http://localhost:8079
+  
+  # Catch-all (required)
+  - service: http_status:404
