@@ -1,11 +1,13 @@
-import type { Context } from 'hono';
-import { createDb } from '../db';
+import { Hono, type Context } from 'hono';
+import type { D1Database } from '@cloudflare/workers-types';
 import { env } from '../env';
 import { ApiKeyService } from '../lib/api-auth';
 import { NotificationService } from '../lib/notifications';
+import { createDb } from '../db';
 
 /**
  * Notifications Handler for External REST API
+{{ ... }}
  * 
  * This handler connects to the real PostgreSQL database using Zero's infrastructure.
  * Designed for external integrations (N8N, Zapier, webhooks).
@@ -41,6 +43,41 @@ export async function listNotificationsHandler(c: Context) {
 
     const notificationService = new NotificationService(db);
     const result = await notificationService.getNotifications({ userId });
+
+    // Create welcome notification if user has no notifications (first time)
+    if (result.notifications.length === 0) {
+      try {
+        // Use the same PostgreSQL NotificationService (not D1)
+        await notificationService.createNotification({
+          userId: userId,
+          subject: '👋 Welcome to Notifications!',
+          body: `Hi there! This is your notification center where you'll receive updates about:
+
+• Workflow completions and results
+• System alerts and important updates  
+• Background task notifications
+• Integration events from external apps
+
+You can manage notifications using the actions above, or head to the Settings tab to configure external API integrations.
+
+This welcome message was created internally by the system to verify everything is working correctly!`,
+          tags: ['welcome', 'system', 'onboarding'],
+          source: 'internal'
+        });
+        
+        // Reload notifications to include the new welcome message
+        const updatedResult = await notificationService.getNotifications({ userId });
+        await conn.end();
+        
+        return c.json({
+          success: true,
+          data: updatedResult.notifications
+        }, 200);
+      } catch (welcomeError) {
+        console.error('Failed to create welcome notification:', welcomeError);
+        // Continue anyway, don't fail the request
+      }
+    }
 
     await conn.end();
 

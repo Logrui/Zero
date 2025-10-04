@@ -497,14 +497,11 @@ export default function NotificationsPage() {
                                 className="mt-1 w-4 h-4 rounded border-white/20 bg-white/10 cursor-pointer"
                                 onClick={(e) => e.stopPropagation()}
                               />
-                              {/* Icon */}
-                              <div className={`flex-shrink-0 w-8 h-8 bg-gradient-to-br rounded-lg flex items-center justify-center ${
-                                isRead 
-                                  ? 'from-gray-500/10 to-gray-500/10 border border-gray-500/20' 
-                                  : 'from-orange-500/20 to-yellow-500/20 border border-orange-500/30'
-                              }`}>
-                                <Bell className={`h-4 w-4 ${isRead ? 'text-gray-500' : 'text-orange-400'}`} />
-                              </div>
+                              
+                              {/* Blue dot indicator (unread) */}
+                              {!isRead && (
+                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></div>
+                              )}
 
                               {/* Content */}
                               <div 
@@ -517,9 +514,6 @@ export default function NotificationsPage() {
                                   }`}>
                                     {notification.subject}
                                   </h3>
-                                  {!isRead && (
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
-                                  )}
                                 </div>
                                 <p className={`text-xs leading-relaxed mb-2 ${
                                   isRead ? 'text-white/30' : 'text-white/60'
