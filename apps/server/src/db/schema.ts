@@ -1,17 +1,17 @@
+import { relations } from 'drizzle-orm';
 import {
-  pgTableCreator,
-  text,
-  timestamp,
   boolean,
+  index,
   integer,
   jsonb,
+  pgTableCreator,
   primaryKey,
+  text,
+  timestamp,
   unique,
   uniqueIndex,
-  index,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
 import { defaultUserSettings } from '../lib/schemas';
 
 export const createTable = pgTableCreator((name) => `mail0_${name}`);
@@ -331,41 +331,41 @@ export const calendarEvent = createTable('calendar_event', {
   location: text('location'),
   color: text('color'),
   categoryId: text('category_id'),
-  
+
   // Recurrence fields
   recurrenceRule: text('recurrence_rule'), // RRULE string
   recurrenceException: text('recurrence_exception'), // EXDATE string
   isRecurringInstance: boolean('is_recurring_instance').default(false),
   originalEventId: text('original_event_id'),
   exceptionDate: text('exception_date'),
-  
+
   // Attendees and reminders (JSON fields)
   attendees: text('attendees'), // JSON string of email addresses
   reminders: text('reminders'), // JSON string of reminder objects
-  
+
   // Status and metadata
   status: text('status').default('confirmed'), // confirmed, tentative, cancelled
   visibility: text('visibility').default('default'), // default, public, private
   transparency: text('transparency').default('opaque'), // opaque, transparent
-  
+
   // Google Calendar sync fields
   googleEventId: text('google_event_id'), // Google Calendar event ID
   googleCalendarId: text('google_calendar_id'), // Google Calendar ID
   syncStatus: text('sync_status').default('synced'), // synced, pending, failed, local_only
   lastSynced: timestamp('last_synced'),
-  
+
   // External integration fields (for future providers)
   source: text('source').default('local'), // local, google, outlook, etc.
   externalId: text('external_id'), // ID from external calendar service
   externalCalendarId: text('external_calendar_id'), // Calendar ID from external service
-  
+
   // Additional Google Calendar fields
   htmlLink: text('html_link'), // Google Calendar event URL
   hangoutLink: text('hangout_link'), // Google Meet link
   conferenceData: text('conference_data'), // JSON string of conference data
   recurringEventId: text('recurring_event_id'), // For recurring event instances
   originalStartTime: text('original_start_time'), // For recurring event exceptions
-  
+
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -403,7 +403,7 @@ export const notifications = createTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').notNull(),
   subject: text('subject').notNull(),
-  body: text('body').notNull(), 
+  body: text('body').notNull(),
   tags: text('tags').array().notNull(),
   source: text('source').notNull(), // 'internal' | 'api'
   apiKeyId: uuid('api_key_id'),
@@ -459,6 +459,149 @@ export const apiKeysRelations = relations(apiKeys, ({ many }) => ({
   notifications: many(notifications),
 }));
 
+// Tasks System Tables
+export const tasks = createTable('tasks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  googleTaskId: text('google_task_id').unique(),
+  userId: text('user_id').notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  status: text('status', { enum: ['needsAction', 'completed'] }).notNull().default('needsAction'),
+  due: timestamp('due'),
+  priority: text('priority', { enum: ['low', 'normal', 'high'] }).notNull().default('normal'),
+  notes: text('notes'),
+  labels: text('labels').array().notNull().default([]),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_tasks_user_id').on(t.userId),
+  index('idx_mail0_tasks_google_task_id').on(t.googleTaskId),
+  index('idx_mail0_tasks_status').on(t.status),
+  index('idx_mail0_tasks_due').on(t.due),
+  index('idx_mail0_tasks_priority').on(t.priority),
+]);
+
+export const subtasks = createTable('subtasks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  status: text('status', { enum: ['needsAction', 'completed'] }).notNull().default('needsAction'),
+  position: integer('position').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_subtasks_task_id').on(t.taskId),
+  index('idx_mail0_subtasks_position').on(t.position),
+]);
+
+export const zeroosTaskExtensions = createTable('zeroos_task_extensions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
+  workspace: text('workspace'),
+  associatedPeople: text('associated_people').array().notNull().default([]),
+  associatedCompanies: text('associated_companies').array().notNull().default([]),
+  linkedGmailThreads: text('linked_gmail_threads').array().notNull().default([]),
+  internalNotes: text('internal_notes'),
+  tags: text('tags').array().notNull().default([]),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_zeroos_task_extensions_task_id').on(t.taskId),
+  index('idx_mail0_zeroos_task_extensions_workspace').on(t.workspace),
+]);
+
+export const syncStates = createTable('sync_states', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
+  lastSyncTimestamp: timestamp('last_sync_timestamp'),
+  conflictResolution: text('conflict_resolution', { enum: ['local', 'remote', 'pending'] }).notNull().default('pending'),
+  retryCount: integer('retry_count').notNull().default(0),
+  lastError: text('last_error'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_sync_states_task_id').on(t.taskId),
+  index('idx_mail0_sync_states_last_sync_timestamp').on(t.lastSyncTimestamp),
+]);
+
+export const changes = createTable('changes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
+  operation: text('operation', { enum: ['create', 'update', 'delete'] }).notNull(),
+  data: jsonb('data').notNull(),
+  timestamp: timestamp('timestamp').notNull().defaultNow(),
+  retryCount: integer('retry_count').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_changes_task_id').on(t.taskId),
+  index('idx_mail0_changes_timestamp').on(t.timestamp),
+  index('idx_mail0_changes_operation').on(t.operation),
+]);
+
+export const userPermissions = createTable('user_permissions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull().unique(),
+  googleAccessToken: text('google_access_token'),
+  googleRefreshToken: text('google_refresh_token'),
+  tokenExpiry: timestamp('token_expiry'),
+  permissions: text('permissions').array().notNull().default([]),
+  lastAuthCheck: timestamp('last_auth_check'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('idx_mail0_user_permissions_user_id').on(t.userId),
+  index('idx_mail0_user_permissions_token_expiry').on(t.tokenExpiry),
+]);
+
+// Add foreign key references after table definitions
+export const tasksRelations = relations(tasks, ({ one, many }) => ({
+  subtasks: many(subtasks),
+  zeroosExtension: one(zeroosTaskExtensions, {
+    fields: [tasks.id],
+    references: [zeroosTaskExtensions.taskId],
+  }),
+  syncState: one(syncStates, {
+    fields: [tasks.id],
+    references: [syncStates.taskId],
+  }),
+  changes: many(changes),
+}));
+
+export const subtasksRelations = relations(subtasks, ({ one }) => ({
+  task: one(tasks, {
+    fields: [subtasks.taskId],
+    references: [tasks.id],
+  }),
+}));
+
+export const zeroosTaskExtensionsRelations = relations(zeroosTaskExtensions, ({ one }) => ({
+  task: one(tasks, {
+    fields: [zeroosTaskExtensions.taskId],
+    references: [tasks.id],
+  }),
+}));
+
+export const syncStatesRelations = relations(syncStates, ({ one }) => ({
+  task: one(tasks, {
+    fields: [syncStates.taskId],
+    references: [tasks.id],
+  }),
+}));
+
+export const changesRelations = relations(changes, ({ one }) => ({
+  task: one(tasks, {
+    fields: [changes.taskId],
+    references: [tasks.id],
+  }),
+}));
+
+export const userPermissionsRelations = relations(userPermissions, ({ one }) => ({
+  user: one(user, {
+    fields: [userPermissions.userId],
+    references: [user.id],
+  }),
+}));
+
 // TypeScript types for notifications system
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
@@ -466,3 +609,17 @@ export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = typeof apiKeys.$inferInsert;
 export type Tag = typeof tags.$inferSelect;
 export type InsertTag = typeof tags.$inferInsert;
+
+// TypeScript types for tasks system
+export type Task = typeof tasks.$inferSelect;
+export type InsertTask = typeof tasks.$inferInsert;
+export type Subtask = typeof subtasks.$inferSelect;
+export type InsertSubtask = typeof subtasks.$inferInsert;
+export type ZeroosTaskExtension = typeof zeroosTaskExtensions.$inferSelect;
+export type InsertZeroosTaskExtension = typeof zeroosTaskExtensions.$inferInsert;
+export type SyncState = typeof syncStates.$inferSelect;
+export type InsertSyncState = typeof syncStates.$inferInsert;
+export type Change = typeof changes.$inferSelect;
+export type InsertChange = typeof changes.$inferInsert;
+export type UserPermission = typeof userPermissions.$inferSelect;
+export type InsertUserPermission = typeof userPermissions.$inferInsert;

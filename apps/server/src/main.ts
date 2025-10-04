@@ -49,6 +49,7 @@ import { ShardRegistry, ZeroAgent, ZeroDriver } from './routes/agent';
 import { ZeroMCP } from './routes/agent/mcp';
 import { ThreadSyncWorker } from './routes/agent/sync-worker';
 import { aiRouter } from './routes/ai';
+import { tasksRouter } from './api/tasks/routes';
 import { publicRouter } from './routes/auth';
 import { createNotificationHandler, listNotificationsHandler, updateNotificationHandler, deleteNotificationHandler } from './routes/notifications-handler';
 import { createApiKeyHandler, listApiKeysHandler, deleteApiKeyHandler } from './routes/api-keys-handler';
@@ -653,6 +654,7 @@ const api = new Hono<HonoContext>()
   })
   .route('/ai', aiRouter)
   .route('/public', publicRouter)
+  .route('/tasks', tasksRouter)
   .get('/diagnose/google-connection', diagnoseGoogleConnection)
   .post('/diagnose/revoke-reauth-connection', revokeAndReauthorizeConnection)
   .on(['GET', 'POST', 'OPTIONS'], '/auth/*', (c) => {

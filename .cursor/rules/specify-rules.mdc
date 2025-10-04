@@ -1,0 +1,25 @@
+﻿# Zero Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-10-04
+
+## Active Technologies
+- TypeScript/React (existing ZeroOS stack) + Google Tasks API, React, existing ZeroOS components (004-tasks-page-tasks)
+
+## Project Structure
+```
+backend/
+frontend/
+tests/
+```
+
+## Commands
+npm test; npm run lint
+
+## Code Style
+TypeScript/React (existing ZeroOS stack): Follow standard conventions
+
+## Recent Changes
+- 004-tasks-page-tasks: Added TypeScript/React (existing ZeroOS stack) + Google Tasks API, React, existing ZeroOS components
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

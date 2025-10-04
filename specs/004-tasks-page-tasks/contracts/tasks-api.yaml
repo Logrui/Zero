@@ -1,0 +1,547 @@
+openapi: 3.0.3
+info:
+  title: Tasks API
+  description: API for tasks page with Google Tasks integration
+  version: 1.0.0
+  contact:
+    name: ZeroOS Team
+    email: team@zeroos.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://api.zeroos.com
+    description: Production server
+
+paths:
+  /tasks:
+    get:
+      summary: Get user tasks
+      description: Retrieve all tasks for the authenticated user
+      tags:
+        - Tasks
+      parameters:
+        - name: status
+          in: query
+          description: Filter by task status
+          required: false
+          schema:
+            type: string
+            enum: [needsAction, completed]
+        - name: workspace
+          in: query
+          description: Filter by workspace
+          required: false
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Sort order
+          required: false
+          schema:
+            type: string
+            enum: [priority, dueDate, created]
+            default: priority
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  total:
+                    type: integer
+                  syncStatus:
+                    $ref: '#/components/schemas/SyncStatus'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create new task
+      description: Create a new task and sync to Google Tasks
+      tags:
+        - Tasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tasks/{taskId}:
+    get:
+      summary: Get task by ID
+      description: Retrieve a specific task by ID
+      tags:
+        - Tasks
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      summary: Update task
+      description: Update an existing task and sync to Google Tasks
+      tags:
+        - Tasks
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflict - task modified by another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      summary: Delete task
+      description: Delete a task and remove from Google Tasks
+      tags:
+        - Tasks
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Task deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /tasks/sync:
+    post:
+      summary: Force sync
+      description: Force synchronization with Google Tasks
+      tags:
+        - Sync
+      responses:
+        '200':
+          description: Sync completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  syncedTasks:
+                    type: integer
+                  conflicts:
+                    type: integer
+                  errors:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /tasks/offline-queue:
+    get:
+      summary: Get offline queue
+      description: Retrieve pending changes for offline sync
+      tags:
+        - Sync
+      responses:
+        '200':
+          description: Offline queue
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  changes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Change'
+                  total:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/google-tasks:
+    get:
+      summary: Initiate Google Tasks OAuth
+      description: Start OAuth flow for Google Tasks integration
+      tags:
+        - Auth
+      responses:
+        '302':
+          description: Redirect to Google OAuth
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Complete Google Tasks OAuth
+      description: Complete OAuth flow with authorization code
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                state:
+                  type: string
+      responses:
+        '200':
+          description: OAuth completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  permissions:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+components:
+  schemas:
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - status
+        - priority
+        - created
+        - updated
+      properties:
+        id:
+          type: string
+          format: uuid
+        googleTaskId:
+          type: string
+          nullable: true
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [needsAction, completed]
+        due:
+          type: string
+          format: date-time
+          nullable: true
+        priority:
+          type: string
+          enum: [low, normal, high]
+        notes:
+          type: string
+          nullable: true
+        subtasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subtask'
+        labels:
+          type: array
+          items:
+            type: string
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        syncStatus:
+          $ref: '#/components/schemas/SyncStatus'
+        zeroosExtension:
+          $ref: '#/components/schemas/ZeroOSTaskExtension'
+
+    Subtask:
+      type: object
+      required:
+        - id
+        - title
+        - status
+        - position
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 200
+        status:
+          type: string
+          enum: [needsAction, completed]
+        position:
+          type: integer
+          minimum: 0
+
+    ZeroOSTaskExtension:
+      type: object
+      properties:
+        workspace:
+          type: string
+          nullable: true
+        associatedPeople:
+          type: array
+          items:
+            type: string
+        associatedCompanies:
+          type: array
+          items:
+            type: string
+        linkedGmailThreads:
+          type: array
+          items:
+            type: string
+        internalNotes:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+
+    SyncStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [synced, modified, conflict, pending]
+        lastSyncTimestamp:
+          type: string
+          format: date-time
+          nullable: true
+        pendingChanges:
+          type: integer
+        retryCount:
+          type: integer
+        lastError:
+          type: string
+          nullable: true
+
+    CreateTaskRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+        due:
+          type: string
+          format: date-time
+          nullable: true
+        priority:
+          type: string
+          enum: [low, normal, high]
+          default: normal
+        notes:
+          type: string
+          nullable: true
+        labels:
+          type: array
+          items:
+            type: string
+        workspace:
+          type: string
+          nullable: true
+
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [needsAction, completed]
+        due:
+          type: string
+          format: date-time
+          nullable: true
+        priority:
+          type: string
+          enum: [low, normal, high]
+        notes:
+          type: string
+          nullable: true
+        labels:
+          type: array
+          items:
+            type: string
+        workspace:
+          type: string
+          nullable: true
+
+    Change:
+      type: object
+      required:
+        - id
+        - taskId
+        - operation
+        - timestamp
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        operation:
+          type: string
+          enum: [create, update, delete]
+        data:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+        retryCount:
+          type: integer
+          default: 0
+
+    ConflictError:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [conflict]
+        message:
+          type: string
+        localVersion:
+          $ref: '#/components/schemas/Task'
+        remoteVersion:
+          $ref: '#/components/schemas/Task'
+        resolution:
+          type: string
+          enum: [local, remote, manual]
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                enum: [unauthorized]
+              message:
+                type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                enum: [not_found]
+              message:
+                type: string
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                enum: [internal_error]
+              message:
+                type: string
+
+security:
+  - bearerAuth: []
+
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT

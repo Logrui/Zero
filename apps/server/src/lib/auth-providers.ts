@@ -45,6 +45,7 @@ export const authProviders = (env: Record<string, string>): ProviderConfig[] => 
         'https://www.googleapis.com/auth/userinfo.email',
         'https://www.googleapis.com/auth/calendar',
         'https://www.googleapis.com/auth/calendar.events',
+        'https://www.googleapis.com/auth/tasks',
       ],
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,

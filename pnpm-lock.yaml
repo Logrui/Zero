@@ -519,6 +519,9 @@ importers:
       '@googleapis/people':
         specifier: 3.0.9
         version: 3.0.9
+      '@googleapis/tasks':
+        specifier: 10.0.0
+        version: 10.0.0
       '@hono/node-server':
         specifier: 1.19.4
         version: 1.19.4(hono@4.8.3)
@@ -1987,6 +1990,10 @@ packages:
 
   '@googleapis/people@3.0.9':
     resolution: {integrity: sha512-gI3PaVcnVTGDbfRpOhN9aFoIAq37yQeG9064xoMbpUoMGo7rSrkUsLXdfENs0sq3YbwwGB+fmSGNjD+EqQm0Jw==}
+    engines: {node: '>=12.0.0'}
+
+  '@googleapis/tasks@10.0.0':
+    resolution: {integrity: sha512-m9fXU7IwOFJuNlPJpEe4VkvalfU2uI3b62rYyIrjx2wXtvvv0JqL3kENOYyZnYRg8l1u5DVDbqcTkw0LntDy5w==}
     engines: {node: '>=12.0.0'}
 
   '@hexagon/base64@1.1.28':
@@ -11180,6 +11187,12 @@ snapshots:
       googleapis-common: 7.2.0
     transitivePeerDependencies:
       - encoding
+      - supports-color
+
+  '@googleapis/tasks@10.0.0':
+    dependencies:
+      googleapis-common: 8.0.0
+    transitivePeerDependencies:
       - supports-color
 
   '@hexagon/base64@1.1.28': {}
