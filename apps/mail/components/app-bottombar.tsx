@@ -20,43 +20,34 @@ export function AppBottombar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  // Notification state management
-  const [notifications, setNotifications] = useState([
-    // Mock notifications for testing
-    {
-      id: "1",
-      subject: "New message received",
-      body: "You have a new message from John Doe about the project update.",
-      tags: ["message", "urgent"],
-      createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-      isRead: false,
-      priority: "high" as const,
-      source: "email"
-    },
-    {
-      id: "2",
-      subject: "Task completed",
-      body: "Your scheduled task has been completed successfully.",
-      tags: ["task", "success"],
-      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-      isRead: true,
-      priority: "medium" as const,
-      source: "system"
-    },
-    {
-      id: "3",
-      subject: "System update available",
-      body: "A new system update is available for download. Click to learn more.",
-      tags: ["system", "update"],
-      createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      isRead: false,
-      priority: "low" as const,
-      source: "system"
+  // Notification state management - fetching from real API
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+
+  // Fetch notifications from API - only unread ones for the overlay
+  const loadNotifications = async () => {
+    setIsLoadingNotifications(true);
+    try {
+      const response = await fetch('http://localhost:8787/notifications/api?userId=test-user-123');
+      const result = await response.json();
+      if (result.success) {
+        // Filter to show only unread notifications in the overlay
+        const unreadNotifications = result.data.filter((n: any) => !n.readStatus);
+        setNotifications(unreadNotifications);
+      }
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    } finally {
+      setIsLoadingNotifications(false);
     }
-  ]);
+  };
+
+  // Load notifications on mount and refresh every 5 seconds
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 5000); // Refresh every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   // Keep a CSS variable in sync with the actual header height so other fixed
   // elements (like the sidebar) can offset correctly above the bottombar.
@@ -147,7 +138,7 @@ export function AppBottombar() {
             onClick={() => setIsNotificationOpen(true)}
           >
             <NotificationIcon
-              count={3} // Mock count - in real app, this would come from context/state
+              count={notifications.filter(n => !n.isRead).length}
               size="md"
               onClick={() => { }}
               icon={<Bell className="h-5 w-5" />}
@@ -262,14 +253,42 @@ export function AppBottombar() {
           console.log("Clicked notification:", notification);
         }}
         onNotificationDelete={async (notificationIds) => {
-          // Remove notifications from state
-          setNotifications(prev => prev.filter(n => !notificationIds.includes(n.id)));
+          try {
+            // Mark each notification as read via API
+            await Promise.all(
+              notificationIds.map(id =>
+                fetch(`http://localhost:8787/notifications/api/${id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ isRead: true })
+                })
+              )
+            );
+            // Refresh notifications
+            await loadNotifications();
+          } catch (error) {
+            console.error('Failed to mark notifications as read:', error);
+            throw error;
+          }
         }}
         onMarkAsRead={async (notificationIds) => {
-          // Mark notifications as read in state
-          setNotifications(prev => prev.map(n =>
-            notificationIds.includes(n.id) ? { ...n, isRead: true } : n
-          ));
+          try {
+            // Mark each notification as read via API
+            await Promise.all(
+              notificationIds.map(id =>
+                fetch(`http://localhost:8787/notifications/api/${id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ isRead: true })
+                })
+              )
+            );
+            // Refresh notifications
+            await loadNotifications();
+          } catch (error) {
+            console.error('Failed to mark notifications as read:', error);
+            throw error;
+          }
         }}
       />
     </header>

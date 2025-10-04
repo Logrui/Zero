@@ -1,60 +1,60 @@
-import {
-  createUpdatedMatrixFromNewEmail,
-  initializeStyleMatrixFromEmail,
-  type EmailMatrix,
-  type WritingStyleMatrix,
-} from './services/writing-style-service';
+import { DurableObject, RpcTarget, WorkerEntrypoint } from 'cloudflare:workers';
 import {
   account,
+  calendarCategory,
+  calendarEvent,
   connection,
+  emailTemplate,
   note,
   session,
   user,
   userHotkeys,
   userSettings,
   writingStyleMatrix,
-  emailTemplate,
-  calendarEvent,
-  calendarCategory,
 } from './db/schema';
 import {
   toAttachmentFiles,
-  type SerializedAttachment,
   type AttachmentFile,
+  type SerializedAttachment,
 } from './lib/attachments';
+import {
+  createUpdatedMatrixFromNewEmail,
+  initializeStyleMatrixFromEmail,
+  type EmailMatrix,
+  type WritingStyleMatrix,
+} from './services/writing-style-service';
 import { SyncThreadsCoordinatorWorkflow } from './workflows/sync-threads-coordinator-workflow';
-import { WorkerEntrypoint, DurableObject, RpcTarget } from 'cloudflare:workers';
 // import { instrument, type ResolveConfigFn } from '@microlabs/otel-cf-workers';
-import { getZeroAgent, getZeroDB, verifyToken } from './lib/server-utils';
-import { SyncThreadsWorkflow } from './workflows/sync-threads-workflow';
-import { ShardRegistry, ZeroAgent, ZeroDriver } from './routes/agent';
-import { ThreadSyncWorker } from './routes/agent/sync-worker';
-import { oAuthDiscoveryMetadata } from 'better-auth/plugins';
-import { EProviders, type IEmailSendBatch } from './types';
-import { eq, and, desc, asc, inArray, gte, lte } from 'drizzle-orm';
-import { ThinkingMCP } from './lib/sequential-thinking';
-import { contextStorage } from 'hono/context-storage';
-import { defaultUserSettings } from './lib/schemas';
-import { createLocalJWKSet, jwtVerify } from 'jose';
-import { enableBrainFunction } from './lib/brain';
 import { trpcServer } from '@hono/trpc-server';
+import { oAuthDiscoveryMetadata } from 'better-auth/plugins';
+import { and, asc, desc, eq, gte, inArray, lte } from 'drizzle-orm';
+import { Hono } from 'hono';
 import { agentsMiddleware } from 'hono-agents';
-import { ZeroMCP } from './routes/agent/mcp';
-import { publicRouter } from './routes/auth';
-import { WorkflowRunner } from './pipelines';
-import { initTracing } from './lib/tracing';
-import { logDebug } from './lib/debug-logger';
-import { env, type ZeroEnv } from './env';
+import { contextStorage } from 'hono/context-storage';
+import { cors } from 'hono/cors';
+import { createLocalJWKSet, jwtVerify } from 'jose';
 import type { HonoContext } from './ctx';
 import { createDb, type DB } from './db';
+import { env, type ZeroEnv } from './env';
 import { createAuth } from './lib/auth';
-import { aiRouter } from './routes/ai';
-import { notificationsDatabaseRouter } from './routes/notifications-production';
-import { appRouter } from './trpc';
-import { cors } from 'hono/cors';
-import { Hono } from 'hono';
+import { enableBrainFunction } from './lib/brain';
+import { logDebug } from './lib/debug-logger';
 import { diagnoseGoogleConnection, revokeAndReauthorizeConnection } from './lib/diagnostics';
+import { defaultUserSettings } from './lib/schemas';
+import { ThinkingMCP } from './lib/sequential-thinking';
+import { getZeroAgent, getZeroDB, verifyToken } from './lib/server-utils';
+import { initTracing } from './lib/tracing';
 import { WorkflowRunner } from './lib/workflow-runner';
+import { ShardRegistry, ZeroAgent, ZeroDriver } from './routes/agent';
+import { ZeroMCP } from './routes/agent/mcp';
+import { ThreadSyncWorker } from './routes/agent/sync-worker';
+import { aiRouter } from './routes/ai';
+import { publicRouter } from './routes/auth';
+import { createNotificationHandler, listNotificationsHandler, updateNotificationHandler, deleteNotificationHandler } from './routes/notifications-handler';
+import { createApiKeyHandler, listApiKeysHandler, deleteApiKeyHandler } from './routes/api-keys-handler';
+import { appRouter } from './trpc';
+import { EProviders, type IEmailSendBatch } from './types';
+import { SyncThreadsWorkflow } from './workflows/sync-threads-workflow';
 
 const SENTRY_HOST = 'o4509328786915328.ingest.us.sentry.io';
 const SENTRY_PROJECT_IDS = new Set(['4509328795303936']);
@@ -652,7 +652,6 @@ const api = new Hono<HonoContext>()
     c.set('auth', undefined as any);
   })
   .route('/ai', aiRouter)
-  .route('/api', notificationsDatabaseRouter)
   .route('/public', publicRouter)
   .get('/diagnose/google-connection', diagnoseGoogleConnection)
   .post('/diagnose/revoke-reauth-connection', revokeAndReauthorizeConnection)
@@ -704,7 +703,7 @@ const app = new Hono<HonoContext>()
         return null;
       },
       credentials: true,
-      allowHeaders: ['Content-Type', 'Authorization'],
+      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
       exposeHeaders: ['X-Zero-Redirect'],
     }),
   )
@@ -765,6 +764,15 @@ const app = new Hono<HonoContext>()
     { replaceRequest: false },
   )
   .route('/api', api)
+  // External notifications API - Must be before agentsMiddleware
+  .get('/notifications/api', listNotificationsHandler)
+  .post('/notifications/api', createNotificationHandler)
+  .patch('/notifications/api/:id', updateNotificationHandler)
+  .delete('/notifications/api/:id', deleteNotificationHandler)
+  // API Key management endpoints
+  .post('/notifications/api/keys', createApiKeyHandler)
+  .get('/notifications/api/keys', listApiKeysHandler)
+  .delete('/notifications/api/keys/:id', deleteApiKeyHandler)
   .use(
     '*',
     agentsMiddleware({
@@ -1201,14 +1209,7 @@ export default class Entry extends WorkerEntrypoint<ZeroEnv> {
 }
 
 export {
-  ZeroAgent,
-  ZeroMCP,
-  ZeroDB,
-  ZeroDriver,
-  ThinkingMCP,
-  WorkflowRunner,
-  ThreadSyncWorker,
-  SyncThreadsWorkflow,
-  SyncThreadsCoordinatorWorkflow,
-  ShardRegistry,
+  ShardRegistry, SyncThreadsCoordinatorWorkflow, SyncThreadsWorkflow, ThinkingMCP, ThreadSyncWorker, WorkflowRunner, ZeroAgent, ZeroDB,
+  ZeroDriver, ZeroMCP
 };
+

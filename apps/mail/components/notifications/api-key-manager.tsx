@@ -87,13 +87,14 @@ export const ApiKeyManager = React.forwardRef<
   showUsageStats = true,
   allowKeyCreation = true,
   className,
-  ...props 
+  ...props
 }, ref) => {
   // State for UI interactions
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState<string | null>(null);
   const [maskedKeys, setMaskedKeys] = React.useState<Set<string>>(new Set());
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
+  const [newlyCreatedKey, setNewlyCreatedKey] = React.useState<string | null>(null);
   
   // Form state for key creation
   const [createForm, setCreateForm] = React.useState({
@@ -145,12 +146,10 @@ export const ApiKeyManager = React.forwardRef<
         description: createForm.description.trim() || undefined
       });
       
-      toast.success('API key created successfully');
+      // Show the full key in a dialog (will be shown only once!)
+      setNewlyCreatedKey(result.key);
       
-      // Show the new key temporarily
-      setMaskedKeys(prev => new Set([...prev, result.key]));
-      
-      // Reset form and close dialog
+      // Reset form and close create dialog
       setCreateForm({ name: '', description: '' });
       setCreateDialogOpen(false);
       
@@ -214,32 +213,9 @@ export const ApiKeyManager = React.forwardRef<
         {/* API Key display */}
         <div className="space-y-2">
           <Label className="text-sm font-medium">API Key</Label>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 p-2 bg-muted rounded text-sm font-mono">
-              {maskApiKey(apiKey.keyPrefix)}
-            </code>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toggleKeyVisibility(apiKey.keyPrefix)}
-              className="h-8 w-8 p-0"
-              title={maskedKeys.has(apiKey.keyPrefix) ? 'Hide key' : 'Show key'}
-            >
-              {/* Eye/EyeOff icon would go here */}
-              {maskedKeys.has(apiKey.keyPrefix) ? '👁️' : '🙈'}
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => copyToClipboard(apiKey.keyPrefix, apiKey.id)}
-              className="h-8 w-8 p-0"
-              title="Copy to clipboard"
-            >
-              {copiedKey === apiKey.id ? '✓' : '📋'}
-            </Button>
-          </div>
+          <code className="block p-2 bg-muted rounded text-sm font-mono">
+            {maskApiKey(apiKey.keyPrefix)}
+          </code>
         </div>
         
         {/* Usage stats */}
@@ -471,6 +447,61 @@ export const ApiKeyManager = React.forwardRef<
               onClick={() => deleteDialogOpen && handleRevokeKey(deleteDialogOpen)}
             >
               Revoke Key
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Newly created key dialog */}
+      <Dialog 
+        open={!!newlyCreatedKey} 
+        onOpenChange={(open: boolean) => !open && setNewlyCreatedKey(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>API Key Created Successfully</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+              <p className="text-sm font-medium text-yellow-600 dark:text-yellow-500">
+                Save this key now - it will only be shown once!
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                For security reasons, you won't be able to see this key again. Store it somewhere safe.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Your API Key</Label>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 p-3 bg-muted rounded text-sm font-mono break-all">
+                  {newlyCreatedKey}
+                </code>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => newlyCreatedKey && copyToClipboard(newlyCreatedKey, 'new-key')}
+                  className="h-10"
+                >
+                  {copiedKey === 'new-key' ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
+            </div>
+            
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>• This key has full access to the permissions you selected</p>
+              <p>• Keep it secure and never share it publicly</p>
+              <p>• Use it in your Authorization header: <code className="bg-muted px-1 py-0.5 rounded">Authorization: Bearer {'{'}your-key{'}'}</code></p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              onClick={() => setNewlyCreatedKey(null)}
+              className="w-full"
+            >
+              I've Saved My Key
             </Button>
           </DialogFooter>
         </DialogContent>

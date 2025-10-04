@@ -37,7 +37,8 @@ import {
   ArrowUp,
   ArrowDown,
   X,
-  Settings
+  Settings,
+  Check
 } from 'lucide-react';
 
 // Types
@@ -263,9 +264,9 @@ export const NotificationOverlay = React.forwardRef<
   const handleSingleDelete = async (notificationId: string) => {
     try {
       await onNotificationDelete([notificationId]);
-      toast.success('Notification deleted successfully');
+      toast.success('Notification marked as read');
     } catch (error) {
-      toast.error('Failed to delete notification');
+      toast.error('Failed to mark notification as read');
     }
   };
   
@@ -274,11 +275,11 @@ export const NotificationOverlay = React.forwardRef<
     
     try {
       await onNotificationDelete(selectedNotifications);
-      toast.success(`${selectedNotifications.length} notifications deleted successfully`);
+      toast.success(`${selectedNotifications.length} notifications marked as read`);
       setSelectedNotifications([]);
       setIsBulkMode(false);
     } catch (error) {
-      toast.error('Failed to delete notifications');
+      toast.error('Failed to mark notifications as read');
     }
   };
   
@@ -491,14 +492,15 @@ export const NotificationOverlay = React.forwardRef<
               </Button>
               
               <Button
-                variant="destructive"
+                variant="default"
                 size="sm"
                 onClick={handleBulkDelete}
                 disabled={selectedNotifications.length === 0}
-                data-testid="bulk-delete-selected"
+                className="bg-green-600 hover:bg-green-700"
+                data-testid="bulk-mark-as-read"
               >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Delete Selected
+                <Check className="h-4 w-4 mr-1" />
+                Mark as Read
               </Button>
             </div>
           </div>
@@ -638,10 +640,11 @@ export const NotificationOverlay = React.forwardRef<
                                 e.stopPropagation();
                                 handleSingleDelete(notification.id);
                               }}
-                              className="h-8 w-8 p-0"
-                              data-testid="delete-notification"
+                              className="h-8 w-8 p-0 hover:bg-green-500/20 hover:text-green-400"
+                              title="Mark as read"
+                              data-testid="mark-as-read-notification"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Check className="h-4 w-4" />
                             </Button>
                             
                             <Button

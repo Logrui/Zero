@@ -99,7 +99,7 @@ export class ApiKeyService {
         userId: data.userId,
         name: data.name,
         keyHash,
-        keyPrefix,
+        prefix: keyPrefix,
         permissions: data.permissions || ['notifications:create'],
         expiresAt: data.expiresAt,
         isActive: true,

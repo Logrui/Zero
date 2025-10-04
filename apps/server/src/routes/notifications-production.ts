@@ -1,26 +1,26 @@
-import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { createDb } from '../db';
 import { env } from '../env';
 import { NotificationService } from '../lib/notifications';
 import { ApiKeyService } from '../lib/api-auth';
 
 /**
- * Database-Integrated Notifications Router
+ * Notifications Handler for External REST API
  * 
- * This router connects to the real PostgreSQL database using Zero's infrastructure.
- * It replaces mock responses with actual database operations.
+ * This handler connects to the real PostgreSQL database using Zero's infrastructure.
+ * Designed for external integrations (N8N, Zapier, webhooks).
  * 
- * Use this router for production deployment.
- * Use the regular notificationsRouter for testing.
+ * Endpoint: POST /notifications/api
  */
-
-export const notificationsDatabaseRouter = new Hono();
 
 // Simple rate limiting for production
 const rateLimitMap = new Map<string, number>();
 
-// POST /notifications - Create notification with database integration
-notificationsDatabaseRouter.post('/notifications', async (c) => {
+/**
+ * Create Notification Handler
+ * POST /notifications/api
+ */
+export async function createNotificationHandler(c: Context) {
   const { db, conn } = createDb(env.HYPERDRIVE.connectionString);
   
   try {
@@ -144,10 +144,13 @@ notificationsDatabaseRouter.post('/notifications', async (c) => {
       }
     }, 500);
   }
-});
+}
 
-// GET /notifications - List notifications with database integration
-notificationsDatabaseRouter.get('/notifications', async (c) => {
+/**
+ * List Notifications Handler
+ * GET /notifications/api/list
+ */
+export async function listNotificationsHandler(c: Context) {
   const { db, conn } = createDb(env.HYPERDRIVE.connectionString);
   
   try {
