@@ -1,28 +1,30 @@
 import { type inferRouterInputs, type inferRouterOutputs } from '@trpc/server';
-import { cookiePreferencesRouter } from './routes/cookies';
-import { connectionsRouter } from './routes/connections';
-import { categoriesRouter } from './routes/categories';
-import { templatesRouter } from './routes/templates';
-import { shortcutRouter } from './routes/shortcut';
-import { settingsRouter } from './routes/settings';
 import { getContext } from 'hono/context-storage';
-import { draftsRouter } from './routes/drafts';
-import { labelsRouter } from './routes/label';
-import { notesRouter } from './routes/notes';
-import { brainRouter } from './routes/brain';
-import { userRouter } from './routes/user';
-import { meetRouter } from './routes/meet';
-import { mailRouter } from './routes/mail';
-import { bimiRouter } from './routes/bimi';
-import { calendarRouter } from './routes/calendar';
 import type { HonoContext } from '../ctx';
 import { aiRouter } from './routes/ai';
+import { bimiRouter } from './routes/bimi';
+import { brainRouter } from './routes/brain';
+import { calendarRouter } from './routes/calendar';
+import { categoriesRouter } from './routes/categories';
+import { connectionsRouter } from './routes/connections';
+import { cookiePreferencesRouter } from './routes/cookies';
+import { draftsRouter } from './routes/drafts';
+import { labelsRouter } from './routes/label';
+import { mailRouter } from './routes/mail';
+import { meetRouter } from './routes/meet';
+import { notesRouter } from './routes/notes';
+import { settingsRouter } from './routes/settings';
+import { shortcutRouter } from './routes/shortcut';
+import { tasksRouter } from './routes/tasks';
+import { templatesRouter } from './routes/templates';
+import { userRouter } from './routes/user';
 import { router } from './trpc';
 
 export const appRouter = router({
   ai: aiRouter,
   bimi: bimiRouter,
   calendar: calendarRouter,
+  tasks: tasksRouter,
   brain: brainRouter,
   categories: categoriesRouter,
   connections: connectionsRouter,

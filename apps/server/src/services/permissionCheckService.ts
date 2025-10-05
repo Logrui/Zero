@@ -1,5 +1,8 @@
-import { getZeroDB } from '../lib/server-utils';
-import { GoogleTasksService } from './googleTasksService';
+import { and, eq } from 'drizzle-orm';
+import { createDb } from '../db';
+import { connection } from '../db/schema';
+import { env } from '../env';
+// Removed GoogleTasksService - using better-auth instead
 
 export interface PermissionCheckResult {
     hasRequiredPermissions: boolean;
@@ -18,11 +21,24 @@ export class PermissionCheckService {
      * Check if user has required Google Tasks permissions
      */
     static async checkUserPermissions(userId: string): Promise<PermissionCheckResult> {
+        let conn;
         try {
-            const db = await getZeroDB(userId);
-            const connection = await db.findConnection('google');
-            
-            if (!connection) {
+            const { db, conn: dbConn } = createDb(env.HYPERDRIVE.connectionString);
+            conn = dbConn;
+
+            // Find user's Google connection
+            const userConnection = await db
+                .select()
+                .from(connection)
+                .where(
+                    and(
+                        eq(connection.userId, userId),
+                        eq(connection.providerId, 'google')
+                    )
+                )
+                .limit(1);
+
+            if (!userConnection.length) {
                 return {
                     hasRequiredPermissions: false,
                     missingScopes: this.REQUIRED_SCOPES,
@@ -30,13 +46,24 @@ export class PermissionCheckService {
                 };
             }
 
+            const connData = userConnection[0];
+
+            console.log('🔍 [PermissionCheck] Checking user permissions:', {
+                userId,
+                currentScopes: connData.scope?.split(' ') || [],
+                requiredScopes: this.REQUIRED_SCOPES,
+                hasAccessToken: !!connData.accessToken,
+                expiresAt: connData.expiresAt
+            });
+
             // Check if the connection has the required scopes
-            const currentScopes = connection.scope?.split(' ') || [];
+            const currentScopes = connData.scope?.split(' ') || [];
             const missingScopes = this.REQUIRED_SCOPES.filter(
                 scope => !currentScopes.includes(scope)
             );
 
             if (missingScopes.length > 0) {
+                console.log('❌ [PermissionCheck] Missing scopes:', missingScopes);
                 return {
                     hasRequiredPermissions: false,
                     missingScopes,
@@ -44,30 +71,33 @@ export class PermissionCheckService {
                 };
             }
 
-            // Test if the connection is still valid by making a test API call
-            try {
-                const googleTasksService = new GoogleTasksService({
-                    clientId: process.env.GOOGLE_CLIENT_ID!,
-                    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-                    redirectUri: `${process.env.VITE_PUBLIC_BACKEND_URL}/auth/callback/google`
-                });
-
-                // Test the connection by trying to list tasks
-                await googleTasksService.listTasks(connection.accessToken);
-                
-                return {
-                    hasRequiredPermissions: true,
-                    missingScopes: [],
-                    needsReauth: false
-                };
-            } catch (error) {
-                // If the API call fails, the token might be expired or invalid
+            // Check if tokens exist
+            if (!connData.accessToken) {
                 return {
                     hasRequiredPermissions: false,
                     missingScopes: this.REQUIRED_SCOPES,
                     needsReauth: true
                 };
             }
+
+            // Check if token is expired
+            if (connData.expiresAt && new Date(connData.expiresAt) < new Date()) {
+                console.log('Access token is expired');
+                return {
+                    hasRequiredPermissions: false,
+                    missingScopes: this.REQUIRED_SCOPES,
+                    needsReauth: true
+                };
+            }
+
+            // If we have all required scopes and a valid token, consider permissions granted
+            // The actual API functionality will be tested when the user tries to use the tasks page
+            console.log('✅ [PermissionCheck] User has required permissions');
+            return {
+                hasRequiredPermissions: true,
+                missingScopes: [],
+                needsReauth: false
+            };
         } catch (error) {
             console.error('Error checking user permissions:', error);
             return {
@@ -75,6 +105,10 @@ export class PermissionCheckService {
                 missingScopes: this.REQUIRED_SCOPES,
                 needsReauth: true
             };
+        } finally {
+            if (conn) {
+                await conn.end();
+            }
         }
     }
 
@@ -82,13 +116,8 @@ export class PermissionCheckService {
      * Get re-authentication URL for Google Tasks permissions
      */
     static async getReauthUrl(userId: string): Promise<string> {
-        const googleTasksService = new GoogleTasksService({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-            redirectUri: `${process.env.VITE_PUBLIC_BACKEND_URL}/auth/callback/google`
-        });
-
-        return googleTasksService.getAuthUrl(userId);
+        // Use better-auth OAuth flow for re-authentication
+        return `${env.BASE_URL}/auth/signin/google`;
     }
 
     /**

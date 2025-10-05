@@ -3,12 +3,13 @@
  * 
  * Custom hook for managing sync state and operations.
  * Handles sync status, statistics, and sync operations.
+ * Updated to use TRPC instead of REST API.
  */
 
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { syncService } from '../services/syncService';
+import { getSyncStatus, syncWithGoogleTasks } from '../../../modules/tasks/lib/tasks';
 import type {
     ConflictResolution,
     SyncStats,
@@ -34,40 +35,77 @@ export function useSync(): UseSyncReturn {
 
     // Update sync status
     const updateSyncStatus = useCallback(async () => {
+        console.log('🔍 [useSync.updateSyncStatus] Starting sync status update');
         try {
-            const newStatus = await syncService.getSyncStatus();
-            setStatus(newStatus);
+            console.log('🌐 [useSync.updateSyncStatus] Calling getSyncStatus()');
+            const newStatus = await getSyncStatus();
+            console.log('✅ [useSync.updateSyncStatus] Sync status received:', newStatus);
+            setStatus({
+                isOnline: newStatus.isOnline,
+                lastSync: newStatus.lastSync,
+                pendingChanges: newStatus.pendingChanges,
+                conflicts: 0, // TODO: Implement conflict tracking
+                errors: []
+            });
         } catch (error) {
-            console.error('Failed to get sync status:', error);
+            console.error('❌ [useSync.updateSyncStatus] Failed to get sync status:', error);
+            console.error('❌ [useSync.updateSyncStatus] Error details:', {
+                message: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined,
+                name: error instanceof Error ? error.name : undefined
+            });
         }
     }, []);
 
     // Update sync stats
     const updateSyncStats = useCallback(async () => {
+        console.log('🔍 [useSync.updateSyncStats] Starting sync stats update');
         try {
-            const newStats = await syncService.getSyncStats();
-            setStats(newStats);
+            console.log('🌐 [useSync.updateSyncStats] Calling getSyncStatus()');
+            const newStatus = await getSyncStatus();
+            console.log('✅ [useSync.updateSyncStats] Sync stats received:', newStatus);
+            setStats({
+                totalTasks: newStatus.totalTasks,
+                syncedTasks: newStatus.syncedTasks,
+                pendingChanges: newStatus.pendingChanges,
+                conflicts: 0, // TODO: Implement conflict tracking
+                lastSync: newStatus.lastSync
+            });
         } catch (error) {
-            console.error('Failed to get sync stats:', error);
+            console.error('❌ [useSync.updateSyncStats] Failed to get sync stats:', error);
+            console.error('❌ [useSync.updateSyncStats] Error details:', {
+                message: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined,
+                name: error instanceof Error ? error.name : undefined
+            });
         }
     }, []);
 
     // Sync tasks
     const sync = useCallback(async () => {
+        console.log('🔄 [useSync.sync] Starting sync process');
         try {
-            await syncService.sync();
+            console.log('🔄 [useSync.sync] Calling syncWithGoogleTasks...');
+            await syncWithGoogleTasks();
+            console.log('✅ [useSync.sync] syncWithGoogleTasks completed');
+
+            console.log('🔄 [useSync.sync] Updating sync status...');
             await updateSyncStatus();
+            console.log('✅ [useSync.sync] Sync status updated');
+
+            console.log('🔄 [useSync.sync] Updating sync stats...');
             await updateSyncStats();
+            console.log('✅ [useSync.sync] Sync stats updated');
         } catch (error) {
-            console.error('Sync failed:', error);
+            console.error('❌ [useSync.sync] Sync failed:', error);
             throw error;
         }
     }, [updateSyncStatus, updateSyncStats]);
 
-    // Resolve conflicts
+    // Resolve conflicts - simplified for TRPC
     const resolveConflicts = useCallback(async (resolutions: ConflictResolution[]) => {
         try {
-            await syncService.resolveConflicts(resolutions);
+            // TODO: Implement conflict resolution with TRPC
             await updateSyncStatus();
             await updateSyncStats();
         } catch (error) {
@@ -76,10 +114,10 @@ export function useSync(): UseSyncReturn {
         }
     }, [updateSyncStatus, updateSyncStats]);
 
-    // Force sync specific task
+    // Force sync specific task - simplified for TRPC
     const forceSync = useCallback(async (taskId: string) => {
         try {
-            await syncService.forceSyncTask(taskId);
+            // TODO: Implement force sync with TRPC
             await updateSyncStatus();
             await updateSyncStats();
         } catch (error) {
@@ -88,10 +126,10 @@ export function useSync(): UseSyncReturn {
         }
     }, [updateSyncStatus, updateSyncStats]);
 
-    // Process offline queue
+    // Process offline queue - simplified for TRPC
     const processQueue = useCallback(async () => {
         try {
-            await syncService.processOfflineQueue();
+            // TODO: Implement offline queue processing with TRPC
             await updateSyncStatus();
             await updateSyncStats();
         } catch (error) {
@@ -100,50 +138,17 @@ export function useSync(): UseSyncReturn {
         }
     }, [updateSyncStatus, updateSyncStats]);
 
-    // Handle sync events
+    // Handle sync events - simplified for TRPC
     useEffect(() => {
-        const handleSyncStart = () => {
-            setStatus(prev => ({ ...prev, errors: [] }));
-        };
-
-        const handleSyncComplete = () => {
-            updateSyncStatus();
-            updateSyncStats();
-        };
-
-        const handleSyncError = (event: any) => {
-            setStatus(prev => ({
-                ...prev,
-                errors: [...prev.errors, event.data.error]
-            }));
-        };
-
-        const handleOfflineChange = () => {
-            updateSyncStatus();
-            updateSyncStats();
-        };
-
-        // Add event listeners
-        syncService.addEventListener('sync_start', handleSyncStart);
-        syncService.addEventListener('sync_complete', handleSyncComplete);
-        syncService.addEventListener('sync_error', handleSyncError);
-        syncService.addEventListener('offline_change', handleOfflineChange);
-
         // Initial status update
         updateSyncStatus();
         updateSyncStats();
-
-        // Cleanup
-        return () => {
-            syncService.removeEventListener('sync_start', handleSyncStart);
-            syncService.removeEventListener('sync_complete', handleSyncComplete);
-            syncService.removeEventListener('sync_error', handleSyncError);
-            syncService.removeEventListener('offline_change', handleOfflineChange);
-        };
     }, [updateSyncStatus, updateSyncStats]);
 
     // Handle online/offline changes
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const handleOnline = () => {
             setStatus(prev => ({ ...prev, isOnline: true }));
             sync(); // Auto-sync when coming back online
@@ -162,11 +167,17 @@ export function useSync(): UseSyncReturn {
         };
     }, [sync]);
 
-    // Start auto-sync
+    // Start auto-sync - simplified for TRPC
     useEffect(() => {
-        syncService.startAutoSync();
-        return () => syncService.stopAutoSync();
-    }, []);
+        // TODO: Implement auto-sync with TRPC
+        // For now, just update status periodically
+        const interval = setInterval(() => {
+            updateSyncStatus();
+            updateSyncStats();
+        }, 30000); // Update every 30 seconds
+
+        return () => clearInterval(interval);
+    }, [updateSyncStatus, updateSyncStats]);
 
     return {
         status,

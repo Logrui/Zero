@@ -396,4 +396,5 @@ export interface UseGoogleTasksReturn {
     connect: () => void;
     disconnect: () => Promise<void>;
     permissions: string[];
+    loading: boolean;
 }

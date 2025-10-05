@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { tasksHandlers } from './handlers';
-import { checkPermissions, getReauthUrl } from './permissions';
 
 /**
  * Tasks API Routes
@@ -11,28 +10,24 @@ import { checkPermissions, getReauthUrl } from './permissions';
 
 const tasksRouter = new Hono();
 
-// Permission and authentication endpoints
-tasksRouter.get('/permissions/check', checkPermissions);
-tasksRouter.get('/permissions/reauth-url', getReauthUrl);
+// Permission and authentication endpoints - removed (using better-auth)
 
-// Task CRUD operations
-tasksRouter.get('/tasks', tasksHandlers.getTasks);
-tasksRouter.get('/tasks/:id', tasksHandlers.getTask);
-tasksRouter.post('/tasks', tasksHandlers.createTask);
-tasksRouter.put('/tasks/:id', tasksHandlers.updateTask);
-tasksRouter.delete('/tasks/:id', tasksHandlers.deleteTask);
+// Task CRUD operations - using /list to avoid route conflicts
+tasksRouter.get('/list', tasksHandlers.getTasks);
+tasksRouter.get('/item/:id', tasksHandlers.getTask);
+tasksRouter.post('/item', tasksHandlers.createTask);
+tasksRouter.put('/item/:id', tasksHandlers.updateTask);
+tasksRouter.delete('/item/:id', tasksHandlers.deleteTask);
 
 // Subtask operations
-tasksRouter.get('/tasks/:id/subtasks', tasksHandlers.getSubtasks);
-tasksRouter.post('/tasks/:id/subtasks', tasksHandlers.createSubtask);
-tasksRouter.put('/tasks/:id/subtasks/:subtaskId', tasksHandlers.updateSubtask);
-tasksRouter.delete('/tasks/:id/subtasks/:subtaskId', tasksHandlers.deleteSubtask);
-tasksRouter.put('/tasks/:id/subtasks/reorder', tasksHandlers.reorderSubtasks);
+tasksRouter.get('/item/:id/subtasks', tasksHandlers.getSubtasks);
+tasksRouter.post('/item/:id/subtasks', tasksHandlers.createSubtask);
+tasksRouter.put('/item/:id/subtasks/:subtaskId', tasksHandlers.updateSubtask);
+tasksRouter.delete('/item/:id/subtasks/:subtaskId', tasksHandlers.deleteSubtask);
+tasksRouter.put('/item/:id/subtasks/reorder', tasksHandlers.reorderSubtasks);
 
-// Google Tasks OAuth
-tasksRouter.get('/auth/google-tasks', tasksHandlers.getGoogleTasksAuthUrl);
-tasksRouter.post('/auth/google-tasks/callback', tasksHandlers.handleGoogleTasksCallback);
-tasksRouter.delete('/auth/google-tasks', tasksHandlers.disconnectGoogleTasks);
+// Google Tasks OAuth - handled by better-auth system
+// Removed custom OAuth handlers in favor of standardized better-auth flow
 
 // Synchronization
 tasksRouter.post('/sync', tasksHandlers.syncTasks);
@@ -49,3 +44,4 @@ tasksRouter.get('/stats', tasksHandlers.getTaskStats);
 tasksRouter.get('/sync/stats', tasksHandlers.getSyncStats);
 
 export { tasksRouter };
+

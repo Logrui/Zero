@@ -3,7 +3,7 @@ import { ChangeModel } from '../../models/change';
 import { SubtaskModel } from '../../models/subtask';
 import { TaskModel } from '../../models/task';
 import { UserPermissionsModel } from '../../models/userPermissions';
-import { GoogleTasksService } from '../../services/googleTasksService';
+// Removed GoogleTasksService - using better-auth instead
 import { SyncService } from '../../services/syncService';
 
 /**
@@ -293,7 +293,8 @@ export const tasksHandlers = {
 
             const authUrl = googleTasksService.getAuthUrl(userId);
 
-            return sendResponse(c, { authUrl });
+            // Redirect to Google OAuth URL instead of returning JSON
+            return c.redirect(authUrl);
         } catch (error) {
             return sendError(c, error.message, 500, 'GOOGLE_AUTH_ERROR');
         }

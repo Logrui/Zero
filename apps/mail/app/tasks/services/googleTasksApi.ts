@@ -44,7 +44,7 @@ export class GoogleTasksApiClient {
      */
     async getAuthUrl(): Promise<string> {
         try {
-            const response = await this.makeRequest<GoogleTasksAuthResponse>('/auth/google-tasks', {
+            const response = await this.makeRequest<GoogleTasksAuthResponse>('/tasks/auth/google-tasks', {
                 method: 'GET'
             });
 
@@ -64,7 +64,7 @@ export class GoogleTasksApiClient {
      */
     async handleCallback(code: string): Promise<void> {
         try {
-            const response = await this.makeRequest<ApiResponse>('/auth/google-tasks/callback', {
+            const response = await this.makeRequest<ApiResponse>('/tasks/auth/google-tasks/callback', {
                 method: 'POST',
                 body: JSON.stringify({ code })
             });
@@ -85,7 +85,7 @@ export class GoogleTasksApiClient {
      */
     async disconnect(): Promise<void> {
         try {
-            const response = await this.makeRequest<ApiResponse>('/auth/google-tasks', {
+            const response = await this.makeRequest<ApiResponse>('/tasks/auth/google-tasks', {
                 method: 'DELETE'
             });
 
@@ -106,14 +106,17 @@ export class GoogleTasksApiClient {
      */
     async checkAuthStatus(): Promise<GoogleTasksAuthState> {
         try {
-            const response = await this.makeRequest<SyncStatusResponse>('/sync/status', {
+            const response = await this.makeRequest<{
+                hasRequiredPermissions: boolean;
+                missingScopes: string[];
+                needsReauth: boolean;
+            }>('/tasks/permissions/check', {
                 method: 'GET'
             });
 
-            if (response.success && response.data) {
-                this.authState.isConnected = response.data.isOnline;
-                this.authState.lastAuthCheck = response.data.lastSync;
-            }
+            this.authState.isConnected = response.hasRequiredPermissions;
+            this.authState.permissions = response.missingScopes;
+            this.authState.lastAuthCheck = new Date();
 
             return this.authState;
         } catch (error) {
@@ -136,7 +139,7 @@ export class GoogleTasksApiClient {
                 });
             }
 
-            const response = await this.makeRequest<TaskListResponse>(`/tasks?${queryParams}`, {
+            const response = await this.makeRequest<TaskListResponse>(`/tasks/list?${queryParams}`, {
                 method: 'GET'
             });
 
@@ -156,7 +159,7 @@ export class GoogleTasksApiClient {
      */
     async createTask(taskData: any): Promise<TaskWithRelations> {
         try {
-            const response = await this.makeRequest<TaskListResponse>('/tasks', {
+            const response = await this.makeRequest<TaskListResponse>('/tasks/item', {
                 method: 'POST',
                 body: JSON.stringify(taskData)
             });
@@ -177,7 +180,7 @@ export class GoogleTasksApiClient {
      */
     async updateTask(taskId: string, updates: any): Promise<TaskWithRelations> {
         try {
-            const response = await this.makeRequest<TaskListResponse>(`/tasks/${taskId}`, {
+            const response = await this.makeRequest<TaskListResponse>(`/tasks/item/${taskId}`, {
                 method: 'PUT',
                 body: JSON.stringify(updates)
             });
@@ -198,7 +201,7 @@ export class GoogleTasksApiClient {
      */
     async deleteTask(taskId: string): Promise<void> {
         try {
-            const response = await this.makeRequest<ApiResponse>(`/tasks/${taskId}`, {
+            const response = await this.makeRequest<ApiResponse>(`/tasks/item/${taskId}`, {
                 method: 'DELETE'
             });
 
@@ -216,7 +219,7 @@ export class GoogleTasksApiClient {
      */
     async syncTasks(): Promise<any> {
         try {
-            const response = await this.makeRequest<ApiResponse>('/sync', {
+            const response = await this.makeRequest<ApiResponse>('/tasks/sync', {
                 method: 'POST'
             });
 
@@ -236,7 +239,7 @@ export class GoogleTasksApiClient {
      */
     async getSyncStatus(): Promise<any> {
         try {
-            const response = await this.makeRequest<SyncStatusResponse>('/sync/status', {
+            const response = await this.makeRequest<SyncStatusResponse>('/tasks/sync/status', {
                 method: 'GET'
             });
 
@@ -256,7 +259,7 @@ export class GoogleTasksApiClient {
      */
     async getSyncStats(): Promise<any> {
         try {
-            const response = await this.makeRequest<SyncStatsResponse>('/sync/stats', {
+            const response = await this.makeRequest<SyncStatsResponse>('/tasks/sync/stats', {
                 method: 'GET'
             });
 
@@ -276,7 +279,7 @@ export class GoogleTasksApiClient {
      */
     async resolveConflicts(resolutions: any[]): Promise<any> {
         try {
-            const response = await this.makeRequest<ApiResponse>('/sync/conflicts/resolve', {
+            const response = await this.makeRequest<ApiResponse>('/tasks/sync/conflicts/resolve', {
                 method: 'POST',
                 body: JSON.stringify({ resolutions })
             });
@@ -317,7 +320,7 @@ export class GoogleTasksApiClient {
      */
     async getOfflineQueue(): Promise<any[]> {
         try {
-            const response = await this.makeRequest<ApiResponse>('/sync/queue', {
+            const response = await this.makeRequest<ApiResponse>('/tasks/sync/queue', {
                 method: 'GET'
             });
 
@@ -337,7 +340,7 @@ export class GoogleTasksApiClient {
      */
     async processOfflineQueue(): Promise<any> {
         try {
-            const response = await this.makeRequest<ApiResponse>('/sync/queue/process', {
+            const response = await this.makeRequest<ApiResponse>('/tasks/sync/queue/process', {
                 method: 'POST'
             });
 
@@ -357,7 +360,7 @@ export class GoogleTasksApiClient {
      */
     async getTaskStats(): Promise<any> {
         try {
-            const response = await this.makeRequest<ApiResponse>('/stats', {
+            const response = await this.makeRequest<ApiResponse>('/tasks/stats', {
                 method: 'GET'
             });
 
@@ -399,7 +402,7 @@ export class GoogleTasksApiClient {
                 }
 
                 const data = await response.json();
-                return data;
+                return data as T;
             } catch (error) {
                 lastError = error as Error;
 
@@ -436,7 +439,7 @@ export class GoogleTasksApiClient {
 
 // Default configuration
 export const defaultGoogleTasksApiConfig: GoogleTasksApiConfig = {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787/api',
+    baseUrl: 'http://localhost:8787/api',
     timeout: 10000,
     retryAttempts: 3,
     retryDelay: 1000

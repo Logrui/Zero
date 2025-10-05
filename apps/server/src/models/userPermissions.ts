@@ -1,6 +1,8 @@
 import { and, desc, eq } from 'drizzle-orm';
+import { createDb } from '../db';
 import type { UserPermission } from '../db/schema';
 import { userPermissions } from '../db/schema';
+import { env } from '../env';
 import { getZeroDB } from '../lib/server-utils';
 
 /**
@@ -59,7 +61,7 @@ export class UserPermissionsModel {
             throw new Error('Token expiry cannot be in the past');
         }
 
-        const db = await getZeroDB(data.userId);
+        const db = await getZeroDB(data.userId) as any;
         const [userPerms] = await db.insert(userPermissions).values({
             userId: data.userId,
             googleAccessToken: data.googleAccessToken,
@@ -76,7 +78,7 @@ export class UserPermissionsModel {
      * Get user permissions by user ID
      */
     static async getByUserId(userId: string): Promise<UserPermission | null> {
-        const db = await getZeroDB(userId);
+        const db = await getZeroDB(userId) as any;
         const userPerms = await db.select()
             .from(userPermissions)
             .where(eq(userPermissions.userId, userId))
@@ -99,7 +101,7 @@ export class UserPermissionsModel {
             throw new Error('Token expiry cannot be in the past');
         }
 
-        const db = await getZeroDB(userId);
+        const db = await getZeroDB(userId) as any;
         const [updatedPerms] = await db.update(userPermissions)
             .set({
                 ...data,
@@ -143,10 +145,10 @@ export class UserPermissionsModel {
      */
     static async clearTokens(userId: string): Promise<UserPermission> {
         return await this.update(userId, {
-            googleAccessToken: null,
-            googleRefreshToken: null,
-            tokenExpiry: null,
-            lastAuthCheck: null
+            googleAccessToken: undefined,
+            googleRefreshToken: undefined,
+            tokenExpiry: undefined,
+            lastAuthCheck: undefined
         });
     }
 
@@ -237,12 +239,18 @@ export class UserPermissionsModel {
      */
     static async getUsersWithExpiredTokens(): Promise<UserPermission[]> {
         const now = new Date();
-        return await db.select()
-            .from(userPermissions)
-            .where(and(
-                eq(userPermissions.googleAccessToken, null),
-                eq(userPermissions.tokenExpiry, now)
-            ));
+        const { db, conn } = createDb(env.HYPERDRIVE.connectionString);
+        try {
+            const result = await db.select()
+                .from(userPermissions)
+                .where(and(
+                    eq(userPermissions.googleAccessToken, ''),
+                    eq(userPermissions.tokenExpiry, now)
+                ));
+            return result;
+        } finally {
+            await conn.end();
+        }
     }
 
     /**
@@ -251,13 +259,17 @@ export class UserPermissionsModel {
     static async getUsersNeedingTokenRefresh(bufferMinutes: number = 5): Promise<UserPermission[]> {
         const bufferTime = new Date();
         bufferTime.setMinutes(bufferTime.getMinutes() + bufferMinutes);
-
-        return await db.select()
-            .from(userPermissions)
-            .where(and(
-                eq(userPermissions.googleAccessToken, null),
-                eq(userPermissions.tokenExpiry, bufferTime)
-            ));
+        const { db, conn } = createDb(env.HYPERDRIVE.connectionString);
+        try {
+            return await db.select()
+                .from(userPermissions)
+                .where(and(
+                    eq(userPermissions.googleAccessToken, ''),
+                    eq(userPermissions.tokenExpiry, bufferTime)
+                ));
+        } finally {
+            await conn.end();
+        }
     }
 
     /**
@@ -270,33 +282,38 @@ export class UserPermissionsModel {
         usersNeedingRefresh: number;
         mostCommonPermissions: { [key: string]: number };
     }> {
-        const allPerms = await db.select().from(userPermissions);
-        const now = new Date();
-        const bufferTime = new Date();
-        bufferTime.setMinutes(bufferTime.getMinutes() + 5);
+        const { db, conn } = createDb(env.HYPERDRIVE.connectionString);
+        try {
+            const allPerms = await db.select().from(userPermissions);
+            const now = new Date();
+            const bufferTime = new Date();
+            bufferTime.setMinutes(bufferTime.getMinutes() + 5);
 
-        const usersWithTokens = allPerms.filter(perm => perm.googleAccessToken).length;
-        const usersWithExpiredTokens = allPerms.filter(perm =>
-            perm.tokenExpiry && perm.tokenExpiry < now
-        ).length;
-        const usersNeedingRefresh = allPerms.filter(perm =>
-            perm.tokenExpiry && perm.tokenExpiry < bufferTime
-        ).length;
+            const usersWithTokens = allPerms.filter(perm => perm.googleAccessToken).length;
+            const usersWithExpiredTokens = allPerms.filter(perm =>
+                perm.tokenExpiry && perm.tokenExpiry < now
+            ).length;
+            const usersNeedingRefresh = allPerms.filter(perm =>
+                perm.tokenExpiry && perm.tokenExpiry < bufferTime
+            ).length;
 
-        const permissionCounts: { [key: string]: number } = {};
-        for (const perm of allPerms) {
-            for (const permission of perm.permissions) {
-                permissionCounts[permission] = (permissionCounts[permission] || 0) + 1;
+            const permissionCounts: { [key: string]: number } = {};
+            for (const perm of allPerms) {
+                for (const permission of perm.permissions) {
+                    permissionCounts[permission] = (permissionCounts[permission] || 0) + 1;
+                }
             }
-        }
 
-        return {
-            totalUsers: allPerms.length,
-            usersWithTokens,
-            usersWithExpiredTokens,
-            usersNeedingRefresh,
-            mostCommonPermissions: permissionCounts
-        };
+            return {
+                totalUsers: allPerms.length,
+                usersWithTokens,
+                usersWithExpiredTokens,
+                usersNeedingRefresh,
+                mostCommonPermissions: permissionCounts
+            };
+        } finally {
+            await conn.end();
+        }
     }
 
     /**
@@ -368,9 +385,14 @@ export class UserPermissionsModel {
      * Get users by permission
      */
     static async getUsersByPermission(permission: string): Promise<UserPermission[]> {
-        return await db.select()
-            .from(userPermissions)
-            .where(eq(userPermissions.permissions, permission));
+        const { db, conn } = createDb(env.HYPERDRIVE.connectionString);
+        try {
+            return await db.select()
+                .from(userPermissions)
+                .where(eq(userPermissions.permissions, [permission]));
+        } finally {
+            await conn.end();
+        }
     }
 
     /**
@@ -379,20 +401,25 @@ export class UserPermissionsModel {
     static async cleanupOldPermissions(olderThanDays: number = 90): Promise<number> {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
+        const { db, conn } = createDb(env.HYPERDRIVE.connectionString);
+        try {
+            const result = await db.delete(userPermissions)
+                .where(and(
+                    eq(userPermissions.lastAuthCheck, cutoffDate),
+                    eq(userPermissions.googleAccessToken, '')
+                ));
 
-        const result = await db.delete(userPermissions)
-            .where(and(
-                eq(userPermissions.lastAuthCheck, cutoffDate),
-                eq(userPermissions.googleAccessToken, null)
-            ));
-
-        return result.rowCount || 0;
+            return result.length || 0;
+        } finally {
+            await conn.end();
+        }
     }
 
     /**
      * Get permission history
      */
     static async getPermissionHistory(userId: string): Promise<UserPermission[]> {
+        const db = await getZeroDB(userId) as any;
         return await db.select()
             .from(userPermissions)
             .where(eq(userPermissions.userId, userId))

@@ -3,12 +3,13 @@
  * 
  * Custom hook for managing tasks state and operations.
  * Handles CRUD operations, loading states, and error handling.
+ * Updated to use TRPC instead of REST API.
  */
 
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { googleTasksApi } from '../services/googleTasksApi';
+import { createTask, deleteTask, getTasks, toggleTask, updateTask } from '../../../modules/tasks/lib/tasks';
 import type {
     CreateTaskData,
     TaskWithRelations,
@@ -23,13 +24,24 @@ export function useTasks(): UseTasksReturn {
 
     // Fetch tasks
     const fetchTasks = useCallback(async () => {
+        console.log('🔍 [useTasks.fetchTasks] Starting task fetch');
         try {
             setLoading(true);
             setError(null);
-            const fetchedTasks = await googleTasksApi.getTasks();
-            setTasks(fetchedTasks);
+            console.log('🌐 [useTasks.fetchTasks] Calling getTasks()');
+            const fetchedTasks = await getTasks();
+            console.log('✅ [useTasks.fetchTasks] Tasks received:', {
+                count: fetchedTasks?.length || 0,
+                tasks: fetchedTasks?.map(t => ({ id: t.id, title: t.title })) || []
+            });
+            setTasks(fetchedTasks as TaskWithRelations[]);
         } catch (err) {
-            console.error('Failed to fetch tasks:', err);
+            console.error('❌ [useTasks.fetchTasks] Failed to fetch tasks:', err);
+            console.error('❌ [useTasks.fetchTasks] Error details:', {
+                message: err instanceof Error ? err.message : String(err),
+                stack: err instanceof Error ? err.stack : undefined,
+                name: err instanceof Error ? err.name : undefined
+            });
             setError(err instanceof Error ? err.message : 'Failed to fetch tasks');
         } finally {
             setLoading(false);
@@ -37,11 +49,11 @@ export function useTasks(): UseTasksReturn {
     }, []);
 
     // Create task
-    const createTask = useCallback(async (data: CreateTaskData) => {
+    const createTaskHandler = useCallback(async (data: CreateTaskData) => {
         try {
             setError(null);
-            const newTask = await googleTasksApi.createTask(data);
-            setTasks(prev => [...prev, newTask]);
+            const newTask = await createTask(data);
+            setTasks(prev => [...prev, newTask as TaskWithRelations]);
         } catch (err) {
             console.error('Failed to create task:', err);
             setError(err instanceof Error ? err.message : 'Failed to create task');
@@ -50,12 +62,12 @@ export function useTasks(): UseTasksReturn {
     }, []);
 
     // Update task
-    const updateTask = useCallback(async (id: string, data: UpdateTaskData) => {
+    const updateTaskHandler = useCallback(async (id: string, data: UpdateTaskData) => {
         try {
             setError(null);
-            const updatedTask = await googleTasksApi.updateTask(id, data);
+            const updatedTask = await updateTask(id, data);
             setTasks(prev => prev.map(task =>
-                task.id === id ? updatedTask : task
+                task.id === id ? updatedTask as TaskWithRelations : task
             ));
         } catch (err) {
             console.error('Failed to update task:', err);
@@ -65,10 +77,10 @@ export function useTasks(): UseTasksReturn {
     }, []);
 
     // Delete task
-    const deleteTask = useCallback(async (id: string) => {
+    const deleteTaskHandler = useCallback(async (id: string) => {
         try {
             setError(null);
-            await googleTasksApi.deleteTask(id);
+            await deleteTask(id);
             setTasks(prev => prev.filter(task => task.id !== id));
         } catch (err) {
             console.error('Failed to delete task:', err);
@@ -78,20 +90,22 @@ export function useTasks(): UseTasksReturn {
     }, []);
 
     // Toggle task completion
-    const toggleTask = useCallback(async (id: string) => {
+    const toggleTaskHandler = useCallback(async (id: string) => {
         try {
             setError(null);
             const task = tasks.find(t => t.id === id);
             if (!task) return;
 
-            const newStatus = task.status === 'completed' ? 'needsAction' : 'completed';
-            await updateTask(id, { status: newStatus });
+            const updatedTask = await toggleTask(id);
+            setTasks(prev => prev.map(t =>
+                t.id === id ? updatedTask as TaskWithRelations : t
+            ));
         } catch (err) {
             console.error('Failed to toggle task:', err);
             setError(err instanceof Error ? err.message : 'Failed to toggle task');
             throw err;
         }
-    }, [tasks, updateTask]);
+    }, [tasks]);
 
     // Refresh tasks
     const refreshTasks = useCallback(async () => {
@@ -107,10 +121,10 @@ export function useTasks(): UseTasksReturn {
         tasks,
         loading,
         error,
-        createTask,
-        updateTask,
-        deleteTask,
-        toggleTask,
+        createTask: createTaskHandler,
+        updateTask: updateTaskHandler,
+        deleteTask: deleteTaskHandler,
+        toggleTask: toggleTaskHandler,
         refreshTasks
     };
 }

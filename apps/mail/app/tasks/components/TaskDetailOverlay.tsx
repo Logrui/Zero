@@ -7,7 +7,10 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Edit, Save, Trash2, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import type {
     CreateSubtaskData,
     Subtask,
@@ -119,7 +122,7 @@ export function TaskDetailOverlay({
     }, [hasUnsavedChanges, onClose]);
 
     // Handle overlay click
-    const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+    const handleOverlayClick = useCallback((e: any) => {
         if (e.target === e.currentTarget) {
             handleClose();
         }
@@ -127,6 +130,8 @@ export function TaskDetailOverlay({
 
     // Handle keyboard shortcuts
     useEffect(() => {
+        if (typeof document === 'undefined') return;
+
         const handleKeyDown = (e: KeyboardEvent) => {
             if (!isOpen) return;
 
@@ -153,60 +158,63 @@ export function TaskDetailOverlay({
 
     return (
         <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
             onClick={handleOverlayClick}
         >
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <Card className="max-w-2xl w-full max-h-[90vh] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <div className="flex items-center space-x-3">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                        <CardTitle className="text-lg">
                             {isEditing ? 'Edit Task' : 'Task Details'}
-                        </h2>
+                        </CardTitle>
                         {hasUnsavedChanges && (
-                            <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
+                            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-orange-600 border border-orange-200 bg-orange-50">
                                 Unsaved changes
-                            </span>
+                            </div>
                         )}
                     </div>
                     <div className="flex items-center space-x-2">
                         {isEditing ? (
                             <>
-                                <button
+                                <Button
+                                    size="sm"
                                     onClick={handleSave}
                                     disabled={!hasUnsavedChanges}
-                                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
+                                    <Save className="w-4 h-4 mr-1" />
                                     Save
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     onClick={handleCancel}
-                                    className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
                                 >
                                     Cancel
-                                </button>
+                                </Button>
                             </>
                         ) : (
-                            <button
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => setIsEditing(true)}
-                                className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
                             >
+                                <Edit className="w-4 h-4 mr-1" />
                                 Edit
-                            </button>
+                            </Button>
                         )}
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={handleClose}
-                            className="text-gray-400 hover:text-gray-600"
                         >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                            <X className="w-4 h-4" />
+                        </Button>
                     </div>
-                </div>
+                </CardHeader>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <CardContent className="overflow-y-auto max-h-[calc(90vh-200px)]">
                     {isEditing ? (
                         <TaskForm
                             data={formData}
@@ -218,65 +226,56 @@ export function TaskDetailOverlay({
                             {/* Task Info */}
                             <div className="space-y-4">
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Title</h3>
-                                    <p className="text-lg text-gray-900">{task.title}</p>
+                                    <h3 className="text-sm font-medium text-muted-foreground">Title</h3>
+                                    <p className="text-lg font-medium">{task.title}</p>
                                 </div>
 
                                 {task.description && (
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Description</h3>
-                                        <p className="text-gray-900 whitespace-pre-wrap">{task.description}</p>
+                                        <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
+                                        <p className="text-foreground whitespace-pre-wrap">{task.description}</p>
                                     </div>
                                 )}
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Status</h3>
-                                        <span className={`
-                      inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${task.status === 'completed'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                            }
-                    `}>
+                                        <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+                                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${task.status === 'completed'
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
                                             {task.status === 'completed' ? 'Completed' : 'Pending'}
-                                        </span>
+                                        </div>
                                     </div>
 
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Priority</h3>
-                                        <span className={`
-                      inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${task.priority === 'high'
-                                                ? 'bg-red-100 text-red-800'
-                                                : task.priority === 'low'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-gray-100 text-gray-800'
-                                            }
-                    `}>
+                                        <h3 className="text-sm font-medium text-muted-foreground">Priority</h3>
+                                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${task.priority === 'high'
+                                            ? 'bg-red-100 text-red-800 border-red-200'
+                                            : task.priority === 'low'
+                                                ? 'bg-green-100 text-green-800 border-green-200'
+                                                : 'bg-gray-100 text-gray-800 border-gray-200'
+                                            }`}>
                                             {task.priority}
-                                        </span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {task.due && (
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Due Date</h3>
-                                        <p className="text-gray-900">{new Date(task.due).toLocaleDateString()}</p>
+                                        <h3 className="text-sm font-medium text-muted-foreground">Due Date</h3>
+                                        <p className="text-foreground">{new Date(task.due).toLocaleDateString()}</p>
                                     </div>
                                 )}
 
                                 {task.labels.length > 0 && (
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Labels</h3>
+                                        <h3 className="text-sm font-medium text-muted-foreground">Labels</h3>
                                         <div className="flex flex-wrap gap-2 mt-1">
                                             {task.labels.map((label, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                                                >
+                                                <div key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
                                                     {label}
-                                                </span>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
@@ -284,8 +283,8 @@ export function TaskDetailOverlay({
 
                                 {task.notes && (
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Notes</h3>
-                                        <p className="text-gray-900 whitespace-pre-wrap">{task.notes}</p>
+                                        <h3 className="text-sm font-medium text-muted-foreground">Notes</h3>
+                                        <p className="text-foreground whitespace-pre-wrap">{task.notes}</p>
                                     </div>
                                 )}
                             </div>
@@ -293,7 +292,7 @@ export function TaskDetailOverlay({
                             {/* Subtasks */}
                             {task.subtasks && task.subtasks.length > 0 && (
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-500 mb-3">Subtasks</h3>
+                                    <h3 className="text-sm font-medium text-muted-foreground mb-3">Subtasks</h3>
                                     <SubtaskList
                                         subtasks={task.subtasks}
                                         onSubtaskCreate={onSubtaskCreate}
@@ -307,7 +306,7 @@ export function TaskDetailOverlay({
                             {/* ZeroOS Extension */}
                             {task.zeroosExtension && (
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-500 mb-3">ZeroOS Details</h3>
+                                    <h3 className="text-sm font-medium text-muted-foreground mb-3">ZeroOS Details</h3>
                                     <ZeroosTaskExtension
                                         extension={task.zeroosExtension}
                                         onUpdate={(data) => {
@@ -319,28 +318,30 @@ export function TaskDetailOverlay({
                             )}
                         </div>
                     )}
-                </div>
+                </CardContent>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-between p-6 border-t bg-muted/50">
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground">
                             Created {new Date(task.createdAt).toLocaleDateString()}
                         </span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground">
                             Updated {new Date(task.updatedAt).toLocaleDateString()}
                         </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <button
+                        <Button
+                            variant="destructive"
+                            size="sm"
                             onClick={handleDelete}
-                            className="px-3 py-1 text-sm text-red-600 hover:text-red-800"
                         >
+                            <Trash2 className="w-4 h-4 mr-1" />
                             Delete
-                        </button>
+                        </Button>
                     </div>
                 </div>
-            </div>
+            </Card>
         </div>
     );
 }

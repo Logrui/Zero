@@ -31,7 +31,7 @@ export class SyncService {
     private config: SyncServiceConfig;
     private syncInterval: NodeJS.Timeout | null = null;
     private eventListeners: Map<string, ((event: SyncEvent) => void)[]> = new Map();
-    private isOnline: boolean = navigator.onLine;
+    private isOnline: boolean = typeof navigator !== 'undefined' ? navigator.onLine : false;
     private offlineQueue: OfflineQueueItem[] = [];
     private lastSyncTime: Date | null = null;
 
@@ -263,6 +263,9 @@ export class SyncService {
      * Setup event listeners
      */
     private setupEventListeners(): void {
+        // Only run on client side
+        if (typeof window === 'undefined') return;
+
         // Online/offline detection
         window.addEventListener('online', () => {
             this.isOnline = true;
@@ -285,6 +288,9 @@ export class SyncService {
      * Load offline queue from localStorage
      */
     private loadOfflineQueue(): void {
+        // Only run on client side
+        if (typeof window === 'undefined') return;
+
         try {
             const stored = localStorage.getItem('tasks-offline-queue');
             if (stored) {
@@ -303,6 +309,9 @@ export class SyncService {
      * Save offline queue to localStorage
      */
     private saveOfflineQueue(): void {
+        // Only run on client side
+        if (typeof window === 'undefined') return;
+
         try {
             localStorage.setItem('tasks-offline-queue', JSON.stringify(this.offlineQueue));
         } catch (error) {
