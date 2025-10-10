@@ -26,7 +26,7 @@ This fork is focused on implementing advanced features for Zero, such as AI Work
 - 🚀 **Max Context Agents w/ MCP Tools** – Long term persistent memory, meetings, documents
 - ⚡**MAX Modules** - Enhance not only emails with Agents workflows & LLMs but enable Calendar, People, Organization, Task, News, and more w/ a bundled Twenty CRM, Qdrant for Vector Embeddings, and N8N for workflows (w/ custom ZeroOS Custom Nodes for Twenty and Zero)
 - 📁 **Automatic Docs/Attachments Management** – Automatic file management for your email attachments with w/ Google Drive and OneDrive. Never lose an email attachment again
-- 🪄 **Full Agentic RAG Context for Agents** - Enable MAX mode for full RAG context w/ memory management for @People @Documents, @Organizations, Google Keep/Obsidian Notes, and 
+- 🪄 **Full Agentic RAG Context for Agents** - Enable MAX mode for full RAG context w/ memory management for @People @Documents, @Organizations, @Notes, @Tasks and @Calendar
 - ⚙️ **Self-Hosting Freedom** – Run your own mini CRM, AI system, email app with ease.
 - 🎨 **Customizable UI & Features** – Tailor your email experience the way you want it.
 - ✅ **Open-Source Integrations w/ Local LLMs and Local Databases** – No hidden agendas, fully transparent.
