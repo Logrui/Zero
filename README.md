@@ -9,7 +9,7 @@
 
 Dissapointed by Superhuman claiming to be a true "AI Inbox"?
 
-Welcome to Zero OS - An Open-Source Full Stack Productivity Suite for the Future of Productivity
+Welcome to Zero OS - An Open-Source Full Stack Productivity Suite for the Future of Productivity - an IDE like command center for your Calendar, Inboxes, CRM, Tasks, and more
 
 Treat your inboxes as the ultimate data source for your upstream workflows syncing files, people, calendar
 
