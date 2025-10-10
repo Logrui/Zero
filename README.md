@@ -13,15 +13,13 @@ Welcome to Zero OS - An Open-Source Full Stack Productivity Suite for the Future
 
 Treat your inboxes as the ultimate data source for your upstream workflows syncing files, people, calendar
 
-Planned Features:
-
 ## What is Zero OS?
 
 Zero OS is a poweruser fork of the open-source AI email solution, Zero Mail. Zero OS enables users the power to **self-host** their own full stack productivity platform while also integrating external services like Gmail and other email providers. 
 
 This fork is focused on implementing advanced features for Zero, such as AI Workflows, advanced AI chat, and a context-aware Zero Agent system across most new features:
 
-## Zero OS Core Features:
+## Zero OS Core and Planned Features:
 - 🦾 **MAX Mode** - Power users can enable MAX mode for frontier level AI integrations w/ People, Organizations, embeddings and tracking for Notes, People, and memories
 - 📬 **Inbox as a Data Source** – Treat multiple email accounts as the penultimate data source for tracking your work life and personal life
 - 💻 **Agentic IDE-like Experience** – Add context easily to Zero OS queries by @tagging Specific Emails, People, Organizations, Tasks,
