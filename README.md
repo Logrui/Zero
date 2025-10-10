@@ -7,36 +7,56 @@
 
 # Zero OS
 
-An Open-Source Full Productivity Suite - CRM/Gmail/Motion/Google Drive Alternative for the Future of Productivity
+Dissapointed by Superhuman claiming to be a true "AI Inbox"?
 
-## What is Zero?
+Welcome to Zero OS - An Open-Source Full Stack Productivity Suite for the Future of Productivity
 
-Zero OS is a fork of the open-source AI email solution, Zero. It gives users the power to **self-host** their own email app while also integrating external services like Gmail and other email providers. This fork is focused on implementing advanced features for Zero, such as AI Workflows, advanced AI chat, and a context-aware Zero Agent system across most new features. Our goal is to modernize and improve emails through AI agents to truly modernize emails.
+Treat your inboxes as the ultimate data source for your upstream workflows syncing files, people, calendar
 
-## Why Zero?
+Planned Features:
 
-Most email services today are either **closed-source**, **data-hungry**, or **too complex to self-host**.
-0.email is different:
+## What is Zero OS?
 
-- ✅ **Open-Source** – No hidden agendas, fully transparent.
-- 🦾 **AI Driven** - Enhance your emails with Agents & LLMs.
-- 🔒 **Data Privacy First** – Your emails, your data. Zero does not track, collect, or sell your data in any way. Please note: while we integrate with external services, the data passed through them is not under our control and falls under their respective privacy policies and terms of service.
-- ⚙️ **Self-Hosting Freedom** – Run your own email app with ease.
-- 📬 **Unified Inbox** – Connect multiple email providers like Gmail, Outlook, and more.
+Zero OS is a poweruser fork of the open-source AI email solution, Zero Mail. Zero OS enables users the power to **self-host** their own full stack productivity platform while also integrating external services like Gmail and other email providers. 
+
+This fork is focused on implementing advanced features for Zero, such as AI Workflows, advanced AI chat, and a context-aware Zero Agent system across most new features:
+
+## Zero OS Core Features:
+- 🦾 **MAX Mode** - Power users can enable MAX mode for frontier level AI integrations w/ People, Organizations, embeddings and tracking for Notes, People, and memories
+- 📬 **Inbox as a Data Source** – Treat multiple email accounts as the penultimate data source for tracking your work life and personal life
+- 💻 **Agentic IDE-like Experience** – Add context easily to Zero OS queries by @tagging Specific Emails, People, Organizations, Tasks,
+- 🚀 **Max Context Agents w/ MCP Tools** – Long term persistent memory, meetings, documents
+- ⚡**MAX Modules** - Enhance not only emails with Agents workflows & LLMs but enable Calendar, People, Organization, Task, News, and more w/ a bundled Twenty CRM, Qdrant for Vector Embeddings, and N8N for workflows (w/ custom ZeroOS Custom Nodes for Twenty and Zero)
+- 📁 **Automatic Docs/Attachments Management** – Automatic file management for your email attachments with w/ Google Drive and OneDrive. Never lose an email attachment again
+- 🪄 **Full Agentic RAG Context for Agents** - Enable MAX mode for full RAG context w/ memory management for @People @Documents, @Organizations, Google Keep/Obsidian Notes, and 
+- ⚙️ **Self-Hosting Freedom** – Run your own mini CRM, AI system, email app with ease.
 - 🎨 **Customizable UI & Features** – Tailor your email experience the way you want it.
-- 🚀 **Developer-Friendly** – Built with extensibility and integrations in mind.
+- ✅ **Open-Source Integrations w/ Local LLMs and Local Databases** – No hidden agendas, fully transparent.
 
 ## Tech Stack
 
-Zero OS is built with modern and reliable technologies:
-
-- **Frontend**: Next.js, React, TypeScript, TailwindCSS, Shadcn UI
-- **Backend**: Node.js, Drizzle ORM
-- **Database**: PostgreSQL
+Zero OS is built on top of the existing Zero tech stack with a few extra modern and reliable technologies focused on self hosting a powerful:
+- **Fast and Light Desktop Frontend**: Next.js, React Router, TypeScript, TailwindCSS, Shadcn UI
+- **Backend**: Node.js, Drizzle ORM, Twenty CRM, or your own separate Locally running Infrastructure
+- **AI Backend**: Cloudflare Workers for embeddings and access to large LLM providers
+- **Database**: PostgreSQL, Qdrant, Redis, and Twenty CRM
 - **Authentication**: Better Auth, Google OAuth
-<!-- - **Testing**: Jest, React Testing Library -->
+- **Mobile Experience** - Zero OS is built on Next.js w/ a focus on a separate mobile app experience
 
-## Getting Started
+**Option 1: Recommended Tech Stack - Hybrid:**
+-Enable Cloudflare Workers to enable speed for AI and 24/7 uptime for automations/notifications/
+-Utilize a Cloudflare Tunnel Published Application Tunnel (requires Domain) for remote access 24/7
+-Keep your private data local
+
+**Option 2: Fully Local Tech Stack:**
+-Only utilize Gmail as input and Microsoft OneDrive
+-Utilize local LLMs for all your embedding and processing needs
+-Keep all your files and data hosted privately on your own PC or private Server
+
+**Option 3: Fully Deployed Online Microsaas:**
+-Complex to set up - set up instructions (WIP)
+
+## Getting Started (NEEDS UPDATE)
 
 ### Video Tutorial
 
@@ -48,7 +68,7 @@ Watch this helpful video tutorial on how to set up Zero locally:
   </a>
 </p>
 
-### Prerequisites
+### Prerequisites (NEEDS UPDATE)
 
 **Required Versions:**
 
@@ -58,12 +78,12 @@ Watch this helpful video tutorial on how to set up Zero locally:
 
 Before running the application, you'll need to set up services and configure environment variables. For more details on environment variables, see the [Environment Variables](#environment-variables) section.
 
-### Setup Options
+### Setup Options (NEEDS UPDATE)
 
 You can set up Zero in two ways:
 
 <details open>
-<summary><b>Standard Setup (Recommended)</b></summary>
+<summary><b>Standard Setup (Recommended)</b></summary> (NEEDS UPDATE)
 
 #### Quick Start Guide
 
@@ -80,8 +100,6 @@ You can set up Zero in two ways:
    # Start database locally
    pnpm docker:db:up
    ```
-
-  
 
 2. **Set Up Environment**
 
@@ -104,7 +122,7 @@ You can set up Zero in two ways:
 <details open>
 <summary><b>Devcontainer Setup</b></summary>
 
-#### Quick Start guide
+#### Quick Start guide (NEEDS UPDATE)
 
 1. **Clone and Install**
 
@@ -137,7 +155,7 @@ You can set up Zero in two ways:
    Visit [http://localhost:3000](http://localhost:3000)
      </details>
 
-### Environment Setup
+### Environment Setup (NEEDS UPDATE)
 
 1. **Better Auth Setup**
 
@@ -147,7 +165,7 @@ You can set up Zero in two ways:
      BETTER_AUTH_SECRET=your_secret_key
      ```
 
-2. **Google OAuth Setup** (Required for Gmail integration)
+2. **Google OAuth Setup** (Required for Gmail integration) 
 
    - Go to [Google Cloud Console](https://console.cloud.google.com)
    - Create a new project
@@ -178,19 +196,7 @@ You can set up Zero in two ways:
 > [!WARNING]
 > The authorized redirect URIs in Google Cloud Console must match **exactly** what you configure in the `.env`, including the protocol (http/https), domain, and path - these are provided above.
 
-3. **Autumn Setup** (Required for some encryption)
-
-   - Go to [Autumn](https://useautumn.com/)
-   - For Local Use, click [onboarding](https://app.useautumn.com/sandbox/onboarding) button and generate an Autumn Secret Key
-   - For production, select the production mode from upper left corner and generate and fill the other fields. After that, generate an Autumn Secret Key
-
-   - Add to `.env`:
-
-   ```env
-   AUTUMN_SECRET_KEY=your_autumn_secret
-   ```
-
-4. **Twilio Setup** (Required for SMS Integration)
+4. **Twilio Setup** (Optional, currently disabled for SMS Integration)
 
    - Go to the [Twilio](https://www.twilio.com/)
    - Create a Twilio account if you don’t already have one
@@ -289,28 +295,3 @@ This also introduces 3 environment variables, `DROP_AGENT_TABLES`,`THREAD_SYNC_M
 Please refer to the [contributing guide](.github/CONTRIBUTING.md).
 
 If you'd like to help with translating Zero to other languages, check out our [translation guide](.github/TRANSLATION.md).
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Mail-0/Zero&type=Timeline)](https://www.star-history.com/#Mail-0/Zero&Timeline)
-
-## This project wouldn't be possible without these awesome companies
-
-<div style="display: flex; justify-content: center;">
-  <a href="https://vercel.com" style="text-decoration: none;">
-    <img src="public/vercel.png" alt="Vercel" width="96"/>
-  </a>
-  <a href="https://better-auth.com" style="text-decoration: none;">
-    <img src="public/better-auth.png" alt="Better Auth" width="96"/>
-  </a>
-  <a href="https://orm.drizzle.team" style="text-decoration: none;">
-    <img src="public/drizzle-orm.png" alt="Drizzle ORM" width="96"/>
-  </a>
-  <a href="https://coderabbit.com" style="text-decoration: none;">
-    <img src="public/coderabbit.png" alt="Coderabbit AI" width="96"/>
-  </a>
-</div>
-
-## 🤍 The team
-
-Curious who makes Zero? Here are our [contributors and maintainers](https://0.email/contributors)
